@@ -1,0 +1,128 @@
+[
+  {
+    "name": "P8z-G4 plafon bez minuta rada",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "  return Math.min(share, Math.max(floor, Math.floor((min / p[zone]) * 1000 + 1e-6)));",
+    "replace": "  return share;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G5 oštrenje bez granice 12 min",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  const repM = Math.min(q.sharpenerRepMaxM, byTime, byDose);",
+    "replace": "  const repM = Math.min(q.sharpenerRepMaxM, byDose);",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G1a vrh bez faktora i satnog plafona",
+    "file": "src/domain/generators/tenK/v2/volume.ts",
+    "find": "  return Math.max(start10, Math.min(old, Math.floor(start10 * factor + EPS), hour10));",
+    "replace": "  return old;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G6 lagan do 0,80 × dugi za sve",
+    "file": "src/domain/generators/tenK/v2/lengths.ts",
+    "find": "    max10: Math.floor(maxShare * long10 + EPS)",
+    "replace": "    max10: Math.floor(Math.max(0.8, maxShare) * long10 + EPS)",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G7a drugi kvalitet ostaje u nedelji testa",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "    if (test) picks = { q1: null, q2: null };",
+    "replace": "    if (test && picks) picks = { ...picks, q1: null };",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G7b test i pre nedelje 4",
+    "file": "src/domain/generators/tenK/v2/periodize.ts",
+    "find": "  if (tw === 0 || tw >= min) return tw;",
+    "replace": "  if (tw === 0 || tw >= min || tw < min) return tw;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-G8 dugi početnika bez udela do distance",
+    "file": "src/domain/generators/tenK/v2/lengths.ts",
+    "find": "  if (!toRace || target10 <= 0) return rule.longMaxShare;",
+    "replace": "  if (toRace || !toRace || target10 <= 0) return rule.longMaxShare;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D49a plafon T početnika bez 3,0 km",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "    beginner && zone === 'T' ? Math.max(floor, Math.round(P.beginner.tCapMinKm * 1000)) : floor;",
+    "replace": "    floor;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D49b viši nivo T i kad ga nedelja ne nosi",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "      !carriesAll({ q1, q2: null })",
+    "replace": "      !carriesAll({ q1, q2: null }) &&\n      false",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D49c prelaz T → RP kao spuštanje doze",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "  if (prev.doseM > cap && beginner && newZone) {",
+    "replace": "  if (prev.doseM > cap && beginner && newZone && false) {",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D50 bez rečenice ravnog obima",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "  if (flatHours !== null)",
+    "replace": "  if (flatHours !== null && false)",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D51a smanjena doza bez donje granice",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "  return lv[lv.length - 1] ?? floorM;",
+    "replace": "  return lv[lv.length - 1] ?? 0;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-D51b validator: nedelja testa određuje stanje Q2",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "          if (!d && w.days.some((x) => x.role === 'test')) continue;",
+    "replace": "          if (!d && r === 'q1' && w.days.some((x) => x.role === 'test')) continue;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8z-S9 početnik na 0,70 × dugi",
+    "file": "src/domain/generators/tenK/v2/policy.ts",
+    "find": "    easyMaxLongShare: b.easyMaxLongShare,\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  }
+]

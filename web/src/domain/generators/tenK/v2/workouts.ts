@@ -342,13 +342,57 @@ export function easyWorkout(km: number, p: Paces): Workout {
   );
 }
 
-export function longWorkout(km: number, p: Paces): Workout {
+export function longWorkout(km: number, p: Paces, tKm = 0): Workout {
+  if (tKm <= 0)
+    return assemble(
+      'long',
+      null,
+      `Dugi ${fmtKm(km)} km lagano`,
+      [{ kind: 'long', km }],
+      [distEasy('long', km, p)],
+      null
+    );
+  // K3-C (10k-v2.15.0): dugi sa završnim T delom (quality.longTKmOf) — dan ostaje `km`, lagan deo = km − T.
+  const easyKm = (km100(km) - km100(tKm)) / 100;
   return assemble(
     'long',
     null,
-    `Dugi ${fmtKm(km)} km lagano`,
-    [{ kind: 'long', km }],
-    [distEasy('long', km, p)],
+    `Dugi ${fmtKm(km)} km: ${fmtKm(easyKm)} km lagano + završnih ${fmtKm(tKm)} km T`,
+    [
+      { kind: 'long', km: easyKm },
+      { kind: 'continuous', zone: 'T', km: tKm }
+    ],
+    [
+      distEasy('long', easyKm, p),
+      seg('continuous', 'T', tKm, Math.round(tKm * p.T), p.T, 'exact', 'estimated')
+    ],
+    null
+  );
+}
+
+/** D36 (P5 F3): lagan dan sa ubrzanjima na kraju — dan ostaje `km` (dužina iz lengths.ts); lagan deo = km − ubrzanja
+    i oporavak; ubrzanja `reps` × strides.sec R tempom, oporavak isti metraž džogom (kao dan pred trku, D8/D14). Ubrzanja
+    nisu rad zone (workKm). */
+export function easyStridesWorkout(km: number, p: Paces, reps: number): Workout {
+  const sec = P.strides.sec;
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail100 = reps * km100(strideKm) + (reps - 1) * km100(rec.m / 1000);
+  const easyKm = (km100(km) - tail100) / 100;
+  const segments: Segment[] = [distEasy('easy', easyKm, p)];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) segments.push(recoverySegment(rec, p));
+    segments.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km + ${reps} × ${sec} s ubrzanja`,
+    [
+      { kind: 'easy', km: easyKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    segments,
     null
   );
 }
@@ -406,15 +450,14 @@ export function sharpenerWarmupCooldown(): WarmupCooldown {
   return { warmupSec: P.raceWeek.raceWarmupSec, cooldownSec: P.raceWeek.raceCooldownSec };
 }
 
-export function sharpenerWorkout(reps: number, p: Paces, feel = false): Workout {
+export function sharpenerWorkout(reps: number, repM: number, p: Paces, feel = false): Workout {
   const wc = sharpenerWarmupCooldown();
-  const s = P.raceWeek.sharpener;
   return qualityWorkout(
     {
       ladder: 'RP_sharpener',
       zone: 'RP',
-      doseM: reps * s.repM,
-      structure: { form: 'reps', reps, repM: s.repM },
+      doseM: reps * repM,
+      structure: { form: 'reps', reps, repM },
       step: 'sharpener'
     },
     p,
@@ -429,7 +472,8 @@ export function raceWorkout(p: Paces, raceSec: number): Workout {
   return assemble(
     'race',
     null,
-    `Trka ${q.raceKm} km (WU 15 min + CD 10 min)`,
+    // G3 (P8 dopuna): trkački dan kao trka — distanca i prognozirano vreme; zagrevanje i hlađenje su preporuka.
+    `Trka ${q.raceKm} km — prognoza ${hms(raceSec)} (pre trke 15 min lagano, posle 10 min)`,
     [
       { kind: 'warmup', sec: q.raceWarmupSec },
       { kind: 'race', km: q.raceKm },
@@ -442,4 +486,13 @@ export function raceWorkout(p: Paces, raceSec: number): Workout {
     ],
     null
   );
+}
+
+/** G3 (P8 dopuna): vreme trke za tekst — m:ss ispod sata, inače h:mm:ss. */
+function hms(sec: number): string {
+  const t = Math.round(sec);
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const ss = String(t % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }

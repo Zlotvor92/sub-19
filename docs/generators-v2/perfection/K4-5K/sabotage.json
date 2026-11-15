@@ -1,0 +1,23 @@
+[
+ {
+  "name": "K4-B bez pravila (weeksMax 99)",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    shortEasy: { minSec: 1800, weeksMax: 2 },",
+  "replace": "    shortEasy: { minSec: 1800, weeksMax: 99 },",
+  "tests": ["src/domain/generators/fiveK/v2/k4.node.test.ts"]
+ },
+ {
+  "name": "K4-B oznaka bez dana manje (weekLengths ignoriše drop)",
+  "file": "src/domain/generators/fiveK/v2/lengths.ts",
+  "find": "  const shortRest = drop > 0 && n >= 2;",
+  "replace": "  const shortRest = drop > 99 && n >= 2;",
+  "tests": ["src/domain/generators/fiveK/v2/k4.node.test.ts"]
+ },
+ {
+  "name": "K4-B i za početnika",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "  if (beginner) return [];",
+  "replace": "  if (beginner && weeks.length < 0) return [];",
+  "tests": ["src/domain/generators/fiveK/v2/k4.node.test.ts"]
+ }
+]

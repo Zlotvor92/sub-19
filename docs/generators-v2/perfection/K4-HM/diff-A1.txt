@@ -1,0 +1,11 @@
+R-d3: n 2640 odb 0→0 prom 2640 vrh<-10% 0 | peak 44.2→44.2 [31.6..55]; longest 19.8→19.8 [14.2..24]; nBlock 0→2 [1..2]; blockSum 0→10 [4..10]
+R-d4: n 3696 odb 0→0 prom 0 vrh<-10% 0
+R-d5: n 4752 odb 0→0 prom 0 vrh<-10% 0
+R-d6: n 5808 odb 0→0 prom 0 vrh<-10% 0
+F-d3: n 990 odb 0→0 prom 990 vrh<-10% 0 | peak 42→42.4 [31.6..55]; longest 18.9→18.9 [14.2..24]; nBlock 0→2 [1..2]; blockSum 0→10 [4..10]
+F-d4: n 1386 odb 0→0 prom 0 vrh<-10% 0
+F-d5: n 1782 odb 0→0 prom 0 vrh<-10% 0
+F-d6: n 2178 odb 0→0 prom 0 vrh<-10% 0
+B-d4: n 945 odb 0→0 prom 0 vrh<-10% 0
+B-d5: n 945 odb 0→0 prom 0 vrh<-10% 0
+nova odbijanja: 0

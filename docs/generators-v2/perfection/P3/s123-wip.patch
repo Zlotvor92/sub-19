@@ -1,0 +1,654 @@
+diff --git a/web/src/domain/generators/tenK/v2/generate.ts b/web/src/domain/generators/tenK/v2/generate.ts
+index ad92c2a..b3bc9f8 100644
+--- a/web/src/domain/generators/tenK/v2/generate.ts
++++ b/web/src/domain/generators/tenK/v2/generate.ts
+@@ -38,6 +38,7 @@ import type {
+   TenKV2Plan,
+   WeekFrame
+ } from './types.ts';
++import { specificTypeNext } from './specific.ts';
+ import { validatePlan } from './validate.ts';
+ import {
+   adaptNominal10,
+@@ -235,7 +236,7 @@ export function construct(
+     const ctx0w = ctxAt(frame.index);
+     // T3 (10K-08): posle novog starta — taper zadržava jedan kvalitet (kad posle povratka ima nedelja sa kvalitetom),
+     // trkačka nedelja kratko oštrenje (steps.restartKeepsTaperQuality / lastRestartBefore, iste funkcije kao validator).
+-    const ctx: WeekContext =
++    let ctx: WeekContext =
+       frame.phase === 'taper' &&
+       restartKeepsTaperQuality(
+         steps,
+@@ -247,6 +248,16 @@ export function construct(
+           ? { ...ctx0w, keepSharpener: true }
+           : ctx0w;
+     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
++    // D34/A25 (P3): tip specifične nedelje iz nedelja kakve se upisuju (specific.ts, isto što čita validator).
++    if (
++      frame.phase === 'specific' &&
++      !frame.deload &&
++      specificTypeNext(
++        out.map((w, i) => ({ ...w, days: written[i]!.days })),
++        rule
++      ) === 'B'
++    )
++      ctx = { ...ctx, specB: true };
+     if (frame.phase === 'race') {
+       const prev = out[out.length - 1];
+       const prevDays = written[written.length - 1]?.days ?? [];
+diff --git a/web/src/domain/generators/tenK/v2/policy.ts b/web/src/domain/generators/tenK/v2/policy.ts
+index 5dda343..13a89a5 100644
+--- a/web/src/domain/generators/tenK/v2/policy.ts
++++ b/web/src/domain/generators/tenK/v2/policy.ts
+@@ -2,7 +2,7 @@
+    Kod ostalih fajlova čita samo ovaj objekat (i `dayRule` / `planRule`, pristup tabeli D17 i tabeli
+    početnika D28); nijedan od njih ne nosi sopstveni trenerski broj. */
+ 
+-import type { Experience } from './types.ts';
++import type { Experience, WorkZone } from './types.ts';
+ 
+ /** Deonica lestvice: broj × metraža. */
+ interface Rep {
+@@ -92,8 +92,8 @@ const DECISIONS: readonly Decision[] = [
+   },
+   {
+     id: 'D11',
+-    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, RP 10 %.',
+-    place: 'policy.ts caps; proverava quality.ts (izbor) i validate.ts',
++    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, RP po cilju nedelje (D33: < 40 km 10 %, ≥ 40 km 15 %; do 10k-v2.10.0 RP 10 %).',
++    place: 'policy.ts caps + capShare; proverava quality.ts (izbor, capM) i validate.ts',
+     rationale:
+       'R/I/T prema Danielsu (sekundarni izvor, ne dokaz); RP heuristika. Nema drugih limita za iste zone. Ne važi za trkačku nedelju (D8).'
+   },
+@@ -253,6 +253,28 @@ const DECISIONS: readonly Decision[] = [
+     rationale:
+       'Heuristika: kod 3 dana i 15 km test (WU + 5 km + CD ≈ 8 km) je ≈ pola nedelje, a u rasterećenju skraćuje dugi na 3,1 km (81bd351: dugi rasterećenja < 4 km u 162 plana početnika, cilj rasterećenja naviše u 144). Posledica: u 102 plana po osećaju ograničena kapacitetom vrh 81bd351 je bio u nedelji testa (dan testa duži od kvalitetnog dana), pa je vrh niži do 1,7 km (4 dana, 35 km, lagan 8:30, 10 ned: 38,5 → 36,8 km); u 36 od njih (3 dana) taper zato prelazi sa RP 2 × 1000 m na T 1,5 km (D31).'
+   },
++  /* ---------- P3 (10k-v2.11.0): specifičnost 10K — odluke organizatora (briefs/P3-10k-specificnost.md), heuristike. ---------- */
++  {
++    id: 'D33',
++    rule: 'S1 — plafon RP po cilju nedelje (jedan plafon, tabela caps.RP): cilj < 40 km → 10 %, cilj ≥ 40 km → 15 % (svaka nedelja sa kvalitetom osim trkačke, D8). Lestvica RP produžena do 8,0 km: … 3 × 2000 · 4 × 1600 (6,4 km) · 5 × 1600 m (8,0 km); 4 × 2000 m nije nivo (ista doza 8,0 km kao 5 × 1600 m) — ostaje kao druga struktura iste doze po D30. „Dan kvaliteta ≤ dugi" (pouka 35), D12 i D16 bez promene.',
++    place: 'policy.ts caps.RP, capShare, ladders.RP; quality.ts capM; validate.ts (ZONE_CAP i ostali čitaju capM)',
++    rationale:
++      'Heuristika organizatora (P3, oznaka: heuristika). Polazno P0 (10k-v2.10.0, planovi sa rezultatom): najveći RP trening 4 km (40 % trke), plafon D11 RP 10 % drži vrh RP u 55 % planova (3 dana 94 %). 15 % samo od 40 km cilja: kod HM (P1) veći plafon na dnu obima dao je nedelje > 25 % km bržih od E. Obrazac postojeće lestvice nije jednoznačan (koraci 0,6 / 1 / 0,5 / 0,5 / 1 km), pa je uzet rezervni niz iz zadatka (samo nivoi veći od 6,0 km, bez duple doze). Brojke pre/posle: docs/generators-v2/perfection/reports/P3-REPORT.md.'
++  },
++  {
++    id: 'D34',
++    rule: 'S2 — održavanje I u specifičnoj fazi: redovan plan 4–6 dana (ne početnik), ne-rasteretne specifične nedelje (bez ograničenja kvaliteta adaptacije): Q1 = RP svake nedelje (D10, D12); Q2 se smenjuje — tip A T cruise (D12, nastavlja od poslednje T doze), tip B I održavanja; prva takva nedelja je A, posle A je B i obrnuto (specific.ts, jedno mesto odluke, iz upisanih nedelja). I održavanja: doza = poslednja I doza (razvoj), ne raste; struktura naizmenično druga struktura iste doze (D10), kad postoji. Nedelja B ne staje (I iznad plafona D11 ili nedelja ne može da se sastavi pri cilju) → nedelja je A uz napomenu (upozorenje B_WEEK_NOT_FIT), sledeća je B. Stanje T slota se u nedelji B ne menja (rasterećenje i taper čitaju poslednju T dozu). „Glavna doza ne opada" (D12): poređenje unutar tipa — A sa poslednjom A (ili nedeljom pre specifične faze), B sa poslednjom B; RP slot ne opada iz nedelje u nedelju (D12). 3 dana i početnik: bez promene.',
++    place: 'specific.ts (specificTypeNext, typeOfWeek); quality.ts (pickMaintainI, pickBuild, advance); week.ts buildWeek (B / A, napomene); generate.ts construct; validate.ts (SPECIFIC_TYPE, I_MAINTAIN, B_WEEK_NOT_FIT, MAIN_DOSE_DECREASE po tipu, PHASE_QUALITY)',
++    rationale:
++      'Heuristika organizatora (P3, oznaka: heuristika). Polazno P0: u specifičnoj fazi I nestaje (Q1 prelazi na RP, Q2 T cruise), a u 36 % planova 5–6 dana I ne raste iznad doze prelaza; održavanje I čuva VO2max stimulus u poslednjim nedeljama bez novog rasta doze. Poređenje glavne doze unutar tipa je pouka P1 (HM, O1): A i B imaju različit sastav, pa poređenje svake nedelje sa prethodnom obara planove bez stvarnog pada doze.'
++  },
++  {
++    id: 'A25',
++    rule: 'S3 — adaptacija: tip specifične nedelje (D34) posle koraka adaptacije određuje se iz upisanih nedelja (prošlost = upisani dani, A11): poslednja upisana ne-rasteretna specifična nedelja bez ograničenja kvaliteta tipa A → sledeća B i obrnuto; tip upisane nedelje = ima li drugi dan kvaliteta I. Jedno mesto odluke (specific.specificTypeNext) za konstruktor i validator. Ostala pravila adaptacije bez promene.',
++    place: 'specific.ts; generate.ts construct (nedelje kakve se upisuju); validate.ts SPECIFIC_TYPE',
++    rationale:
++      'Heuristika organizatora (P3). Stalni uslov 4: uslov poznat unapred (urađene nedelje) ulazi u konstruktor, ne ispravlja se posle konstrukcije.'
++  },
+   /* ---------- Segment 04 (10k-v2.4.0): adaptacija. Heuristike zadate za segment, bez trenerske provere. ---------- */
+   {
+     id: 'A1',
+@@ -443,7 +465,7 @@ const DECISIONS: readonly Decision[] = [
+ 
+ export const TEN_K_V2_POLICY = {
+   id: '10k-v2',
+-  version: '10k-v2.10.0',
++  version: '10k-v2.11.0',
+ 
+   /** D1 (dani i obim: D17; početnik: D28). */
+   input: {
+@@ -653,7 +675,10 @@ export const TEN_K_V2_POLICY = {
+       { reps: 4, repM: 1000 },
+       { reps: 3, repM: 1500 },
+       { reps: 5, repM: 1000 },
+-      { reps: 3, repM: 2000 }
++      { reps: 3, repM: 2000 },
++      /* D33 (10k-v2.11.0): produžetak do 8,0 km. */
++      { reps: 4, repM: 1600 },
++      { reps: 5, repM: 1600 }
+     ] as readonly Rep[]
+   },
+ 
+@@ -675,8 +700,17 @@ export const TEN_K_V2_POLICY = {
+     rRepM: [200, 300, 400] as readonly number[]
+   },
+ 
+-  /** D11: jedan plafon po zoni, po treningu, udeo ciljnog obima nedelje. */
+-  caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.1 },
++  /** D11: jedan plafon po zoni, po treningu, udeo ciljnog obima nedelje. D33: RP po cilju nedelje — poslednji red sa
++      fromKm ≤ cilj (0,1 km). Čita se samo kroz capShare. */
++  caps: {
++    R: 0.05,
++    I: 0.08,
++    T: 0.1,
++    RP: [
++      { fromKm: 0, share: 0.1 },
++      { fromKm: 40, share: 0.15 }
++    ] as readonly { fromKm: number; share: number }[]
++  },
+ 
+   /** D13 (udeo dugog: D17). */
+   lengths: {
+@@ -762,6 +796,18 @@ export const TEN_K_V2_POLICY = {
+ 
+ export type TenKV2Policy = typeof TEN_K_V2_POLICY;
+ 
++/** D11/D33 — JEDINI pristup plafonu zone: udeo ciljnog obima nedelje `targetKm` (RP po tabeli caps.RP). */
++export function capShare(zone: WorkZone, targetKm: number): number {
++  const c = TEN_K_V2_POLICY.caps;
++  if (zone !== 'RP') return c[zone];
++  const t10 = Math.round(targetKm * 10);
++  return c.RP.filter((r) => Math.round(r.fromKm * 10) <= t10).pop()!.share;
++}
++
++/** Plafon zone u procentima za tekst korisnika (bez greške zaokruživanja: 0,15 → 15). */
++export const capPct = (zone: WorkZone, targetKm: number): number =>
++  Math.round(capShare(zone, targetKm) * 1000) / 10;
++
+ /** Podržani brojevi dana trčanja (D17). */
+ export type RunDaysCount = keyof TenKV2Policy['days'];
+ export interface DayRule {
+diff --git a/web/src/domain/generators/tenK/v2/quality.ts b/web/src/domain/generators/tenK/v2/quality.ts
+index 7a4714f..66c16de 100644
+--- a/web/src/domain/generators/tenK/v2/quality.ts
++++ b/web/src/domain/generators/tenK/v2/quality.ts
+@@ -4,7 +4,7 @@
+    slota = poslednji izbor slota u ne-rasteretnoj nedelji izgradnje (test D27 i nedelja bez kvaliteta ga ne
+    menjaju). `quality` = broj kvalitetnih dana iz pravila plana (1 ili 2). */
+ 
+-import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { capShare, type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
+ import type { Dose, LadderId, Paces, Phase, Structure, WorkZone } from './types.ts';
+ import {
+   doseOf,
+@@ -28,9 +28,12 @@ export interface QualityState {
+   /** D31: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje [m] (0 = nema); čita je samo
+       rasterećenje i taper početnika. */
+   t: number;
++  /** D34: poslednji izbor u lestvici I iz ne-rasteretne nedelje izgradnje (razvoj ili nedelja B) — doza i struktura I
++      održavanja (null = nema). */
++  i: SlotState | null;
+ }
+ 
+-export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
++export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0, i: null };
+ 
+ /** D10: lestvica slota po fazi izgradnje (4–6 dana); D18: jedan kvalitet — baza T kontinuirano, razvoj
+     T cruise, specifično RP (bez I i R). */
+@@ -59,9 +62,9 @@ export function carries(from: LadderId, to: LadderId): boolean {
+   );
+ }
+ 
+-/** D11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
++/** D11/D33: plafon zone za trening, u metrima, za ciljni obim nedelje (policy.capShare). */
+ export function capM(zone: WorkZone, targetKm: number): number {
+-  return Math.floor(P.caps[zone] * targetKm * 1000 + 1e-6);
++  return Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6);
+ }
+ 
+ const pick = (ladder: LadderId, s: Structure, step: Dose['step']): Dose => ({
+@@ -194,9 +197,18 @@ export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): Lad
+   return firstLevelOverCap('T_continuous', targetKm, true) ? null : 'T_continuous';
+ }
+ 
++/** D34: I održavanja nedelje B — doza = poslednja I doza (ne raste), struktura druga struktura iste doze kad postoji
++    (naizmenično; inače ista). null = nema I doze ili ne staje u plafon I (D11) cilja nedelje (nedelja B ne staje). */
++export function pickMaintainI(state: QualityState, targetKm: number, p: Paces): Dose | null {
++  const i = state.i;
++  if (!i || i.doseM > capM('I', targetKm)) return null;
++  return pick('I', otherStructure('I', i.doseM, i.structure, p) ?? i.structure, 'maintain');
++}
++
+ /** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana i početnik, D18/D28). `skipQ1` =
+     test na danu Q1 (D27). Početnik: lestvica Q1 po D31; kad ni 1,5 km ne staje u plafon, Q1 = null
+-    (nedelja bez kvaliteta, odstupanje D28). null = nedelja nije izvodljiva pri ovom cilju. */
++    (nedelja bez kvaliteta, odstupanje D28). `weekB` (D34): Q2 = I održavanja. null = nedelja nije izvodljiva
++    pri ovom cilju. */
+ export function pickBuild(
+   state: QualityState,
+   phase: Phase,
+@@ -204,7 +216,8 @@ export function pickBuild(
+   p: Paces,
+   rule: PlanRule,
+   allowDrop = false,
+-  skipQ1 = false
++  skipQ1 = false,
++  weekB = false
+ ): WeekPicks | null {
+   const quality = rule.quality;
+   const l1 = buildLadder(phase, targetKm, rule);
+@@ -214,17 +227,26 @@ export function pickBuild(
+     if (!q1) return null;
+   }
+   if (quality === 1) return { q1, q2: null };
+-  const q2 = pickSlot(state.q2, ladderFor(phase, 'q2', quality), targetKm, p, allowDrop);
++  const q2 = weekB
++    ? pickMaintainI(state, targetKm, p)
++    : pickSlot(state.q2, ladderFor(phase, 'q2', quality), targetKm, p, allowDrop);
+   return q2 ? { q1, q2 } : null;
+ }
+ 
+ /** Stanje posle nedelje izgradnje: slot bez izbora zadržava stanje pre nedelje (D27: progresija se posle
+-    testa nastavlja od stanja pre testa); `t` = poslednja doza u zoni T (D31). */
++    testa nastavlja od stanja pre testa); `t` = poslednja doza u zoni T (D31). D34: I održavanja na Q2 (nedelja B) ne
++    menja stanje T slota; `i` = poslednji izbor u lestvici I. */
+ export function advance(picks: WeekPicks, prev: QualityState): QualityState {
+   const slot = (d: Dose | null, before: SlotState | null): SlotState | null =>
+     d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : before;
+   const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
+-  return { q1: slot(picks.q1, prev.q1), q2: slot(picks.q2, prev.q2), t: t ? t.doseM : prev.t };
++  const i = [picks.q1, picks.q2].filter((d) => d?.ladder === 'I').pop() ?? null;
++  return {
++    q1: slot(picks.q1, prev.q1),
++    q2: picks.q2?.ladder === 'I' ? prev.q2 : slot(picks.q2, prev.q2),
++    t: t ? t.doseM : prev.t,
++    i: slot(i, prev.i)
++  };
+ }
+ 
+ /** ≈ share × poslednja doza, nivo lestvice naniže (`beginner`: lestvica početnika, D31); ispod najnižeg
+diff --git a/web/src/domain/generators/tenK/v2/specific.ts b/web/src/domain/generators/tenK/v2/specific.ts
+new file mode 100644
+index 0000000..35a12d1
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/specific.ts
+@@ -0,0 +1,47 @@
++/* D34 / A25 (P3, 10k-v2.11.0) — tip ne-rasteretne specifične nedelje (A: Q2 T cruise, B: Q2 I održavanja). JEDINO
++   mesto odluke: konstruktor (generate.ts, iz nedelja kakve se upisuju) i validator (validate.ts) zovu istu funkciju nad
++   prethodnim nedeljama plana. Redovan plan 4–6 dana; 3 dana i početnik nemaju tipove (null). */
++
++import type { PlanRule } from './policy.ts';
++import { isA9Note } from './week.ts';
++
++export type SpecificType = 'A' | 'B';
++
++/** Nedelja kakvu funkcija čita (PlanWeek ili nedelja konstruktora sa upisanim danima). */
++export interface TypedWeek {
++  readonly phase: string;
++  readonly deload: boolean;
++  readonly limits?: { readonly quality?: unknown } | undefined;
++  readonly notes: readonly string[];
++  readonly days: readonly {
++    readonly role: string;
++    readonly workout: { readonly dose?: { readonly ladder: string } | null | undefined };
++  }[];
++}
++
++/** D34: plan ima smenu A/B (redovan plan sa dva kvaliteta: 4–6 dana, ne početnik). */
++export const hasSpecificTypes = (rule: PlanRule): boolean => rule.quality === 2 && !rule.beginner;
++
++/** D34: nedelja koja nosi tip — specifična, ne-rasteretna, bez ograničenja kvaliteta adaptacije (A4/A9). */
++export const typedWeek = (w: TypedWeek): boolean =>
++  w.phase === 'specific' &&
++  !w.deload &&
++  w.limits?.quality === undefined &&
++  !w.notes.some(isA9Note);
++
++/** D34: tip upisane nedelje — B kad je drugi dan kvaliteta I (održavanja), inače A. */
++export const typeOfWeek = (w: TypedWeek): SpecificType =>
++  w.days.some((d) => d.role === 'q2' && d.workout.dose?.ladder === 'I') ? 'B' : 'A';
++
++/**
++ * D34/A25: tip sledeće nedelje koja nosi tip, iz prethodnih nedelja (prošlost = upisani dani): prva je A; posle
++ * poslednje A je B i obrnuto. null = plan nema tipove (3 dana, početnik).
++ */
++export function specificTypeNext(
++  prev: readonly TypedWeek[],
++  rule: PlanRule
++): SpecificType | null {
++  if (!hasSpecificTypes(rule)) return null;
++  const last = [...prev].reverse().find(typedWeek);
++  return !last || typeOfWeek(last) === 'B' ? 'A' : 'B';
++}
+diff --git a/web/src/domain/generators/tenK/v2/types.ts b/web/src/domain/generators/tenK/v2/types.ts
+index c8b9b04..019bbeb 100644
+--- a/web/src/domain/generators/tenK/v2/types.ts
++++ b/web/src/domain/generators/tenK/v2/types.ts
+@@ -174,6 +174,8 @@ export type DoseStep =
+   | 'repeat'
+   /** D11 ispred D12: nijedan cilj nije izvodljiv uz „doza ne pada" → najviši nivo u plafonu. */
+   | 'drop'
++  /** D34: I održavanja nedelje B (doza poslednje I, ne raste). */
++  | 'maintain'
+   | 'deload'
+   | 'taper'
+   | 'sharpener';
+diff --git a/web/src/domain/generators/tenK/v2/validate.ts b/web/src/domain/generators/tenK/v2/validate.ts
+index e02afd1..8a8683e 100644
+--- a/web/src/domain/generators/tenK/v2/validate.ts
++++ b/web/src/domain/generators/tenK/v2/validate.ts
+@@ -37,7 +37,8 @@ import {
+   phasesOf,
+   testWeekOf
+ } from './periodize.ts';
+-import { planRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { capPct, planRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { hasSpecificTypes, specificTypeNext, typedWeek, typeOfWeek } from './specific.ts';
+ import {
+   capM,
+   carries,
+@@ -61,6 +62,7 @@ import {
+   raceWeekRest,
+   restDaysWeek,
+   sharpenerReps,
++  B_NOT_FIT,
+   T1_DELOAD,
+   T1_OFF
+ } from './week.ts';
+@@ -264,6 +266,9 @@ export function validatePlan(
+   /** A4/A9: nedelja sa manje kvaliteta — ograničenje koraka ili napomena A9 konstruktora. */
+   const reducedQ = (w: PlanWeek): boolean =>
+     w.limits?.quality !== undefined || w.notes.some(isA9Note);
++  /** D34: tip nedelje koja ga nosi (specific.ts), null za ostale nedelje i planove bez tipova (3 dana, početnik). */
++  const specT = (w: PlanWeek): 'A' | 'B' | null =>
++    hasSpecificTypes(rule) && isSteady(w) && typedWeek(w) ? typeOfWeek(w) : null;
+   const restOf = (w: PlanWeek): Set<string> => new Set(w.limits?.rest ?? []);
+   const painOf = (w: PlanWeek): Set<string> => new Set(w.limits?.pain ?? []);
+   const dateIn = (w: PlanWeek, wd: string): string =>
+@@ -785,7 +790,7 @@ export function validatePlan(
+         if (m > capM(z, w.targetKm) && !(keepT && d.workout.kind === 'quality'))
+           err(
+             'ZONE_CAP',
+-            `${z} ${m} m > ${P.caps[z] * 100} % cilja ${w.targetKm} km (D11).`,
++            `${z} ${m} m > ${capPct(z, w.targetKm)} % cilja ${w.targetKm} km (D11, D33).`,
+             w.index,
+             d.date
+           );
+@@ -887,7 +892,9 @@ export function validatePlan(
+         // A4/A9: taper samo RP na drugom danu kvaliteta (dan Q1 u zabrani); doza: TAPER_QUALITY.
+       } else {
+         const role = d.role === 'q1' || d.role === 'q2' ? d.role : null;
+-        if (!role || !wo.qualityType || !slotTypes[w.phase][role].includes(wo.qualityType)) {
++        // D34: nedelja B — drugi kvalitet specifične faze je I održavanja (tip: SPECIFIC_TYPE, doza: I_MAINTAIN).
++        const bI = specT(w) === 'B' && role === 'q2' && wo.qualityType === 'I';
++        if (!bI && (!role || !wo.qualityType || !slotTypes[w.phase][role].includes(wo.qualityType))) {
+           // D31: početnik — T kontinuirano (i ista doza druge strukture) umesto RP specifične faze; u taperu
+           // T kontinuirano umesto RP (sadržaj: TAPER_QUALITY).
+           const beginnerT =
+@@ -983,6 +990,22 @@ export function validatePlan(
+         err('RECOVERY', 'Kontinuiran blok nema deonice ni oporavak.', w.index, d.date);
+     }
+ 
++  // --- D34/A25: tip specifične nedelje (A / B) — ista funkcija kao konstruktor (specific.specificTypeNext) nad
++  // prethodnim nedeljama plana (upisanim). Nedelja A umesto B samo uz napomenu konstruktora (B ne staje).
++  if (hasSpecificTypes(rule))
++    weeks.forEach((w, k) => {
++      if (!isSteady(w) || !typedWeek(w) || !checked(w)) return;
++      const want = specificTypeNext(weeks.slice(0, k), rule);
++      const got = typeOfWeek(w);
++      if (got === 'B' && want !== 'B')
++        err('SPECIFIC_TYPE', `Nedelja B posle nedelje B ili kao prva specifična nedelja (D34).`, w.index);
++      else if (want === 'B' && got === 'A') {
++        if (w.notes.some((n) => n.startsWith(B_NOT_FIT)))
++          warn('B_WEEK_NOT_FIT', `Nedelja A umesto B: I održavanja ne staje (D34).`, w.index);
++        else err('SPECIFIC_TYPE', `Očekivana nedelja B (I održavanja) posle nedelje A (D34).`, w.index);
++      }
++    });
++
+   // --- D12: progresija po slotu kroz ne-rasteretne nedelje izgradnje. Prethodna doza slota je iz poslednje
+   // nedelje koja ga ima: test (D27), uvod i nedelja bez kvaliteta početnika (D28) ne menjaju stanje slota.
+   // Segment 04: lanac ne-rasteretnih nedelja izgradnje; nedelja sa ograničenjem kvaliteta (A4/A9) ne menja
+@@ -1000,16 +1023,34 @@ export function validatePlan(
+   const noQuality = (w: PlanWeek): boolean =>
+     rule.beginner && !w.test && w.index > rule.introWeeks && !slotDose(w, 'q1');
+   let prevMain: PlanWeek | null = null;
++  /** D34: glavna doza po tipu (A sa poslednjom A ili nedeljom pre specifične faze, B sa poslednjom B). */
++  let prevType: Record<'A' | 'B', PlanWeek | null> = { A: null, B: null };
++  /** D34: poslednja I doza lanca (doza I održavanja). */
++  let lastI: Dose | null = null;
+   let a: PlanWeek | null = null;
+   for (const c of chain) {
+     if (typeof c === 'string') {
+-      [lastOf, prevMain, a] = [{ q1: null, q2: null }, null, null];
++      [lastOf, prevMain, a, prevType, lastI] = [{ q1: null, q2: null }, null, null, { A: null, B: null }, null];
+       continue;
+     }
+     const b = c;
++    const tb = specT(b);
+     for (const role of ['q1', 'q2'] as const) {
++      const db0 = slotDose(b, role);
++      // D34: I održavanja (nedelja B) nije deo lanca T slota — doza = poslednja I doza, korak 'maintain'.
++      if (role === 'q2' && tb === 'B') {
++        if (lastI && db0 && (db0.doseM !== lastI.doseM || db0.step !== 'maintain'))
++          err(
++            'I_MAINTAIN',
++            `Nedelja B: I održavanja ${db0.doseM} m ≠ poslednja I doza ${lastI.doseM} m (D34).`,
++            b.index
++          );
++        if (!lastI)
++          err('I_MAINTAIN', 'Nedelja B bez prethodne I doze (D34).', b.index);
++        continue;
++      }
+       const da = lastOf[role];
+-      const db = slotDose(b, role);
++      const db = db0;
+       if (db) lastOf[role] = db;
+       if (!da || !db) continue;
+       if (db.step === 'drop') {
+@@ -1026,7 +1067,7 @@ export function validatePlan(
+         else
+           warn(
+             'DOSE_DROPPED',
+-            `${role === 'q1' ? 'Prvi' : 'Drugi'} kvalitet: doza spuštena ${da.doseM} → ${db.doseM} m (bez toga nijedan obim nedelje ne može da se sastavi uz najviše ${P.caps[db.zone] * 100} % nedelje u tom tempu).`,
++            `${role === 'q1' ? 'Prvi' : 'Drugi'} kvalitet: doza spuštena ${da.doseM} → ${db.doseM} m (bez toga nijedan obim nedelje ne može da se sastavi uz najviše ${capPct(db.zone, b.targetKm)} % nedelje u tom tempu).`,
+             b.index
+           );
+         continue;
+@@ -1078,15 +1119,24 @@ export function validatePlan(
+       noQuality(b) ||
+       reducedVolume ||
+       b.notes.some(isP35Drop);
+-    // D27: provera „glavna doza ne opada" preskače test nedelju.
++    // D27: provera „glavna doza ne opada" preskače test nedelju. D34: u specifičnoj fazi sa tipovima poređenje unutar
++    // tipa (A sa poslednjom A ili nedeljom pre specifične faze, B sa poslednjom B).
+     if (!b.test) {
+-      if (prevMain && mainDoseM(b) < mainDoseM(prevMain) && !dropped)
++      const ref = tb === 'B' ? prevType.B : tb === 'A' ? (prevType.A ?? prevMain) : prevMain;
++      if (ref && mainDoseM(b) < mainDoseM(ref) && !dropped)
+         err(
+           'MAIN_DOSE_DECREASE',
+-          `Glavna doza ${mainDoseM(b)} m < ${mainDoseM(prevMain)} m (D12).`,
++          `Glavna doza ${mainDoseM(b)} m < ${mainDoseM(ref)} m (D12${tb ? `, nedelja ${tb}, D34` : ''}).`,
+           b.index
+         );
+-      if (!noQuality(b)) prevMain = b;
++      if (!noQuality(b)) {
++        if (tb) prevType[tb] = b;
++        else prevMain = b;
++      }
++    }
++    for (const r of ['q1', 'q2'] as const) {
++      const d = slotDose(b, r);
++      if (d?.ladder === 'I') lastI = d;
+     }
+     const prevA = a;
+     a = b;
+@@ -1154,7 +1204,7 @@ export function validatePlan(
+     const b = c;
+     for (const role of ['q1', 'q2'] as const) {
+       const db = slotDose(b, role);
+-      if (!db) continue;
++      if (!db || (role === 'q2' && specT(b) === 'B')) continue;
+       const a = lastWeek[role];
+       lastWeek[role] = b;
+       if (skip[role]) {
+@@ -1202,7 +1252,7 @@ export function validatePlan(
+       else
+         warn(
+           'BUILD_NO_QUALITY',
+-          `Nedelja bez kvaliteta: ni T ${num(t)} km ne staje u najviše ${P.caps.T * 100} % nedelje od ${num(w.targetKm)} km.`,
++          `Nedelja bez kvaliteta: ni T ${num(t)} km ne staje u najviše ${capPct('T', w.targetKm)} % nedelje od ${num(w.targetKm)} km.`,
+           w.index
+         );
+     }
+@@ -1273,7 +1323,7 @@ export function validatePlan(
+         else
+           warn(
+             'DELOAD_NO_QUALITY',
+-            `Rasterećenje bez kvaliteta: ni T ${want} m ne staje u najviše ${P.caps.T * 100} % nedelje u tom tempu.`,
++            `Rasterećenje bez kvaliteta: ni T ${want} m ne staje u najviše ${capPct('T', w.targetKm)} % nedelje u tom tempu.`,
+             w.index
+           );
+       } else if (nQuality !== 1 || !t || t.doseM !== want)
+@@ -1408,7 +1458,7 @@ export function validatePlan(
+         else
+           warn(
+             'TAPER_NO_QUALITY',
+-            `Taper bez kvaliteta: ni RP ${wantRp} m ne staje u najviše ${P.caps.RP * 100} % nedelje u tempu trke.`,
++            `Taper bez kvaliteta: ni RP ${wantRp} m ne staje u najviše ${capPct('RP', w.targetKm)} % nedelje u tempu trke.`,
+             w.index
+           );
+       } else if (!rp || rp.zone !== 'RP' || rp.doseM !== wantRp || !tOk)
+@@ -1473,6 +1523,8 @@ export function validatePlan(
+         }
+       } else if (!reducedQ(w)) {
+         for (const r of ['q1', 'q2'] as const) {
++          // D34: I održavanja nedelje B ne menja stanje T slota.
++          if (r === 'q2' && specT(w) === 'B') continue;
+           const d = slotDose(w, r);
+           // 06f (pouka 35): drugi slot nedelje pouke 35 je lagan — njegovo stanje ostaje nepoznato.
+           if (d || r === 'q1' || !w.notes.some(isP35Drop)) slotKnown[r] = true;
+diff --git a/web/src/domain/generators/tenK/v2/week.ts b/web/src/domain/generators/tenK/v2/week.ts
+index 2de0986..90b18f8 100644
+--- a/web/src/domain/generators/tenK/v2/week.ts
++++ b/web/src/domain/generators/tenK/v2/week.ts
+@@ -14,8 +14,9 @@ import {
+   painLong10,
+   taperLengths
+ } from './lengths.ts';
+-import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { capPct, type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
+ import {
++  capM,
+   deloadSlot,
+   ladderFor,
+   pickBuild,
+@@ -81,8 +82,15 @@ export interface WeekContext {
+   t1Off?: boolean;
+   /** T1 (10K-08): redovno rasterećenje nije izvodljivo po D5 (dugi 0,8 × poslednji) — pravilo A9 (napomena T1_DELOAD). */
+   t1Deload?: boolean;
++  /** D34 (P3): nedelja tipa B (specific.specificTypeNext) — Q2 = I održavanja; ne staje → nedelja A uz napomenu. */
++  specB?: boolean;
+ }
+ 
++/** D34: napomena nedelje B (drugi kvalitet I održavanja). */
++export const B_WEEK_NOTE = 'Specifična faza, nedelja B';
++/** D34: napomena nedelje A umesto B (validator: upozorenje B_WEEK_NOT_FIT). */
++export const B_NOT_FIT = 'Nedelja B ne staje';
++
+ /** T1: napomena rasterećenja sastavljenog po pravilu A9 jer po D5 nije izvodljivo (validator: ADAPT_DELOAD_LONG). */
+ export const T1_DELOAD =
+   'Rasterećenje: dugi 0,8 × poslednji ne ostavlja lagane ≥ 3 km — dugi skraćen (kao posle smanjenja obima).';
+@@ -144,8 +152,8 @@ const ladderName = (l: LadderId): string =>
+   l === 'T_cruise' ? 'T u deonicama' : l === 'T_continuous' ? 'T kontinuirano' : l;
+ 
+ /** Napomena kad slot ponavlja trening jer druga struktura iste doze ne postoji (D10). */
+-const repeatNote = (slot: string, d: Dose): string =>
+-  `${slotName(slot)}: ${d.zone} ${fmtKm(d.doseM / 1000)} km ponovljen — veća doza ne staje u najviše ${P.caps[d.zone] * 100} % nedelje u tom tempu, a drugačija podela iste doze ne postoji.`;
++const repeatNote = (slot: string, d: Dose, targetKm: number): string =>
++  `${slotName(slot)}: ${d.zone} ${fmtKm(d.doseM / 1000)} km ponovljen — veća doza ne staje u najviše ${capPct(d.zone, targetKm)} % nedelje u tom tempu, a drugačija podela iste doze ne postoji.`;
+ 
+ /** Lagani dani: datumi rastuće (raniji dan dobija višak zaokruženja, D19). */
+ const easyDates = (frame: WeekFrame, days: readonly Weekday[]): string[] =>
+@@ -229,6 +237,36 @@ export function buildWeek(
+   lastLong10: number | null,
+   longest10: number,
+   mode: QualityMode = 'rule'
++): BuiltWeek | null {
++  const one = (weekB: boolean): BuiltWeek | null =>
++    buildWeekOf(ctx, frame, target10, quality, lastLong10, longest10, mode, weekB);
++  // D34 (P3, jedino mesto odluke B / A): nedelja B — Q2 I održavanja; kad ne staje (I iznad plafona, nedelja ne može da
++  // se sastavi pri cilju, ili bi drugi dan kvaliteta otpao po pouci 35) nedelja je A uz napomenu, sledeća je B.
++  if (!ctx.specB || frame.phase !== 'specific' || frame.deload || (mode !== 'rule' && mode !== 'relax'))
++    return one(false);
++  const b = one(true);
++  if (b && b.picks?.q2?.ladder === 'I') return b;
++  const a = one(false);
++  const i = quality.i;
++  const why = !i
++    ? 'nema I doze razvoja'
++    : i.doseM > capM('I', target10 / 10)
++      ? `I održavanja ${fmtKm(i.doseM / 1000)} km je iznad ${capPct('I', target10 / 10)} % nedelje`
++      : b
++        ? `dan I održavanja ${fmtKm(i.doseM / 1000)} km bio bi duži od dugog`
++        : `sa I održavanja ${fmtKm(i.doseM / 1000)} km nedelja ne može da se sastavi pri cilju ${fmtKm(target10 / 10)} km (dužine dugog i laganih)`;
++  return a ? { ...a, notes: [...a.notes, `${B_NOT_FIT}: ${why} — nedelja je A (T u deonicama); sledeća je B.`] } : null;
++}
++
++function buildWeekOf(
++  ctx: WeekContext,
++  frame: WeekFrame,
++  target10: number,
++  quality: QualityState,
++  lastLong10: number | null,
++  longest10: number,
++  mode: QualityMode,
++  weekB: boolean
+ ): BuiltWeek | null {
+   const p = ctx.paces;
+   const pat = ctx.pattern;
+@@ -309,7 +347,7 @@ export function buildWeek(
+               ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+               : mode === 'none'
+                 ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+-                : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u najviše ${P.caps.T * 100} % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`,
++                : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u najviše ${capPct('T', targetKm)} % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`,
+       ...(test ? [testNote] : []),
+       ...(ctx.t1Deload ? [T1_DELOAD] : []),
+       ...(ref
+@@ -368,10 +406,10 @@ export function buildWeek(
+         ? 'Taper bez kvaliteta (adaptacija); dugi ≤ 0,75 × najduži.'
+         : !w1
+           ? rule.beginner
+-            ? `Taper bez kvaliteta — ni ${rpMin} ni T ${fmtKm(P.beginner.tFirstKm)} km ne staju u najviše ${P.caps.T * 100} % nedelje u tom tempu; dugi ≤ 0,75 × najduži.`
+-            : `Taper bez kvaliteta — ni ${rpMin} ne staje u najviše ${P.caps.RP * 100} % nedelje u tempu trke; dugi ≤ 0,75 × najduži.`
++            ? `Taper bez kvaliteta — ni ${rpMin} ni T ${fmtKm(P.beginner.tFirstKm)} km ne staju u najviše ${capPct('T', targetKm)} % nedelje u tom tempu; dugi ≤ 0,75 × najduži.`
++            : `Taper bez kvaliteta — ni ${rpMin} ne staje u najviše ${capPct('RP', targetKm)} % nedelje u tempu trke; dugi ≤ 0,75 × najduži.`
+           : t !== 'none' && t.q1.zone === 'T'
+-            ? `Taper: ${rpMin} ne staje u najviše ${P.caps.RP * 100} % nedelje u tempu trke — T kontinuirano ≈ 60 % poslednje T doze (najmanje ${fmtKm(P.beginner.tFirstKm)} km); dugi ≤ 0,75 × najduži.`
++            ? `Taper: ${rpMin} ne staje u najviše ${capPct('RP', targetKm)} % nedelje u tempu trke — T kontinuirano ≈ 60 % poslednje T doze (najmanje ${fmtKm(P.beginner.tFirstKm)} km); dugi ≤ 0,75 × najduži.`
+             : mode === 'one'
+               ? 'Taper: samo RP ≈ 60 % poslednje doze (adaptacija); dugi ≤ 0,75 × najduži.'
+               : oneT
+@@ -403,7 +441,7 @@ export function buildWeek(
+       one = { dose: d, day: wd };
+     }
+   } else {
+-    picks = pickBuild(quality, frame.phase, targetKm, p, rule, relax, test);
++    picks = pickBuild(quality, frame.phase, targetKm, p, rule, relax, test, weekB);
+     if (!picks) return null;
+   }
+   const w1 = test
+@@ -450,23 +488,27 @@ export function buildWeek(
+     // Napomena režima (limitNote).
+   } else if (!w1)
+     notes.push(
+-      `Bez kvaliteta: ni T ${fmtKm(P.beginner.tFirstKm)} km kontinuirano ne staje u najviše ${P.caps.T * 100} % nedelje od ${fmtKm(targetKm)} km.`
++      `Bez kvaliteta: ni T ${fmtKm(P.beginner.tFirstKm)} km kontinuirano ne staje u najviše ${capPct('T', targetKm)} % nedelje od ${fmtKm(targetKm)} km.`
+     );
+   else if (picks?.q1 && picks.q1.ladder !== ladderFor(frame.phase, 'q1', rule.quality)) {
+     const phaseLadder = ladderFor(frame.phase, 'q1', rule.quality);
+     const first = doseOf(ladderLevels(phaseLadder)[0]!) / 1000;
+     notes.push(
+-      `T kontinuirano umesto ${ladderName(phaseLadder)}: ni najkraći ${ladderName(phaseLadder)} (${fmtKm(first)} km) ne staje u najviše ${P.caps[zoneOf(phaseLadder)] * 100} % nedelje od ${fmtKm(targetKm)} km.`
++      `T kontinuirano umesto ${ladderName(phaseLadder)}: ni najkraći ${ladderName(phaseLadder)} (${fmtKm(first)} km) ne staje u najviše ${capPct(zoneOf(phaseLadder), targetKm)} % nedelje od ${fmtKm(targetKm)} km.`
+     );
+   }
++  if (picks?.q2?.ladder === 'I')
++    notes.push(
++      `${B_WEEK_NOTE}: drugi kvalitet je I održavanja ${fmtKm(picks.q2.doseM / 1000)} km (doza poslednje I, ne raste); T u deonicama se nastavlja u sledećoj nedelji A.`
++    );
+   const slots: [string, Dose, SlotState | null][] = [];
+   if (picks?.q1) slots.push(['Q1', picks.q1, quality.q1]);
+   if (picks?.q2) slots.push(['Q2', picks.q2, quality.q2]);
+-  for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d));
++  for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d, targetKm));
+   for (const [slot, d, prev] of slots)
+     if (d.step === 'drop')
+       notes.push(
+-        `${slotName(slot)}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — bez toga nijedan obim nedelje ne može da se sastavi uz najviše ${P.caps[d.zone] * 100} % nedelje u tom tempu.`
++        `${slotName(slot)}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — bez toga nijedan obim nedelje ne može da se sastavi uz najviše ${capPct(d.zone, targetKm)} % nedelje u tom tempu.`
+       );
+   const make = (a: NonNullable<ReturnType<typeof assemble>>, extra: string[]): BuiltWeek =>
+     done(

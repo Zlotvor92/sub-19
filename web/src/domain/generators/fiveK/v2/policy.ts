@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.12.0',
+  version: '5k-v2.17.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -62,8 +62,21 @@ export const FIVE_K_V2_POLICY = {
       'ispod 12 km na 3 dana nema prostora za kvalitet; počni laganim trčanjem ili izaberi 4 dana',
     /** Distance rezultata iz kojih se računa VDOT. */
     resultDistancesM: [3000, 5000, 10000] as const,
-    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena). */
-    vdot: { min: 30, max: 60 },
+    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena).
+        5k-v2.13.0 (P4 S2, heuristika): gornja granica 60 → 70 — tempo, deonice, WU/CD i dugi provereni na VDOT 62/65/68/70
+        (docs/generators-v2/perfection/reports/P4-REPORT.md). */
+    vdot: { min: 30, max: 70 },
+    /** 5k-v2.13.0 (P4 S2, heuristika; odluka organizatora B2 posle STOP 2): 3 dana, obim < 12,1 km (dno tabele 3 dana,
+        12 km) i VDOT ≥ 66 → odbijanje VOLUME_LOW_FOR_PACE. Pri toj brzini lagan ≥ 20 min ne staje uz dugi, pa nedelja
+        vrhunca kratkog plana ostaje samo sa dugim (WEEK_DEGENERATE od VDOT-a 66,3, samo 12,0 km × 6–7 ned). Jedno mesto:
+        input.lowVolumeForPace (ulaz, assess A1, validator, Forma). */
+    lowVolumeForPace: {
+      runDays: 3,
+      belowKm: 12.1,
+      fromVdot: 66,
+      message:
+        'pri ovoj brzini 3 dana i 12 km nedeljno ne daju smislenu nedelju (lagan trening ne staje uz dugi); povećaj obim ili izaberi 4 dana'
+    },
     /** Trajanje plana u celim nedeljama (heuristika opsega). 2.3.0: od 6 (kratka priprema). */
     planWeeks: { min: 6, max: 16 },
     /** Cilj [s] mora da odgovara VDOT-u u ovom opsegu da bi uopšte bio procenjen (sanity granica). */
@@ -126,6 +139,22 @@ export const FIVE_K_V2_POLICY = {
     maxBuildGrowth: 0.08,
     /** Vrh obima ≤ ovaj faktor × početni obim (heuristika). */
     peakCapFactor: 1.3,
+    /** 5k-v2.15.0 (P8 dopuna G1a, odluka organizatora po glavnom treneru): faktor vrha po dužini pripreme (trkač;
+        početnik ostaje beginner.peakCapFactor) — ≤ 12 ned 1,30; 13–15 1,35; ≥ 16 1,40 — i satni plafon nedelje
+        (cilj × srednji lagan tempo) po VDOT-u plana (po osećaju procena): < 40 → 6 h, 40–49,9 → 7 h, ≥ 50 → 8 h; start
+        iznad plafona → vrh = start. (G1b) Korak rasta < minStepShare tekućeg cilja se ne primenjuje (nedelja drži cilj,
+        rast se prenosi). Jedino mesto: volume.peakKm, volume.planVolume/nextBuildKm. */
+    peakFactorByWeeks: [
+      { fromWeeks: 0, factor: 1.3 },
+      { fromWeeks: 13, factor: 1.35 },
+      { fromWeeks: 16, factor: 1.4 }
+    ],
+    weeklyHoursByVdot: [
+      { fromVdot: 0, hours: 6 },
+      { fromVdot: 40, hours: 7 },
+      { fromVdot: 50, hours: 8 }
+    ],
+    minStepShare: 0.03,
     /** Svaka N-ta nedelja (po rednom broju plana) u izgradnji je rasteretna (heuristika). */
     deloadEvery: 4,
     /** 5k-v2.11.0 (C1, MASTER pouka 4): najranija nedelja rasterećenja (nikad u nedeljama 1–2). */
@@ -147,8 +176,12 @@ export const FIVE_K_V2_POLICY = {
   },
 
   quality: {
-    /** I (uključujući RP) ≤ 8% nedeljnog obima; ponavljanje ≤ 5 min (Daniels-ova heuristika). */
-    iMaxShare: 0.08,
+    /** 5k-v2.13.0 (P4 S1, heuristika): JEDAN plafon I (uključujući RP) = udeo cilja nedelje po tabeli — poslednji red
+        čiji je `fromKm` ≤ cilj: cilj < 40 km → 10 %, cilj ≥ 40 km → 12 % (do 5k-v2.12.0 8 % za sve). Jedino mesto
+        čitanja: workouts.iMaxShareOf (budžet konstruktora i validator I_SHARE). Ponavljanje ≤ 5 min (iRepMaxSec).
+        5k-v2.15.0 (P8 a, heuristika, odluka organizatora P8, nalaz slepe ocene): jedan broj 10 % za sve ciljeve (red
+        ≥ 40 km → 12 % ukinut; preterao je kod većeg obima). */
+    iMaxShareByTargetKm: [{ fromKm: 0, share: 0.1 }],
     iRepMaxSec: 300,
     /** T ≤ 10% nedeljnog obima (heuristika). */
     tMaxShare: 0.1,
@@ -169,6 +202,10 @@ export const FIVE_K_V2_POLICY = {
     /** 5k-v2.12.0 (T4): trkač sa rezultatom — glavna doza vrhunca (I) i oštrenja (RP) ≥ ovaj udeo budžeta (plafon zone
         I 8 % nedeljnog obima); progresija ostaje strogo najmanji korak naviše (chooseProgressiveReps 'strict'). */
     peakMainMinShare: 0.8,
+    /** 5k-v2.15.3 (P8 završetak, odluka organizatora, heuristika): I doza u vrhuncu posle prethodne I nedelje raste do
+        najvećeg nivoa lestvice čiji je rad ≤ iStepMaxGrowth × prethodni rad (najmanje sledeći veći nivo). Jedino mesto:
+        workouts.iStepUp. */
+    iStepMaxGrowth: 1.25,
     /** Ponuda dužina ponavljanja [km] po tipu, od poželjnije ka manje poželjnoj (heuristika).
         Bira se PRVA opcija čiji ukupni rad dostiže `repFillShare` budžeta; ako nijedna, ona sa
         najvećim ukupnim radom. 2.0.1: dodate kraće opcije za nizak obim (v. DECISIONS). */
@@ -194,6 +231,35 @@ export const FIVE_K_V2_POLICY = {
     /** Rasteretna nedelja: jedan kvalitet sa ovim udelom budžeta. 2.0.1: 1,0 — „kratak" dolazi od
         manjeg obima nedelje (80%) i jednog umesto dva kvaliteta (v. DECISIONS). */
     deloadBudgetScale: 1.0,
+    /** 5k-v2.15.0 (P8 b, heuristika, odluka organizatora P8, nalaz slepe ocene: rasterećenje i taper nisu smanjivali
+        kvalitet): rad zone u rasterećenju ≤ deloadQualityShare, u taperu ≤ taperQualityShare × poslednja ne-rasteretna
+        doza te zone (I, RP, T, R; rad u km), ali ne ispod prvog nivoa lestvice (G2); dugi rasterećenja ≤
+        deloadLongShare × poslednji ne-rasteretni dugi. Jedno mesto: generate.qualityCapOf (granica nedelje),
+        workouts.cappedBudget (budžet sesije), lengths.weekLengths (dugi). (c) prvi I posle R faze ≤ firstIShareOfBudget
+        × budžet I (workouts.peakWeek/peakWeekOne; validator PEAK_MAIN_FLOOR ga izuzima). */
+    /** 5k-v2.15.0 (P8 dopuna G4, odluka organizatora po glavnom treneru): plafon JEDNOG treninga u minutima rada po
+        tempu zone (član iste funkcije plafona zone, workouts.zoneBudget / feel): I ≤ 20 min za VDOT < 40, inače 24; RP
+        ≤ 20 min; T ≤ 30 min. Po osećaju VDOT je procena (paces.vdotOrEstimate). Plafon minuta je iznad prvog nivoa. */
+    minuteCap: { iSlowVdot: 40, iSlowMin: 20, iMin: 24, rpMin: 20, tMin: 30 },
+    /** 5k-v2.16.0 (K3-A, glavni trener krug 2 § 3b, heuristika): opseg rada JEDNOG I treninga [min] po cilju nedelje
+        (vrh obima — I je u vrhuncu): od fromKm, VDOT ≥ iSlowVdot po pojasu (lo = cilj vrha, hi = plafon), VDOT ispod
+        njega samo plafon slowHi; ispod fromKm sadašnje vrednosti (G4). Gornja granica je plafon minuta I (G4 24 ostaje
+        najveći); u vrhuncu budžet I = plafon, a korak lestvice (iStepUp) sme do donje granice. Jedino mesto:
+        workouts.iDoseRange (minuteCapKm, iPeakBudget; validator isto). */
+    iDose: {
+      fromKm: 30,
+      slowHi: 18,
+      bands: [
+        { fromKm: 30, lo: 12, hi: 16 },
+        { fromKm: 45, lo: 16, hi: 20 },
+        { fromKm: 65, lo: 18, hi: 24 }
+      ]
+    },
+    deloadQualityShare: 0.6,
+    /** 5k-v2.15.0 (P8 dopuna G5): taper ≤ 60 % NAJVEĆEG rada iste zone u izgradnji (bilo 0,7 × poslednji). */
+    taperQualityShare: 0.6,
+    deloadLongShare: 0.8,
+    firstIShareOfBudget: 0.7,
     /** Oporavak: I = isto vreme lagano; R = ista distanca lagano; RP = pola vremena; T = 60 s.
         2.1.0: oporavak zadat vremenom zaokružuje se na `roundSec` (prikaz i obračun isti). */
     recovery: {
@@ -213,7 +279,10 @@ export const FIVE_K_V2_POLICY = {
         udeo vremena ponavljanja − step, ne ispod minRatio (heuristika gustine). */
     denser: { step: 0.25, minRatio: { I: 0.5, RP: 0.25 } },
     /** Trkačka nedelja: kratko oštrenje RP-om (opcije u repOptionsKm.RPsharpener). */
-    raceWeekSharpener: { maxReps: 4, minReps: 2 }
+    raceWeekSharpener: { maxReps: 4, minReps: 2 },
+    /** 5k-v2.15.0 (P8 dopuna G5): oštrenje trkačke nedelje = 2 jednake deonice u trkačkom tempu, dužina deljiva sa
+        100 m, najmanje 400 m, ukupno ≤ maxWorkSec rada (i deonica ≤ iRepMaxSec); ne staje → ubrzanja umesto oštrenja. */
+    raceSharpener: { reps: 2, minRepKm: 0.4, stepKm: 0.1, maxWorkSec: 720 }
   },
 
   /** 2.4.0: plan po osećaju (bez pouzdanog rezultata). Trajanja, broj ponavljanja i RPE su
@@ -240,23 +309,34 @@ export const FIVE_K_V2_POLICY = {
       recoverySec: 60
     },
     /** Kontrolno trčanje: 3 km maksimalno ravnomerno u 3. nedelji, ili 4. ako je 3. rasteretna. */
-    test: { km: 3, weeks: [3, 4] as const },
+    /** 5k-v2.15.0 (P8 dopuna G7): test ne pre nedelje 4 (bilo [3, 4]). */
+    test: { km: 3, weeks: [4, 5] as const, minWeek: 4 },
+    /** 5k-v2.14.0 (P5 F1, heuristika, odluka organizatora): plan SA REZULTATOM (ne početnik) i ukupno ≥ minWeeks
+        nedelja dobija isti test (3 km, WU/CD, pravila obima) u poslednjoj ne-rasteretnoj nedelji vrhunca (faza pre
+        oštrenja), na danu Q1 umesto I (periodize.resultTestWeekOf; konstruktor, validator TEST_WEEK). */
+    resultTest: { minWeeks: 10 },
+    resultTestNote:
+      'Kontrolno trčanje 3 km u nedelji {week} (umesto intervala): meri formu pred oštrenje. Unesi rezultat — tempo ' +
+      'od sledeće nedelje se prilagođava.',
+    resultTestWeekNote:
+      'Kontrolno trčanje 3 km umesto intervala: meri formu pred oštrenje. Unesi rezultat — tempo od sledeće nedelje ' +
+      'se prilagođava.',
     effort: {
       strides: { rpeMin: 8, rpeMax: 8, cue: 'brzo i opušteno, ne sprint' },
       hills: { rpeMin: 8, rpeMax: 8, cue: 'snažno uzbrdo, kontrolisano; nazad lagano' },
       fartlek: { rpeMin: 7, rpeMax: 8, cue: 'brzo ali kontrolisano' },
       fartlekBeginner: { rpeMin: 6, rpeMax: 7, cue: 'brzo ali kontrolisano, bez naprezanja' },
-      fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'osećaj trkačkog napora za 5K' },
+      fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'malo ispod trkačkog napora za 5K' },
       tempo: { rpeMin: 6, rpeMax: 7, cue: 'može da se priča u kratkim rečenicama' },
       test: { rpeMin: 9, rpeMax: 10, cue: 'maksimalno ravnomerno' },
-      race: { rpeMin: 9, rpeMax: 10, cue: 'trka' }
+      race: { rpeMin: 9, rpeMax: 9, cue: 'trka' }
     } satisfies Record<string, Effort>,
     note:
       'Plan po osećaju: nema pouzdanog rezultata, pa E dolazi iz tvog uobičajenog laganog tempa (±15 s), ' +
       'a kvalitet je zadat trajanjem i naporom (RPE), bez brojčanog tempa. Km kvaliteta su procena iz E tempa.',
     testNote:
-      'Kontrolno trčanje 3 km u nedelji {week}: plan i dalje ostaje po osećaju do kraja; tempo iz testa ' +
-      'ulazi tek kroz adaptaciju.',
+      'Kontrolno trčanje 3 km u nedelji {week}: do tada je plan po osećaju. Unesi rezultat — od sledeće nedelje ' +
+      'plan dobija tempo iz testa.',
     forecastNote: 'Prognoza 5K: nedovoljno podataka (nema pouzdanog rezultata).',
     oldResultNote:
       'Rezultat {result} ({date}) je stariji od 12 nedelja: prikazan samo kao informacija, ne koristi se za tempo ni prognozu.',
@@ -286,7 +366,11 @@ export const FIVE_K_V2_POLICY = {
   long: {
     /** Dugi trk ≤ days[n].longMaxShare ciljnog km nedelje i ≤ 90 min (računato sporijom granicom E
         tempa), lagano (heuristika). 2.1.0: 35% za 4 dana; 2.3.0: udeo je u tabeli `days`. */
-    maxSec: 5400
+    maxSec: 5400,
+    /** 5k-v2.16.0 (K3-C, glavni trener krug 2 § 3g / § 4.3, heuristika): redovan plan sa 3 dana — u ne-rasteretnoj
+        nedelji oštrenja (specifična faza) dugi dobija ubrzanja na kraju (drugi podražaj nedelje). Ne u nedelji sa
+        ograničenjima adaptacije (bol, odmor, zabrana kvaliteta). Jedino mesto: workouts.longStridesOf. */
+    sharpenStrides3: { reps: 6, sec: 20, recoverySec: 60 }
   },
 
   easy: {
@@ -299,7 +383,32 @@ export const FIVE_K_V2_POLICY = {
         trening ≤ buildMaxShareOfLong × dugi iste nedelje, a najkraći lagan = max(minKm, minSec laganim tempom). Ostatak
         cilja koji ne staje: manje laganih dana, pa planirano < cilj (dugi se zbog toga ne produžava). */
     buildMaxShareOfLong: 0.8,
+    /** 5k-v2.15.0 (P8 dopuna G6, odluka organizatora po glavnom treneru): plan sa 4 i više dana — lagan ≤ 0,70 × dugi
+        (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. 5k-v2.15.2: početnik (svaki broj
+        dana) ostaje na buildMaxShareOfLong 0,8 — lengths.easyShareOf. */
+    buildMaxShareOfLong4: 0.7,
+    /** 5k-v2.16.0 (K3-B, glavni trener krug 2 § 3f, heuristika): redovan plan sa TAČNO 4 dana — lagan ≤ 0,75 × dugi
+        (5+ dana buildMaxShareOfLong4 0,70; početnik 0,80). Cilj se ne spušta. Jedino mesto: lengths.easyShareOf. */
+    buildMaxShareOfLongExact4: 0.75,
+    /** 5k-v2.16.0 (K3-C, glavni trener krug 2 § 4.3, heuristika): redovan plan sa 3 dana — lagan ≤ 0,70 × dugi (bilo
+        buildMaxShareOfLong 0,80; početnik ostaje 0,80); višak je planirano < cilj, prijavljen jednom po planu. Jedino
+        mesto: lengths.easyShareOf. */
+    buildMaxShareOfLong3: 0.7,
+    /** 5k-v2.16.0 (K3-B): nedelja 1 redovnog plana sa tačno 4 dana — lagan ≤ 0,80 × dugi (nedelja 1 ≥ 95 % trenutnog
+        obima; 0,75 to ne daje u 327 planova mreže). Jedino mesto: lengths.easyShareOf. */
+    week1MaxShareOfLongExact4: 0.8,
+    /* 5k-v2.15.1 (P8 završetak, odluka organizatora 1): varijanta B (0,75 uz spuštanje cilja kroz tabelu izvodljivih
+       ciljeva) izmerena i odbačena — vrh cilja pada > 10 % u 36–79 % planova svake grupe sa 4+ dana
+       (docs/generators-v2/perfection/P8-5K/g6.ts). Ostaje A: 0,70, cilj se ne spušta, planirano < cilj, upozorenje
+       jednom po planu u prikazu (text.userWarnings). */
     minSec: 1200,
+    /** 5k-v2.17.0 (K4-B, glavni trener krug 3 § B, heuristika): plan u kom bi najkraći lagan trening ne-rasteretne
+        nedelje izgradnje (sa danom kvaliteta ili testa i bar dva lagana dana) bio kraći od minSec u više od weeksMax
+        nedelja — u tim nedeljama jedan lagan dan je „odmor ili 20 min lagano po želji" (lagan dan manje, isti oblik kao
+        T1 easyRest); njegovi km prelaze u ostale lagane dane do granice laganog, ostatak je planirano < cilj bez
+        upozorenja po nedelji. Početnik: ne važi. Jedino mesto odluke: week.shortEasyWeeks (dužine: lengths.weekLengths
+        `drop`). */
+    shortEasy: { minSec: 1800, weeksMax: 2 },
     /** 2.1.0: dan pred trku lagan ≤ 4 km (ukupno, sa ubrzanjima) + 4 × 20 s ubrzanja (heuristika). */
     raceEveMaxKm: 4.0,
     /** 2.2.0: lagan dan trkačke nedelje ≤ 50 min (sporijom granicom E) i ≤ 50% dugog iz prethodne
@@ -317,14 +426,18 @@ export const FIVE_K_V2_POLICY = {
   warmup: {
     /** Zagrevanje/hlađenje [km] po ciljnom km nedelje (heuristika). Zadatak: 2–3 / 1,5–2 km.
         2.0.1: ispod 25 km nedeljno 1,5 / 1,0 km, inače nedelja od 15–24 km nema mesta za lagan
-        trk (v. DECISIONS). Trka uvek koristi `race`. */
+        trk (v. DECISIONS). Trka: workouts.raceWarmup (5k-v2.15.0). */
     bands: [
       { fromWeekKm: 0, warmupKm: 1.5, cooldownKm: 1.0 },
       { fromWeekKm: 25, warmupKm: 2.0, cooldownKm: 1.5 },
       { fromWeekKm: 35, warmupKm: 2.5, cooldownKm: 1.5 },
       { fromWeekKm: 45, warmupKm: 3.0, cooldownKm: 2.0 }
     ],
-    race: { warmupKm: 2.0, cooldownKm: 1.5 }
+    /** 5k-v2.15.0 (P8 d, heuristika, odluka organizatora P8, nalaz slepe ocene: trka 8,5 km za sve nivoe): trkački dan
+        ima WU/CD pojasa `bands` za VRH obima plana (cilj ≤ 20 km/ned → prvi pojas 1,5 / 1,0 km); ako bi tako trkački
+        dan bio najduži dan plana (≥ najdužeg treninga), prvi pojas, pa `raceMin` (1,0 / 0,5 km — najkraće smisleno
+        zagrevanje pred trku; tumačenje taba). Jedino mesto: workouts.raceWarmup (konstruktor, validator WARMUP). */
+    raceMin: { warmupKm: 1.0, cooldownKm: 0.5 }
   },
 
   schedule: {
@@ -384,7 +497,15 @@ export const FIVE_K_V2_POLICY = {
     orientationMessage:
       'Cilj je orijentir: posle duge pauze ostaje manje od 6 nedelja do trke, priprema nije potpuna.',
     painMessage:
-      'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.'
+      'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.',
+    /** 5k-v2.14.0 (P5 F2, Odluka 10; heuristika, odluka organizatora): dva uzastopna dana kvaliteta plana (Q1/Q2, ne
+        test; oba u poslednjih hardLookbackDays dana do asOf, poznata) od kojih je svaki neodrađen ili sa RPE ≥ hardRpe
+        → sledeća nedelja izgradnje ne podiže dozu nijednog slota (ponavlja poslednju dozu); obim se ne menja. */
+    hardLookbackDays: 14,
+    hardRpe: 9,
+    hardMessage:
+      'Poslednja dva zahtevna treninga ({dates}) su bila preteška ili preskočena — doza nedelje {week} ne raste; ako ' +
+      'tempo deluje pretežak, unesi nov rezultat ili uradi test.'
   },
 
   /** 2.6.0: plan trčanje/hodanje (canRun30Min = false; runWalk.ts, runWalkAssess.ts). Lestvica i pragovi
@@ -476,6 +597,9 @@ export interface Athlete {
   /** 2.10.4 (3i): pomak broja nedelje u porukama (ulaz weekOffset; input.weekLabel). */
   weekOffset?: number;
 }
+
+/** 5k-v2.15.0 (P8 G3): najveći broj dana trčanja tabele `days`. */
+export const MAX_DAYS = Math.max(...Object.keys(FIVE_K_V2_POLICY.days).map(Number));
 
 /** 2.4.0: broj dana (stari potpis, 2.3.0) → iskusan trkač sa rezultatom. */
 export const asAthlete = (a: Athlete | RunDaysCount): Athlete =>
@@ -959,5 +1083,136 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prvo otpada oštrenje, pa lagani u odmor (week.raceWeekRest). (C11, pouka 35) U svim nedeljama osim trkačke (i ' +
       'taper, i uz dane odmora). Sačuvan plan 5k-v2.11.1 i stariji prilagođavaju se po 2.12.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/5k-v2/reports/SEGMENT-10-IMPLEMENTATION.md.'
+  },
+  {
+    version: '5k-v2.13.0',
+    decision:
+      'P4 (program „trenerski kvalitet v2", odluke organizatora; sve HEURISTIKE). (S1) Jedan plafon I (uključujući RP): ' +
+      'udeo cilja nedelje po tabeli quality.iMaxShareByTargetKm — cilj < 40 km 10 %, ≥ 40 km 12 % (bilo 8 %); jedino ' +
+      'mesto workouts.iMaxShareOf (qualityBudgets: konstruktor, po osećaju, početnik; validator I_SHARE). R 5 %, T 10 %, ' +
+      'maxReps, iRepMaxSec, trajanje T i „≤ 1 korak nedeljno" bez promene. Mreža P0 (trkač sa rezultatom, medijana): I rad ' +
+      'najveći 11 → 13,7 min, najveći RP trening 2,5 → 3,2 km, ukupno RP 6,5 → 8,5 km; profil (b) I vrh 10 → 14 min. ' +
+      'Na 5 dana vrh I/RP posle izmene drži maxReps (I 50 %, RP 69 % planova) — prijavljeno, ne menja se. (S2) Opseg VDOT-a ' +
+      '30–60 → 30–70; plan proveren na VDOT 62/65/68/70 (tempo, deonice, WU/CD, dugi). Svesna odluka (O-d): oštrenje ' +
+      'trkačke nedelje 2–3 × 300 m RP traje 54–59 s na VDOT ≥ 63 (33 od 1 056 planova po VDOT-u) — prihvaćeno, to je ' +
+      'oštrenje, ne I trening; pravilo „deonica ≥ 60 s" važi za I/RP u izgradnji (tamo 0 na svim VDOT-ima). (B2) 3 dana, ' +
+      'obim < 12,1 km, VDOT ≥ 66 → odbijanje VOLUME_LOW_FOR_PACE sa preporukom (input.lowVolumeForPace; ulaz, assess A1 ' +
+      'RESULT_IGNORED, validator, Forma): bez toga nedelja vrhunca ima samo dugi (WEEK_DEGENERATE od VDOT-a 66,3, samo ' +
+      '12,0 km × 6–7 ned; uzrok T1 lagan ≥ 20 min uz lagan ≤ 0,8 × dugi). Fina mreža (3 dana × 12–14 km korak 0,1 × 6–16 ' +
+      'ned × VDOT 62–70 korak 0,5 = 3 927): odbijeno 99 (svi ranije odbijani zbog VDOT > 60), WEEK_DEGENERATE 0. (S3) ' +
+      'Samo merenje (feel.feelDoseHeld): dozu po osećaju i početnika drži dužina faze u 88–89 % slučajeva. (F1, dopuna ' +
+      'pouke 23 za I/RP; odluka organizatora posle STOP 3) Zadržana I/RP doza — ista doza gušćeg oporavka (workouts.' +
+      'altMain) i zadržan I vrhunca (peakWeek) — mora da stane u iRepMaxSec na TEKUĆEM tempu; inače postojeći lanac ' +
+      'doze (jedan kvalitet doze rasterećenja). Bez toga sporiji rezultat u vrhuncu (5 d / 50–60 km / VDOT 38, 6 × 1000 m) ' +
+      'davao je I_REP 306 s > 300 s: 10 odbijenih tokova od 104 800 trajne rane mreže 08g → 0. Sačuvan plan ' +
+      '5k-v2.12.0 i stariji prilagođavaju se po 2.13.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P4-REPORT.md.'
+  },
+  {
+    version: '5k-v2.14.0',
+    decision:
+      'P5 (program „trenerski kvalitet v2", odluke organizatora; HEURISTIKE). (F1) Plan SA REZULTATOM (ne početnik) i ' +
+      'ukupno ≥ feel.resultTest.minWeeks (10) nedelja dobija tačno jedan kontrolni test — isti kao plan po osećaju ' +
+      '(3 km maksimalno ravnomerno, WU/CD pojasa nedelje, isti obračun obima, test nije rad zone) — u poslednjoj ' +
+      'ne-rasteretnoj nedelji vrhunca (faza pre oštrenja), na danu Q1 umesto I; drugi kvalitet nedelje T kao u vrhuncu. ' +
+      'Jedino mesto: periodize.testKindOf/resultTestWeekOf (konstruktor, koraci adaptacije, validator TEST_WEEK). Stanje I ' +
+      'slota ostaje iz nedelje pre testa. Rezultat testa ulazi postojećim putem (Odluka 1: tempo od sledeće nedelje; nov ' +
+      'rezultat ukida test od svoje nedelje); test koji adaptacija blokira (rasterećenje, ograničenje kvaliteta) otpada — ' +
+      'premešta se samo u planu po osećaju. Napomena nedelje i plana: čemu test služi i da se rezultat unese. Mreža ' +
+      '(4 374 ulaza): 2 761 plan dobija test (sve u vrhuncu, 4–5 nedelja do trke), sve ostale nedelje bajt-iste, 0 novih ' +
+      'odbijanja; u 207 planova nedelja testa ima planirano < cilj (lagan ≤ 0,8 × dugi, T1 — prijavljeno). (F2, Odluka 10) ' +
+      'Dva uzastopna dana kvaliteta plana (Q1/Q2, ne test) u poslednjih adapt.hardLookbackDays (14) dana do asOf, oba ' +
+      'poznata (zapis ili potpuna pokrivenost ili prijavljena pauza), svaki neodrađen ili sa RPE ≥ adapt.hardRpe (9) → ' +
+      'sledeća nedelja izgradnje (n, ne rasterećenje) ne podiže dozu nijednog slota: ponavlja poslednju dozu slota u ' +
+      'fazi (R/I/RP, T, R oštrenja; po osećaju svaka vrsta) kad staje u budžet nedelje, inače postojeći izbor; prva doza ' +
+      'vrste u fazi nije rast. Cilj obima se ne menja. Jedino mesto: assess (korak `hard`), steps.holdWeek (oznaka ' +
+      'nedelje `hold`), izbor kvaliteta (workouts/feel), validator DOSE_HOLD (rad zone ≤ poslednje nedelje izgradnje iste ' +
+      'faze sa tom zonom; nedelja zadržavanja sme da ponovi par — izuzetak QUALITY_REPEAT/BASE_PLATEAU/donji prag). Ispod ' +
+      'bola, pauze, umora i manjka izvršenja (tada HARD_QUALITY applied false); isti zapisi ne prave nov korak (kao umor, ' +
+      'pouka 36); taper i trkačka nedelja bez efekta. Sačuvan plan 5k-v2.13.0 i stariji prilagođavaju se po 2.14.0 ' +
+      '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P5-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.15.0',
+    decision:
+      'P8 (ispravke po slepoj trenerskoj oceni i dopuna po glavnom treneru; odluke organizatora, HEURISTIKE). (a) budžet ' +
+      'I/RP 10 % za sve ciljeve (workouts.iMaxShareOf). (b) rasterećenje: rad zone ≤ 0,6 × poslednja ne-rasteretna doza, ' +
+      'dugi ≤ max(3 km, 0,8 × poslednji dugi) (generate.qualityCapOf). (c) prvi I posle R faze ≤ 0,7 × budžet I ' +
+      '(periodize.isFirstIWeek, workouts.firstIBudget). (d) WU/CD trke po pojasu vrha obima, najmanje 1,0 / 0,5 km ' +
+      '(workouts.raceWarmup). (e) početnik iznad kapaciteta plana početnika → redovan plan (steps.beginnerAboveTable). ' +
+      'G1 rast obima do kraja razvoja (volume.spreadKm), vrh ≤ start × 1,30 / 1,35 / 1,40 po dužini pripreme i satni ' +
+      'plafon nedelje 6 / 7 / 8 h po VDOT-u (volume.peakKm), korak < 3 % se ne primenjuje (volume.minStep). G2 plafon ' +
+      'zone ≥ prvi nivo lestvice (workouts.firstLevelBudget, feel.feelFirstLevel); ne važi u trkačkoj nedelji. G4 plafon ' +
+      'treninga u minutima rada: T 30, I 20 (VDOT < 40) / 24, RP 20 (workouts.minuteCapKm, feel.feelMinuteCap). G5 taper ' +
+      '≤ 60 % najvećeg rada zone u izgradnji; oštrenje trkačke nedelje 2 jednake deonice ≥ 400 m, ukupno ≤ 12 min, inače ' +
+      'ubrzanja (week.buildRaceWeek). G6 lagan ≤ 0,70 × dugi za 4+ dana (lengths.easyCapKm), cilj se ne spušta. G7 test ' +
+      'je jedini kvalitet nedelje i ne ide pre nedelje 4 (periodize.resultTestWeekOf, feel.test.minWeek; validator ' +
+      'ROLES). G3 tekst: trka kao trka, RPE trke 9, upozorenja zbirno u prikazu (text.userWarnings). Sačuvan plan ' +
+      '5k-v2.14.0 i stariji prilagođavaju se po 2.15.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.15.1',
+    decision:
+      'P8 završetak (odluke organizatora posle STOP-a; HEURISTIKE). (1) G6: varijanta B (lagan ≤ 0,75 × dugi za 4+ dana ' +
+      'uz spuštanje cilja kroz volume.fitTargetKm) izmerena na mreži final-check (3 816 planova): vrh cilja pada > 10 % ' +
+      'u R 4 d 78,8 %, F 4 d 61,0 %, F 5 d 38,6 %, B 4 d 36,8 %, R 5 d 36,4 % planova — odbačena; ostaje A (0,70, cilj se ' +
+      'ne spušta, planirano < cilj, upozorenje jednom po planu u prikazu). (2) I doza u vrhuncu posle prethodnog I ' +
+      'treninga lanca (i smanjenog prvog, P8 c) raste najviše jedan korak lestvice nedeljno: najmanji rad iz ponude I ' +
+      'strogo veći od prethodnog, bez donjeg praga 70–80 % budžeta (ranije p07 3 × 1000 → 6 × 800 m). Jedino mesto: ' +
+      'workouts.iStepUp (u qualitySession); validator PEAK_MAIN_FLOOR važi samo za prvi I lanca. (3) Tumačenja 5k-v2.15.0 ' +
+      'prihvaćena: razvoj 5K = baza + vrhunac; „tabela početnika" = kapacitet plana početnika; WU/CD trke najmanje ' +
+      '1,0 / 0,5 km. Sačuvan plan 5k-v2.15.0 i stariji prilagođavaju se po 2.15.1 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.15.2',
+    decision:
+      'P8 G6, dopuna odluke organizatora (nalaz iz 10K, mreža početnika: 0,70 kod početnika sa 4 dana obara obim čim ' +
+      'uđe prvi kvalitet; HEURISTIKA): početnik ostaje na lagan ≤ 0,80 × dugi za svaki broj dana; 0,70 važi samo za ' +
+      'redovan plan sa 4+ dana. Jedino mesto: lengths.easyShareOf (easyCapKm; konstruktor, mešovita nedelja, validator ' +
+      'EASY_VS_LONG / PLANNED_BELOW_TARGET). Sačuvan plan 5k-v2.15.1 i stariji prilagođavaju se po 2.15.2 ' +
+      '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.15.3',
+    decision:
+      'P8 završetak, druga dopuna organizatora (HEURISTIKE). (2) Korak I u vrhuncu nije najsitniji: I doza sledeće ' +
+      'nedelje = najveći nivo lestvice čiji je rad ≤ 1,25 × rad prethodne I nedelje (quality.iStepMaxGrowth), a najmanje ' +
+      'sledeći veći nivo; i dalje ispod plafona minuta (G4) i budžeta. Jedino mesto: workouts.iStepUp. (3) Napomena ' +
+      'nedelje „Lagan trk najviše …" (G6, planirano < cilj) stoji samo u prvoj takvoj nedelji plana (generate.push, ' +
+      'week.EASY_CAP_NOTE); upozorenja PLANNED_BELOW_TARGET ostaju po nedelji, zbirno u prikazu. Sačuvan plan 5k-v2.15.2 ' +
+      'i stariji prilagođavaju se po 2.15.3 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.16.0',
+    decision:
+      'K3 (glavni trener, krug 2 § 3–4; HEURISTIKE). K3-A: rad jednog I treninga po cilju nedelje (VDOT ≥ 40): ' +
+      '30–45 km 12–16 min, 45–65 km 16–20 min, ≥ 65 km 18–24 min; VDOT < 40 najviše 18 min od 30 km; ispod 30 km ' +
+      'sadašnje vrednosti. Gornja granica je plafon minuta I, u vrhuncu i budžet I; korak lestvice sme do donje granice. ' +
+      'Jedino mesto: workouts.iDoseRange (minuteCapKm, iPeakBudget, iStepUp; validator I_SHARE / PEAK_MAIN_FLOOR isto). ' +
+      'K3-B: redovan plan sa tačno 4 dana lagan ≤ 0,75 × dugi (5+ dana 0,70, početnik 0,80), u nedelji 1 ≤ 0,80 ' +
+      '(nedelja 1 blizu trenutnog obima); cilj se ne spušta. Jedino mesto: lengths.easyShareOf (easyCapKm, weekLengths; ' +
+      'validator isto). ' +
+      'K3-C: redovan plan sa 3 dana lagan ≤ 0,70 × dugi (bilo 0,80; višak planirano < cilj, napomena jednom po planu); ' +
+      'u ne-rasteretnoj nedelji oštrenja dugi + 6 × 20 s ubrzanja (workouts.longStridesOf; validator LONG_NOT_EASY ' +
+      'isto); u bazi ista R / T doza najviše 2 nedelje te vrste zaredom, pa druga struktura iste ili veće doze (nema je → ' +
+      'ista doza; workouts.baseWeekOne). ' +
+      'Sačuvan plan 5k-v2.15.3 i stariji prilagođavaju se po 2.16.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/K3-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.17.0',
+    decision:
+      'K4-B (glavni trener, krug 3 § B; HEURISTIKA): kad bi najkraći lagan trening ne-rasteretne nedelje izgradnje (sa ' +
+      'danom kvaliteta ili testa i bar dva lagana dana) bio kraći od 30 min u više od 2 nedelje plana, u tim nedeljama ' +
+      'jedan lagan dan je „odmor ili 20 min lagano po želji" — lagan dan manje (postojeći oblik T1 easyRest, ekrani ' +
+      'nedirani); njegovi km prelaze u ostale lagane dane do granice laganog, dugi ostaje kakav je bio, ostatak je ' +
+      'planirano < cilj bez upozorenja po nedelji; jedna rečenica u napomeni plana. Početnik: ne važi (sa 4 dana ' +
+      'planirani vrh pada > 10 % u 38 / 296 planova mreže). Odluka se čita iz plana sastavljenog ' +
+      'bez pravila (generate.construct, drugi sastav). Jedino mesto: week.shortEasyWeeks (easy.shortEasy); dužine ' +
+      'lengths.weekLengths (drop); validator EASY_REST / SHORT_REST isto. Sačuvan plan 5k-v2.16.0 i stariji ' +
+      'prilagođavaju se po 2.17.0 (KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/K4-5K-REPORT.md.'
   }
 ];

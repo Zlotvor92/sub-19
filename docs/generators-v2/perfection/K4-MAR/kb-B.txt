@@ -1,0 +1,10 @@
+R-d3 K4-B 0 (nedelja 0, planirano < cilj 0, lagan med NaN km) vraćeno 0
+R-d4 K4-B 0 (nedelja 0, planirano < cilj 0, lagan med NaN km) vraćeno 0
+R-d5 K4-B 620 (nedelja 4300, planirano < cilj 1090, lagan med 11.2 km) vraćeno 0
+R-d6 K4-B 848 (nedelja 5914, planirano < cilj 0, lagan med 8.3 km) vraćeno 6
+F-d3 K4-B 0 (nedelja 0, planirano < cilj 0, lagan med NaN km) vraćeno 0
+F-d4 K4-B 0 (nedelja 0, planirano < cilj 0, lagan med NaN km) vraćeno 0
+F-d5 K4-B 162 (nedelja 926, planirano < cilj 298, lagan med 10.8 km) vraćeno 0
+F-d6 K4-B 161 (nedelja 1089, planirano < cilj 0, lagan med 8.1 km) vraćeno 0
+B-d4 K4-B 32 (nedelja 167, planirano < cilj 80, lagan med 10.1 km) vraćeno 0
+B-d5 K4-B 45 (nedelja 225, planirano < cilj 0, lagan med 7.7 km) vraćeno 0

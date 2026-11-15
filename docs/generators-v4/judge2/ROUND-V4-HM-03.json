@@ -1,0 +1,426 @@
+{
+ "krug": "V4-HM-03",
+ "sudija": "drugi",
+ "datum": "2026-11-13",
+ "planovi": {
+  "p01": {
+   "P1": 7,
+   "P2": 7,
+   "P3": 8,
+   "P4": 7,
+   "P5": 7,
+   "P6": 7,
+   "P7": 7,
+   "ukupno": 72,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N9: 51,1 km posle 35,8 (+43 %) i prag 36 min (do tada max 24, +50 %) 3 dana posle testa 10 km",
+    "N8: dugi 12 km dan posle testa 10 km; 'brz rad 6 %' a sam test je ~24 % vremena",
+    "prag 4:42 samo 6 s/km sporiji od tempa 10K 46:00 (4:36); ~4:48 očekivano"
+   ],
+   "dobro": [
+    "MP u dugom raste 2 -> 5,5 -> 9,5 km",
+    "cilj iskreno 'dostižan' sa rasponom"
+   ]
+  },
+  "p02": {
+   "P1": 6,
+   "P2": 6,
+   "P3": 7,
+   "P4": 7,
+   "P5": 6,
+   "P6": 5,
+   "P7": 7,
+   "ukupno": 63,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "'Polazim od tvojih ≈ 40 km' — obim nije zadat; gradi do 54,4 km (N8) bez upozorenja",
+    "N12 (2 ned. do trke): 3 kvalitetna, 22 % brzog rada (N7 13 %)",
+    "taktika ostavlja poslednjih 5,1 km na 4:18/km za 1:33:46"
+   ],
+   "dobro": [
+    "jasna struktura",
+    "oštrenje u nedelji trke"
+   ]
+  },
+  "p03": {
+   "P1": 6,
+   "P2": 6,
+   "P3": 7,
+   "P4": 7,
+   "P5": 7,
+   "P6": 7,
+   "P7": 6,
+   "ukupno": 65,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N11 dugi 2:15 = 47 % nedelje (18,2 od 38,8 km)",
+    "N13: 64 min MP u nedelji za 25 km/ned",
+    "upozorenje: +30–40 min daje 42,8–44,2 km, piše 39,8"
+   ],
+   "dobro": [
+    "iskreno upozorenje za 3 dana sa konkretnim predlogom"
+   ]
+  },
+  "p04": {
+   "P1": 6,
+   "P2": 5,
+   "P3": 7,
+   "P4": 7,
+   "P5": 5,
+   "P6": 6,
+   "P7": 7,
+   "ukupno": 61,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N18: 85 min brzog rada 2 nedelje pred trku; N19 MP 27 + prag 11 min",
+    "N17: 93 min MP u nedelji, 69,2 km (+26 %)",
+    "jedan test u N8, 12 nedelja bez kalibracije; isti usponi N1–N7"
+   ],
+   "dobro": [
+    "razuman 5-dnevni raspored",
+    "postupan MP"
+   ]
+  },
+  "p05": {
+   "P1": 7,
+   "P2": 6,
+   "P3": 7,
+   "P4": 7,
+   "P5": 6,
+   "P6": 7,
+   "P7": 7,
+   "ukupno": 67,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "prag 3:40 vs MP 3:42 (2 s/km) — nema pravog praga",
+    "N14 95,2 km sa 3 kvalitetna; N15 MP 8 km + prag 12",
+    "N11 111,2 km (+23 %)"
+   ],
+   "dobro": [
+    "obim i dani prema nivou",
+    "bez gela na trci od 77 min"
+   ]
+  },
+  "p06": {
+   "P1": 5,
+   "P2": 8,
+   "P3": 5,
+   "P4": 5,
+   "P5": 7,
+   "P6": 7,
+   "P7": 6,
+   "ukupno": 61,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "3–4 lagana dana po 24–29 min za VDOT 58",
+    "obim 35,7 -> 43,4 i nazad; N6 'rasterećenje' 39,1 = N5 39,0",
+    "prag 3:46 vs MP 3:49 (3 s/km)"
+   ],
+   "dobro": [
+    "iskreno upozorenje sa predlogom 60 km",
+    "čist taper"
+   ]
+  },
+  "p07": {
+   "P1": 6,
+   "P2": 5,
+   "P3": 7,
+   "P4": 6,
+   "P5": 5,
+   "P6": 6,
+   "P7": 7,
+   "ukupno": 60,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N5 18 km MP, N7 19 km MP; dve MP sesije 4 nedelje",
+    "55 -> 73 km (+33 %) za 6 nedelja",
+    "N8 66,3 km = 91 % vrha sa 15 km MP; N9 MP + prag"
+   ],
+   "dobro": [
+    "kratka priprema odmah u specifično"
+   ]
+  },
+  "p08": {
+   "P1": 5,
+   "P2": 5,
+   "P3": 6,
+   "P4": 4,
+   "P5": 7,
+   "P6": 6,
+   "P7": 6,
+   "ukupno": 55,
+   "dao_bih": "ne",
+   "zamerke": [
+    "dugi 20,5–21,5 km u 11/20 nedelja od N1 (~46 % nedelje); obim +6 % za 20 nedelja",
+    "N15 MP 2×1,5 km — prazan trening",
+    "upozorenje 58,3 km (računski 52,6–54,3); N8 test 'brz rad 0 %'"
+   ],
+   "dobro": [
+    "upozorenje za 3 dana"
+   ]
+  },
+  "p09": {
+   "P1": 6,
+   "P2": 6,
+   "P3": 7,
+   "P4": 7,
+   "P5": 6,
+   "P6": 7,
+   "P7": 7,
+   "ukupno": 65,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N4 'rasterećenje' ima prag + test 5 km + dugi",
+    "trka 'napor 6/10' (HM ~7–8/10)",
+    "N14 3 kvalitetna, N15 MP + prag"
+   ],
+   "dobro": [
+    "dva rana testa (N4, N8)",
+    "jasne zone napora"
+   ]
+  },
+  "p10": {
+   "P1": 6,
+   "P2": 7,
+   "P3": 6,
+   "P4": 7,
+   "P5": 7,
+   "P6": 6,
+   "P7": 6,
+   "ukupno": 64,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N17 47 min 'u tempu trke' bez tempa",
+    "upozorenje 47,1 km (računski 43–44,3)",
+    "testovi 'brz rad 0 %'; dugi 2:07 = 47 % nedelje"
+   ],
+   "dobro": [
+    "postupan rast 25 -> 39 km",
+    "dva testa"
+   ]
+  },
+  "p11": {
+   "P1": 7,
+   "P2": 7,
+   "P3": 7,
+   "P4": 6,
+   "P5": 7,
+   "P6": 6,
+   "P7": 6,
+   "ukupno": 67,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "prognoza −7:02 (5,7 %), 'ciljaj 5:33' = 20 s/km brže od MP",
+    "faze skaču N12–N15",
+    "najduži dugi 1:55 u N14, 'vršna' N17 1:47"
+   ],
+   "dobro": [
+    "prve 4 nedelje bez kvaliteta",
+    "obim ×2 za 20 nedelja"
+   ]
+  },
+  "p12": {
+   "P1": 5,
+   "P2": 5,
+   "P3": 6,
+   "P4": 6,
+   "P5": 6,
+   "P6": 5,
+   "P7": 6,
+   "ukupno": 55,
+   "dao_bih": "ne",
+   "zamerke": [
+    "početnik: N1 44,9 km i dugi 1:40; N10 60,8 km i dugi 2:15",
+    "N13 77 min MP; N14 (2 ned.) 42 min MP",
+    "test 10 km pa dugi 75 min sutradan; prognoza iz laganog tempa (s20: 2:20)"
+   ],
+   "dobro": [
+    "dva testa",
+    "zone napora"
+   ]
+  },
+  "vlasnik-v1": {
+   "P1": 6,
+   "P2": 7,
+   "P3": 6,
+   "P4": 5,
+   "P5": 7,
+   "P6": 5,
+   "P7": 6,
+   "ukupno": 61,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi max 15 km a upozorenje traži 16 — plan može sam",
+    "vrh obima N3 36,3, 'vršna' N7 35,8; subote 4,5–5,5 km popuna",
+    "upozorenje 38,2 km (računski 41,4–43,1); 1:41:00 vs 1:40:59"
+   ],
+   "dobro": [
+    "MP rad u ritmu",
+    "čista završnica"
+   ]
+  },
+  "vlasnik-v2": {
+   "P1": 7,
+   "P2": 7,
+   "P3": 6,
+   "P4": 7,
+   "P5": 7,
+   "P6": 7,
+   "P7": 7,
+   "ukupno": 68,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi max 16 km za 18 nedelja (očekivano 18–19)",
+    "N16 22 % brzog rada 2 ned. pred trku; 'vršna' N15 41,1 < N13 46,1",
+    "N2 prag 11. dan i dugi 11,5 km 14. dan posle HM, protivno upozorenju"
+   ],
+   "dobro": [
+    "oporavak N1 posle HM",
+    "subota-trka ispravno rešena"
+   ]
+  }
+ },
+ "prosek_planova": 62.9,
+ "broj_ge80": 0,
+ "broj_ge70": 1,
+ "vlasnik": {
+  "v1": 61,
+  "v2": 68
+ },
+ "scenariji": {
+  "s01": {
+   "ocena": 8.5,
+   "komentar": "10K 44:40 -> tempa −6 s/km (70 %), objašnjeno"
+  },
+  "s02": {
+   "ocena": 7.5,
+   "komentar": "8 dana oporavka posle 10K; dugi 2:14->2:18; drugačije od planiranog testa"
+  },
+  "s03": {
+   "ocena": 7.5,
+   "komentar": "−11 s/km; dan i dalje 'test 3 km' a urađen 5K; oporavak nije razmotren"
+  },
+  "s04": {
+   "ocena": 8,
+   "komentar": "tempa −16 s/km; otkriva lutanje procene na 1:58:51"
+  },
+  "s05": {
+   "ocena": 6,
+   "komentar": "smanjenje do N13, MP u N13 izbačen 7 ned. posle bolesti"
+  },
+  "s06": {
+   "ocena": 7,
+   "komentar": "razuman povratak; gubi MP dugi u N17"
+  },
+  "s07": {
+   "ocena": 8,
+   "komentar": "postupno, test pomeren"
+  },
+  "s08": {
+   "ocena": 8,
+   "komentar": "kratko i mirno"
+  },
+  "s09": {
+   "ocena": 8.5,
+   "komentar": "sledeći dugi 4->5,5 km MP"
+  },
+  "s10": {
+   "ocena": 9,
+   "komentar": "sledeći dugi ne raste"
+  },
+  "s11": {
+   "ocena": 7.5,
+   "komentar": "'ionako kraći'; ne kaže da je 1:45 najduži"
+  },
+  "s12": {
+   "ocena": 8,
+   "komentar": "sledeći dugi bez MP; ne pita zašto"
+  },
+  "s13": {
+   "ocena": 8,
+   "komentar": "bezbedno, uslov ≤2/10, lekar; MP malo previše sečen"
+  },
+  "s14": {
+   "ocena": 7,
+   "komentar": "lagani dani skraćeni 4 nedelje bez uslova povratka"
+  },
+  "s15": {
+   "ocena": 8,
+   "komentar": "dugi skraćen, test pomeren"
+  },
+  "s16": {
+   "ocena": 5,
+   "komentar": "49 izmena kroz 10 nedelja; lagani 25–30 min a dugi 1:50"
+  },
+  "s17": {
+   "ocena": 8,
+   "komentar": "oporavak, cilj 'na ivici'"
+  },
+  "s18": {
+   "ocena": 8.5,
+   "komentar": "samo oporavak"
+  },
+  "s19": {
+   "ocena": 6.5,
+   "komentar": "ne prepoznaje izdržljivost kao problem; prognoza −7:39"
+  },
+  "s20": {
+   "ocena": 7.5,
+   "komentar": "forma 100 % usvojena, iskreno"
+  },
+  "s21": {
+   "ocena": 9,
+   "komentar": "nula promena"
+  },
+  "s22": {
+   "ocena": 9,
+   "komentar": "nula promena"
+  },
+  "s23": {
+   "ocena": 9,
+   "komentar": "nula promena"
+  },
+  "s24": {
+   "ocena": 8.5,
+   "komentar": "nula promena; procena forme pomerena bez signala"
+  }
+ },
+ "prosek_scenarija": 7.81,
+ "parovi": {
+  "P1": {
+   "ocena": 6,
+   "komentar": "smer tačan; B N1 23,6 km uz sadašnjih 40; 'nemam trčanja sa sata' netačno"
+  },
+  "P2": {
+   "ocena": 6.5,
+   "komentar": "upozorenja odlična; B N1 11,2 uz 20; dugi max 11,3 km"
+  },
+  "P3": {
+   "ocena": 7.5,
+   "komentar": "pravi smer; oznaka 'povratnik' za A pogrešna"
+  }
+ },
+ "prosek_parova": 6.67,
+ "ispravke": [
+  "taper intenziteta: 14 dana pred trku max 1 MP + kratak dugi; 7 dana max 20 min MP",
+  "procena forme ne raste od same poslušnosti (s04, s24)",
+  "start od stvarnog obima iz istorije (P1B, P2B)",
+  "mali broj dana/obim: p08 ravan 20 ned., p06 5×24 min",
+  "doze MP za početnike i kratke pripreme (p12, p07)",
+  "razmak prag–MP po nivou (p05, p06, p01)",
+  "jedno pravilo za dan posle trke/testa",
+  "brojevi: test u 'brz rad', '+30–40 min' matematika, dugi 15 vs 16",
+  "oznake 'vršna'/'rasterećenje'/faze",
+  "bol/bolest: uslovni povratak umesto dugog sečenja (s16, s14, s05)"
+ ],
+ "za_pregled_vlasniku": [
+  "vlasnik-v2",
+  "p01",
+  "p12"
+ ],
+ "napomene": [
+  "video 'MORA DA SE RAZLIKUJE' u parovima i pregled.txt scenarija pre sopstvenih očekivanja",
+  "ls coach/ pokazao samo imena fajlova"
+ ]
+}

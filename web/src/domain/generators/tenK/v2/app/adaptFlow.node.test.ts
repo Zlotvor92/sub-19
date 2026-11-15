@@ -3,11 +3,9 @@ import type { IsoDate } from '../../../../date';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState, LogEntry } from '../../../../state';
 import type { TenKV2PlanInput } from '../../../contract';
-import { regeneratorForDistance } from '../../../handoff';
 import {
   generateTenKV2Plan,
   stampForStorage,
-  TEN_K_GENERATOR,
   TEN_K_V2_GENERATOR,
   TEN_K_V2_TEST_FIELD,
   tenKV2AdaptPreview,
@@ -21,7 +19,6 @@ import {
   unsupportedPlanReason,
   type TenKV2AdaptOutcome
 } from '../../../select';
-import * as tenK from '../../index';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { buildFacts, EDITS_KEY } from './facts.ts';
@@ -507,7 +504,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
   });
 
-  it('06i/3i/10K-07/10K-08 (10k-v2.10.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.9.0 ostaje plan 10K v2 i prilagođava se pravilima 10.0 (rezultat nosi 10k-v2.10.0); druge verzije → UNKNOWN_POLICY', () => {
+  it('06i/3i/10K-07/10K-08/P3/P5/P8/P9b/K3/K4 (10k-v2.16.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.15.0 ostaje plan 10K v2 i prilagođava se pravilima 16.0 (rezultat nosi 10k-v2.16.0); druge verzije → UNKNOWN_POLICY', () => {
     expect(KNOWN_VERSIONS).toEqual([
       '10k-v2.4.0',
       '10k-v2.4.1',
@@ -521,7 +518,13 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       '10k-v2.8.0',
       '10k-v2.8.1',
       '10k-v2.9.0',
-      '10k-v2.10.0'
+      '10k-v2.10.0',
+      '10k-v2.11.0',
+      '10k-v2.12.0',
+      '10k-v2.13.0',
+      '10k-v2.14.0',
+      '10k-v2.15.0',
+      '10k-v2.16.0'
     ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
@@ -545,7 +548,11 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       '10k-v2.7.0',
       '10k-v2.8.0',
       '10k-v2.8.1',
-      '10k-v2.9.0'
+      '10k-v2.9.0',
+      '10k-v2.10.0',
+      '10k-v2.11.0',
+      '10k-v2.12.0',
+      '10k-v2.13.0'
     ]) {
       const old = as(cur, version);
       expect(isTenKV2Plan(old), version).toBe(true);
@@ -559,20 +566,20 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       const saved = stampForStorage(r.result);
       expect(saved.meta, version).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.10.0'
+        policyVersion: '10k-v2.16.0'
       });
-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.10.0');
+      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.16.0');
       expect(isTenKV2Plan(saved), version).toBe(true);
-      // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
+      // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (P8: 41,4 → 29,0), ned 5 = 31,9 (4.0: 27,6); ned 5 je
       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
       expect(
         v2Of(saved)
           .weeks.slice(3, 5)
           .map((w) => w.targetKm),
         version
-      ).toEqual([35.7, 32.5]); // 10K-08 (T1): 35,9 / 32,7
+      ).toEqual([35.9, 32.7]); // 10K-08 (T1): 35,7 / 32,5; P5 (D37 veća T doza): 35,9 / 32,7; P8 (G1a vrh ≤ start × 1,35): 35,0 / 31,9; K3-B (4 dana lagan ≤ 0,75 × dugi): 35,9 / 32,7
       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
-        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,5 km).' // 10K-08 (T1): 29,7
+        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).' // 10K-08 (T1): 29,5; P5: 29,7; P8 (G1a): 29,0
       );
       // Isto prilagođavanje kao plan tekuće verzije (A15: buduće nedelje po tekućim pravilima).
       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));
@@ -583,10 +590,5 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       expect(generatorForPlan(p), version).toBeNull();
       expect(unsupportedPlanReason(p), version).toBe(UNKNOWN_POLICY);
     }
-  });
-
-  it('predaja HM/maraton → kraća distanca 10K ostaje 10K v1 (10K v2 kao cilj predaje tek sa HM v2)', () => {
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-    expect(TEN_K_GENERATOR.policyId).toBe('10k-v1');
   });
 });

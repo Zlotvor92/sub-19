@@ -55,6 +55,8 @@ export type ReasonCode =
   | 'MISSING_EASY_PACE'
   | 'EASY_PACE_OUT_OF_RANGE'
   | 'VDOT_OUT_OF_RANGE'
+  /* 5k-v2.13.0 (P4 S2, B2): 3 dana + obim < 12,1 km + VDOT ≥ 66. */
+  | 'VOLUME_LOW_FOR_PACE'
   | 'GOAL_INVALID'
   | 'QUALITY_INFEASIBLE'
   | 'WEEK_INFEASIBLE'
@@ -114,10 +116,32 @@ export interface WeekFrame {
   deload: boolean;
   /** 1 ili 2 za nedelje tapera, inače null. */
   taperStep: 1 | 2 | null;
-  /** 2.4.0: kontrolno trčanje 3 km umesto glavnog kvaliteta (samo plan po osećaju). */
+  /** 2.4.0: kontrolno trčanje 3 km umesto glavnog kvaliteta (plan po osećaju; 5k-v2.14.0 i plan sa rezultatom ≥ 10
+      nedelja, periodize.testKindOf). */
   test: boolean;
   /** 2.5.0: ograničenja adaptacije za ovu nedelju (steps.ts); izostavljeno u planu generatora. */
   limits?: WeekLimits;
+  /** 5k-v2.14.0 (P5 F2, Odluka 10; steps.holdWeek): doza nijednog slota ne raste (ponavlja poslednju). */
+  hold?: true;
+  /** 5k-v2.15.0 (P8 b): granica rada zone [km] u rasterećenju (deloadQualityShare) i taperu (taperQualityShare) ×
+      poslednja ne-rasteretna doza te zone, i dugi rasterećenja (deloadLongShare × poslednji dugi). Postavlja je samo
+      konstruktor (generate.qualityCapOf); ne ide u nedelju plana. */
+  qcap?: QualityCap;
+  /** 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek) — budžet I × firstIShareOfBudget.
+      Postavlja ga samo konstruktor; ne ide u nedelju plana. */
+  firstI?: true;
+  /** 5k-v2.17.0 (K4-B): nedelja malog obima (week.shortEasyWeeks) — jedan lagan dan je „odmor ili 20 min po želji".
+      Postavlja ga samo konstruktor; ne ide u nedelju plana (oznaka je napomena week.shortRestNote). */
+  shortRest?: true;
+}
+
+/** 5k-v2.15.0 (P8 b): granice nedelje rasterećenja/tapera (WeekFrame.qcap). */
+export interface QualityCap {
+  I?: number;
+  RP?: number;
+  T?: number;
+  R?: number;
+  longKm?: number;
 }
 
 /** 2.5.0: ograničenja nedelje izvedena iz koraka adaptacije (datumski opsezi → dani nedelje). */
@@ -414,6 +438,10 @@ export interface AdaptStep {
   reduced?: boolean;
   /** 5k-v2.11.1 (Z7): prozor zapisa [from, asOf] iz kog je manjak izvršenja napravio ovaj korak (samo kad je primenjen). */
   underFrom?: IsoDate;
+  /** 5k-v2.14.0 (P5 F2, Odluka 10): okidač „dva uzastopna kvaliteta preteška ili preskočena" — `lastHard` = datum drugog
+      dana (isti zapisi ne prave nov korak, ni kad korak nije primenjen); `hold` = nedelja (datumi) u kojoj doza
+      kvaliteta ne raste, null = nije primenjeno (nadjačano ili sledeća nedelja nije izgradnja). */
+  hard?: { lastHard: IsoDate; hold: DateRange | null };
 }
 
 export interface FiveKV2Adaptation {
@@ -434,6 +462,8 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
+  /* 5k-v2.14.0 (P5 F2, Odluka 10): dva uzastopna kvaliteta preteška ili preskočena. */
+  | 'HARD_QUALITY'
   /* 2.6.0: trčanje/hodanje — nivo posle činjenica i prelaz na kontinuirani plan. */
   | 'LEVEL'
   | 'TRANSITION';

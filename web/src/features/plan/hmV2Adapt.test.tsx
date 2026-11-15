@@ -43,9 +43,10 @@ const WITH_RESULT: HmV2PlanInput = {
   recentResult: { distanceM: 10000, timeSec: 2700, date: '2026-10-20' },
   goalTimeSec: 6000
 };
+// P8 G7 (hm-v2.11.0): plan po osećaju od 10–12 nedelja nema test (pao bi pre nedelje 4) — plan od 14 nedelja.
 const FEEL: HmV2PlanInput = {
   startDate: START,
-  raceDate: RACE,
+  raceDate: '2027-02-07',
   runDays: ['tue', 'thu', 'sun'],
   currentWeeklyKm: 30,
   easyPaceSecPerKm: 390,

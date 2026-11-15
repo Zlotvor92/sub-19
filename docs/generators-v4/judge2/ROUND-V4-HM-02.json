@@ -1,0 +1,333 @@
+{
+ "round": "V4-HM-02",
+ "judge": "drugi sudija (nezavisan)",
+ "distance": "HM",
+ "weights": {
+  "q1_dao_bih": 20,
+  "q2_zdrav_svez": 20,
+  "q3_spreman": 20,
+  "q4_ide_nekud": 10,
+  "q5_trka": 10,
+  "q6_istina": 10,
+  "q7_uredan": 10
+ },
+ "plans": {
+  "p01": {
+   "scores": [
+    8,
+    7.5,
+    8,
+    8,
+    7.5,
+    7,
+    7
+   ],
+   "total": 76.5,
+   "verdict": "da uz izmenu"
+  },
+  "p02": {
+   "scores": [
+    8,
+    7.5,
+    8,
+    8,
+    7.5,
+    7,
+    7
+   ],
+   "total": 76.5,
+   "verdict": "da uz izmenu"
+  },
+  "p03": {
+   "scores": [
+    8,
+    8,
+    6.5,
+    8,
+    7,
+    8,
+    7.5
+   ],
+   "total": 75.5,
+   "verdict": "da uz izmenu"
+  },
+  "p04": {
+   "scores": [
+    7.5,
+    7.5,
+    8,
+    6.5,
+    7.5,
+    7,
+    7.5
+   ],
+   "total": 74.5,
+   "verdict": "da uz izmenu"
+  },
+  "p05": {
+   "scores": [
+    7,
+    8.5,
+    6.5,
+    7.5,
+    7.5,
+    7,
+    8
+   ],
+   "total": 74.0,
+   "verdict": "da uz izmenu"
+  },
+  "p06": {
+   "scores": [
+    5.5,
+    8,
+    5,
+    6,
+    5,
+    5,
+    6.5
+   ],
+   "total": 59.5,
+   "verdict": "ne"
+  },
+  "p07": {
+   "scores": [
+    8,
+    7.5,
+    8,
+    7.5,
+    7.5,
+    7,
+    8
+   ],
+   "total": 77.0,
+   "verdict": "da uz izmenu"
+  },
+  "p08": {
+   "scores": [
+    7.5,
+    7.5,
+    7,
+    6,
+    7.5,
+    6.5,
+    8
+   ],
+   "total": 72.0,
+   "verdict": "da uz izmenu"
+  },
+  "p09": {
+   "scores": [
+    7.5,
+    7.5,
+    8,
+    8,
+    7,
+    8,
+    8
+   ],
+   "total": 77.0,
+   "verdict": "da uz izmenu"
+  },
+  "p10": {
+   "scores": [
+    8,
+    8,
+    6.5,
+    6.5,
+    6.5,
+    7,
+    7
+   ],
+   "total": 72.0,
+   "verdict": "da uz izmenu"
+  },
+  "p11": {
+   "scores": [
+    4,
+    6,
+    2.5,
+    4,
+    4,
+    4,
+    6
+   ],
+   "total": 43.0,
+   "verdict": "ne"
+  },
+  "p12": {
+   "scores": [
+    8,
+    7.5,
+    8,
+    7.5,
+    7,
+    7.5,
+    7.5
+   ],
+   "total": 76.5,
+   "verdict": "da uz izmenu"
+  }
+ },
+ "plans_mean": 71.2,
+ "plans_ge80": 0,
+ "plans_ge70": 10,
+ "owner": {
+  "vlasnik-v1": {
+   "scores": [
+    5,
+    7.5,
+    4.5,
+    6.5,
+    5.5,
+    5.5,
+    7
+   ],
+   "total": 58.5,
+   "verdict": "ne bez izmene dugog i obima"
+  },
+  "vlasnik-v2": {
+   "scores": [
+    5,
+    7.5,
+    4.5,
+    5.5,
+    6,
+    5,
+    6.5
+   ],
+   "total": 57.0,
+   "verdict": "ne bez izmene dugog i obima"
+  }
+ },
+ "scenarios": {
+  "s01": {
+   "abcde": [
+    9,
+    9,
+    7.5,
+    8.5,
+    8.5
+   ],
+   "total": 85
+  },
+  "s05": {
+   "abcde": [
+    6.5,
+    8,
+    8.5,
+    7.5,
+    7
+   ],
+   "total": 75
+  },
+  "s07": {
+   "abcde": [
+    8.5,
+    7,
+    5.5,
+    7.5,
+    7.5
+   ],
+   "total": 72
+  },
+  "s09": {
+   "abcde": [
+    9,
+    7.5,
+    7,
+    8.5,
+    7.5
+   ],
+   "total": 79
+  },
+  "s11": {
+   "abcde": [
+    8.5,
+    7,
+    5,
+    8.5,
+    7.5
+   ],
+   "total": 73
+  },
+  "s13": {
+   "abcde": [
+    7.5,
+    8,
+    7,
+    8,
+    9
+   ],
+   "total": 79
+  },
+  "s15": {
+   "abcde": [
+    8.5,
+    7.5,
+    5.5,
+    8,
+    9
+   ],
+   "total": 77
+  },
+  "s17": {
+   "abcde": [
+    7,
+    8.5,
+    8.5,
+    8.5,
+    8.5
+   ],
+   "total": 82
+  },
+  "s19": {
+   "abcde": [
+    9,
+    5,
+    5,
+    8,
+    8
+   ],
+   "total": 70
+  },
+  "s21": {
+   "abcde": [
+    10,
+    10,
+    9,
+    10,
+    8.5
+   ],
+   "total": 95
+  }
+ },
+ "scenarios_mean": 78.7,
+ "pairs": {
+  "P1": {
+   "score_0_10": 8
+  },
+  "P2": {
+   "score_0_10": 4
+  },
+  "P3": {
+   "score_0_10": 2.5
+  }
+ },
+ "pairs_mean_0_10": 4.8,
+ "top_issues": [
+  "Mali obim: dugi vezan za deo nedeljnog obima daje najduzi trening 8,5-13,5 km za polumaraton i kad priprema traje 18-20 nedelja (p11, p06, vlasnik-v1/v2, P2B); upozorenje to predstavlja kao nuznost.",
+  "Tempo za dan trke je nepotvrdjena prognoza napretka, i uz upozorenje 'pocni sporije' (p11 5:33/km uz dugi 9,9 km; p06 3:46/km uz 42 km nedeljno).",
+  "Par P3 obrnut: trkac bez kvaliteta i sa dugim 14-15 km dobija 62 km i dugi 21,1 km u 1. nedelji, vise od spremnijeg B; P2B ima istu prognozu kao A i sprinteve uzbrdo uz tegobu potkolenice.",
+  "Tempa se ubrzavaju bez testa (pripisan napredak) i to se objavljuje uz bolest, bol i propusten trening (s07 5 s, s15 9 s, s11 11 s po km), suprotno recenici u zaglavlju.",
+  "Bolest: dan pauze se vodi kao uradjen dugi (s05 13.12, s07 10.1); u s05 povratak 23 -> 32 -> 50 km sa testom 10 km punim naporom, a tekst kaze 'laksi'.",
+  "Doze kvaliteta ne prate nivo i obim (p05 100 km ima iste minute praga kao p01 40 km).",
+  "Dugi dan posle testa; prag 11. dana posle polumaratona uprkos pravilu 14-15 dana bez brzine.",
+  "Tekst: nalazi cuvara nerazumljivi, objasnjenje nedelje sa 3 treninga netacno, redosled faza, iste nedelje osnove (p04, p08)."
+ ],
+ "disclosures": [
+  "Red 'MORA DA SE RAZLIKUJE' u zaglavlju fajlova parova vidjen pre sopstvenog ocekivanja.",
+  "Red 'PROMENA: n' u zaglavlju scenarija vidjen pre sopstvenog odgovora.",
+  "scenarios/pregled.txt nije citan."
+ ]
+}

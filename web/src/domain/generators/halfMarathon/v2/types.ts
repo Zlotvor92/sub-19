@@ -127,6 +127,8 @@ export interface WeekFrame {
   test?: true;
   /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
   limits?: WeekLimits;
+  /** W1-B: nedelja osnovne pripreme dugog plana (faza baze, bez kvaliteta, obim = trenutni); inače polja nema. */
+  prep?: true;
 }
 
 /** Segment 04: ograničenja nedelje iz koraka adaptacije (datumski opsezi → dani nedelje, steps.ts). */
@@ -185,7 +187,9 @@ export type DoseStep =
   | 'drop'
   | 'deload'
   | 'taper'
-  | 'sharpener';
+  | 'sharpener'
+  /** P1-S1: nedelja tipa B — I održavanja (doza = poslednja I doza razvoja, ne raste). */
+  | 'maintain';
 
 export interface Dose {
   ladder: LadderId | 'RP_sharpener';
@@ -308,6 +312,12 @@ export interface Violation {
   message: string;
 }
 
+/** W1: činjenica rasporeda plana van opsega dužine (upisuje se u plan, adaptacija je čita iz upisanog plana — pouka
+    29). 'short': plan je poslednjih N nedelja rasporeda od `fullWeeks` nedelja; 'long': prvih `prepWeeks` nedelja je
+    osnovna priprema ispred standardnog plana. U planu dužine [MIN, MAX] polja nema. */
+export type PlanLayoutFact =
+  { kind: 'short'; fullWeeks: number } | { kind: 'long'; prepWeeks: number };
+
 export interface HmV2Plan {
   policyId: string;
   policyVersion: string;
@@ -332,6 +342,8 @@ export interface HmV2Plan {
   warnings: Violation[];
   /** Segment 04: istorija adaptacije (adapt.ts); u planu generatora polja nema. */
   adaptation?: HmV2Adaptation;
+  /** W1: raspored plana van opsega dužine (periodize.layoutOf); u planu dužine [MIN, MAX] polja nema. */
+  layout?: PlanLayoutFact;
 }
 
 export type GenerateResult = { ok: true; plan: HmV2Plan } | { ok: false; reasons: Reason[] };
@@ -443,6 +455,10 @@ export interface HmV2AdaptStep {
   /** HM-09: nedelja koja sadrži asOf, poznata od početka do asOf, i najduži trčan u tom delu — sledeći korak
       dopunjuje ostatak nedelje (assess.ranLongOf). Samo kad postoji. */
   ranPart?: { week: number; km: number };
+  /** P5-F2: nedelja izgradnje u kojoj doza nijednog slota (ni blok RP u dugom) ne raste. Samo kad je primenjeno. */
+  qualityHold?: number;
+  /** P5-F2: datum poslednjeg zapisa okidača (primenjen ili ne) — isti zapisi ne prave nov korak. Samo kad ga ima. */
+  qualitySeen?: IsoDate;
 }
 
 /** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */
@@ -476,7 +492,9 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
-  | 'TEST_MOVED';
+  | 'TEST_MOVED'
+  /** P5-F2: dva uzastopna zahtevna treninga preskočena ili sa RPE ≥ 9. */
+  | 'QUALITY_STRAIN';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */
 export interface AdaptReason {

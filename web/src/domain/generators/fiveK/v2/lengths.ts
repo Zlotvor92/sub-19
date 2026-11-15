@@ -30,10 +30,33 @@ export function easyMinKm(phase: Phase, p: PaceModel, deload = false): number {
     : P.easy.minKm;
 }
 
+/** 5k-v2.15.2 (P8 G6, dopuna odluke organizatora): udeo laganog prema dugom — JEDINO mesto: redovan plan sa 4+ dana
+    buildMaxShareOfLong4 (0,70); 3 dana i POČETNIK (svaki broj dana) buildMaxShareOfLong (0,80). 5k-v2.16.0 (K3-B):
+    redovan plan sa TAČNO 4 dana buildMaxShareOfLongExact4 (0,75), u nedelji 1 plana week1MaxShareOfLongExact4 (0,80:
+    nedelja 1 ne sme biti mnogo ispod trenutnog obima). `week` = redni broj nedelje plana (0 = nebitno). */
+export const easyShareOf = (days: number, beginner: boolean, week = 0): number =>
+  beginner
+    ? P.easy.buildMaxShareOfLong
+    : days < 4
+      ? P.easy.buildMaxShareOfLong3
+      : days === 4
+        ? week === 1
+          ? P.easy.week1MaxShareOfLongExact4
+          : P.easy.buildMaxShareOfLongExact4
+        : P.easy.buildMaxShareOfLong4;
+
 /** 5k-v2.12.0 (T1): najduži lagan trening uz dugi `longKm` — JEDINO mesto: izgradnja bez rasterećenja
     ⌊easy.buildMaxShareOfLong × dugi⌋ na 0,1 km; inače dugi (lagan ≤ dugi). */
-export function easyCapKm(longKm: number, phase: Phase, deload = false): number {
-  return easyVsLongWeek(phase, deload) ? floor1(longKm * P.easy.buildMaxShareOfLong) : longKm;
+export function easyCapKm(
+  longKm: number,
+  phase: Phase,
+  deload: boolean,
+  days: number,
+  beginner = false,
+  week = 0
+): number {
+  const share = easyShareOf(days, beginner, week);
+  return easyVsLongWeek(phase, deload) ? floor1(longKm * share) : longKm;
 }
 
 /** Raspodela ostatka na lagane dane (jednako, poslednji uzima zaokruživanje). 2.4.0: ako ukupno staje
@@ -79,18 +102,34 @@ export function weekLengths(
   phase: Phase,
   p: PaceModel,
   a: Athlete,
-  deload = false
-): { longKm: number; shares: number[]; capped: boolean; overLong: boolean; easyMin: number } {
+  deload = false,
+  maxLongKm = Infinity,
+  week = 0,
+  drop = 0
+): {
+  longKm: number;
+  shares: number[];
+  capped: boolean;
+  overLong: boolean;
+  easyMin: number;
+  shortRest: boolean;
+} {
   const easyMin = easyMinKm(phase, p, deload);
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
   // lagane 3,2 km, tj. lagan > dugi. 2.4.1: i udeo dana (longCapKm) je na 0,1 km za sve brojeve dana.
+  // 5k-v2.15.0 (P8 b): `maxLongKm` = granica dugog rasterećenja (deloadLongShare × poslednji dugi, generate.qualityCapOf).
   const longOf = (n: number): number =>
-    Math.min(longCapKm(target, p, a), floor1(target - qualityKm - n * easyMin));
+    Math.min(longCapKm(target, p, a), floor1(target - qualityKm - n * easyMin), maxLongKm);
   let n = nEasy;
   if (easyVsLongWeek(phase, deload))
-    while (n > 0 && easyCapKm(longOf(n), phase, deload) + 1e-9 < easyMin) n--;
+    while (n > 0 && easyCapKm(longOf(n), phase, deload, a.days, a.beginner, week) + 1e-9 < easyMin)
+      n--;
+  // 5k-v2.17.0 (K4-B): nedelja week.shortEasyWeeks (`drop` = 1) — jedan lagan dan manje uz bar dva lagana; dugi ostaje
+  // kakav je bio (uz n laganih), km tog dana prelaze u ostale lagane do granice, ostatak je planirano < cilj.
   const longKm = longOf(n);
-  const cap = easyCapKm(longKm, phase, deload);
+  const shortRest = drop > 0 && n >= 2;
+  if (shortRest) n--;
+  const cap = easyCapKm(longKm, phase, deload, a.days, a.beginner, week);
   const rest = r2(target - qualityKm - longKm);
   const capped = rest > n * cap + 1e-9;
   return {
@@ -99,7 +138,8 @@ export function weekLengths(
     capped,
     // Kapacitet (volume.feasibility) gleda samo lagan > dugi; granica T1 (0,8 × dugi) daje planirano < cilj.
     overLong: rest > n * longKm + 1e-9,
-    easyMin
+    easyMin,
+    shortRest
   };
 }
 

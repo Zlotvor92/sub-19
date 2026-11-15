@@ -10,6 +10,7 @@
 
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { baseVdot } from '../steps.ts';
+import { userWarnings } from '../text.ts';
 import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
@@ -19,7 +20,7 @@ import type {
   RunWalkDay
 } from '../types.ts';
 import { addDays, diffDays, type IsoDate } from './date.ts';
-import type { GenPlanState, StoredWeek } from '../../exchange.ts';
+import type { GenPlanState, StoredWeek } from './exchange.ts';
 import { runWalkRaceStructure, runWalkStructure, workoutStructure } from './structure.ts';
 import type {
   PlanMeta,
@@ -56,6 +57,14 @@ export const KNOWN_VERSIONS: readonly string[] = [
     '5k-v2.10.4',
     '5k-v2.11.0',
     '5k-v2.11.1',
+    '5k-v2.12.0',
+    '5k-v2.13.0',
+    '5k-v2.14.0',
+    '5k-v2.15.0',
+    '5k-v2.15.1',
+    '5k-v2.15.2',
+    '5k-v2.15.3',
+    '5k-v2.16.0',
     P.version
   ])
 ];
@@ -281,7 +290,7 @@ function planWarnings(plan: AnyV2Plan): string[] {
   const cont = isRunWalk(plan) ? plan.continuous?.plan : undefined;
   const all = [plan, ...(cont ? [cont] : [])];
   for (const p of all)
-    for (const t of [...p.notes, ...p.warnings.map((v) => v.message)])
+    for (const t of [...p.notes, ...userWarnings(p.warnings, p.input.weekOffset ?? 0)])
       if (t && !out.includes(t)) out.push(t);
   return out;
 }

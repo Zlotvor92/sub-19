@@ -6,12 +6,11 @@ import { describe, expect, it } from 'vitest';
 import { personalPlan } from '../personal';
 import type { GenPlanState } from '../state';
 import {
-  FIVE_K_GENERATOR,
-  HALF_MARATHON_GENERATOR,
-  HALF_MARATHON_PREPARATION,
-  MARATHON_GENERATOR,
-  MARATHON_PREPARATION,
-  TEN_K_GENERATOR,
+  FIVE_K_V2_GENERATOR,
+  HALF_MARATHON_V2_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
+  MARATHON_V2_GENERATOR,
+  TEN_K_V2_GENERATOR,
   generatorForDistance,
   generatorForPlan,
   preparationForPlan,
@@ -31,6 +30,8 @@ import {
       distance daju `null` (aplikacija to prikazuje), bez zamene drugim generatorom (segment 5/5);
    6. (segment 5/5) iz produkcione ulazne tačke (`main.tsx`, uključujući lenje `import()` ekrane) nijedan izvršni modul
       starog generisanja/adaptacije nije dostižan — ni kroz barel re-export (analiza po imenu);
+   V1b: generatori su 5K v2, 10K v2, maraton v2 (`<distanca>/v2/`, ulaz `app/index.ts`; v1 obrisan) i folder polumaratona
+   (zamrznut HM v1 za lični plan vlasnika + HM v2 u `halfMarathon/v2/`, ulaz `index.ts`);
    7. (segment 5/5) izbor generatora (`select.ts`, `handoff.ts`) ne uvozi stari mehanizam ni tipom;
    8. (segment 5/5) ZAMRZNUT INVENTAR: aplikacija sme iz `domain/training`/`domain/plan` da uvozi samo popisana imena
       (format razmene, prikaz, merenje forme — `LEGACY_SHARED_ALLOWED`). Svaki novi uvoz trenerske funkcije ili konstante
@@ -40,9 +41,18 @@ import {
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DOMAIN = join(SRC, 'domain');
-const GENERATORS = ['fiveK', 'tenK', 'halfMarathon', 'marathon'].map((g) =>
+const GENERATORS = ['fiveK/v2', 'tenK/v2', 'halfMarathon', 'marathon/v2'].map((g) =>
   join(DOMAIN, 'generators', g)
 );
+/** Ulaz generatora (javni API) i jedini fajl koji sme da izađe tipom (neutralni tipovi razmene), ako ga ima. */
+const ENTRY = (root: string): string =>
+  root.endsWith('/v2') ? join(root, 'app/index.ts') : join(root, 'index.ts');
+const EXCHANGE = (root: string): string | null =>
+  root.endsWith('fiveK/v2')
+    ? join(root, 'app/exchange.ts')
+    : root.endsWith('halfMarathon')
+      ? join(root, 'exchange.ts')
+      : null;
 const LEGACY = [join(DOMAIN, 'training'), join(DOMAIN, 'plan')];
 const isTest = (f: string): boolean => /\.test\.tsx?$/.test(f) || f.startsWith(join(SRC, 'test/'));
 const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
@@ -399,17 +409,18 @@ const inside = (f: string, root: string): boolean => f.startsWith(root + '/');
 describe('arhitektura: četiri nezavisna generatora', () => {
   it('svaki generator postoji i ima sopstveni javni API', () => {
     for (const root of GENERATORS) {
-      expect(files.has(join(root, 'index.ts')), root).toBe(true);
-      expect(files.has(join(root, 'exchange.ts')), root).toBe(true);
+      expect(files.has(ENTRY(root)), root).toBe(true);
+      const exchange = EXCHANGE(root);
+      if (exchange) expect(files.has(exchange), root).toBe(true);
     }
   });
 
   it('izvršno zatvorenje svakog generatora ostaje u njegovom direktorijumu', () => {
     const out: string[] = [];
     for (const root of GENERATORS) {
-      const exchange = join(root, 'exchange.ts');
+      const exchange = EXCHANGE(root);
       const seen = new Set<string>();
-      const stack = [join(root, 'index.ts')];
+      const stack = [ENTRY(root)];
       while (stack.length) {
         const f = stack.pop()!;
         if (seen.has(f)) continue;
@@ -427,7 +438,7 @@ describe('arhitektura: četiri nezavisna generatora', () => {
             out.push(`${relative(SRC, f)} → ${relative(SRC, e.to)}`);
         }
       }
-      expect(seen.size, root).toBeGreaterThan(50);
+      expect(seen.size, root).toBeGreaterThan(40);
     }
     expect(out).toEqual([]);
   });
@@ -444,7 +455,7 @@ describe('arhitektura: četiri nezavisna generatora', () => {
           const legacy = LEGACY.some((l) => inside(target, l));
           const app = /generators\/(select|handoff)\.ts$/.test(target);
           const exchangeOk =
-            file === join(root, 'exchange.ts') &&
+            file === EXCHANGE(root) &&
             e.typeOnly &&
             [join(DOMAIN, 'state/index.ts'), join(DOMAIN, 'date/index.ts')].includes(target);
           if (other || legacy || app || !exchangeOk)
@@ -498,14 +509,18 @@ describe('arhitektura: četiri nezavisna generatora', () => {
   it('svaka podržana distanca ide svom generatoru (i odluka o pripremi); ostalo eksplicitno nema generator', () => {
     const plan = (raceDistM: number): GenPlanState =>
       ({ weeks: [], pred: [], meta: { raceDistM } }) as never;
-    expect(generatorForPlan(plan(5000))).toBe(FIVE_K_GENERATOR);
-    expect(generatorForPlan(plan(10000))).toBe(TEN_K_GENERATOR);
-    expect(generatorForPlan(plan(21097.5))).toBe(HALF_MARATHON_GENERATOR);
-    expect(generatorForPlan(plan(42195))).toBe(MARATHON_GENERATOR);
-    expect(preparationForPlan(plan(21097.5))).toBe(HALF_MARATHON_PREPARATION);
-    expect(preparationForPlan(plan(42195))).toBe(MARATHON_PREPARATION);
-    // Ugrađeni lični plan (aktivni plan kad je `genPlan === null`) je polumaraton → HM generator.
-    expect(generatorForPlan(personalPlan(48))).toBe(HALF_MARATHON_GENERATOR);
+    // V1b: nov plan svake distance pravi v2; sačuvan plan bez oznake (stari generator) nema generator ni odluku.
+    expect(generatorForDistance(5000)).toBe(FIVE_K_V2_GENERATOR);
+    expect(generatorForDistance(10000)).toBe(TEN_K_V2_GENERATOR);
+    expect(generatorForDistance(21097.5)).toBe(HALF_MARATHON_V2_GENERATOR);
+    expect(generatorForDistance(42195)).toBe(MARATHON_V2_GENERATOR);
+    for (const d of [5000, 10000, 21097.5, 42195]) {
+      expect(generatorForPlan(plan(d))).toBeNull();
+      expect(preparationForPlan(plan(d))).toBeNull();
+    }
+    // Ugrađeni lični plan (aktivni plan kad je `genPlan === null`) → zamrznut HM v1, bez odluke o pripremi.
+    expect(generatorForPlan(personalPlan(48))).toBe(LEGACY_PERSONAL_GENERATOR);
+    expect(preparationForPlan(personalPlan(48))).toBeNull();
     // Nepodržano: bez zamene drugim generatorom.
     for (const d of [7000, 3000, 21097, 42194, 50000]) {
       expect(generatorForPlan(plan(d))).toBeNull();
@@ -646,9 +661,14 @@ describe('arhitektura: četiri nezavisna generatora', () => {
       for (const n of NAMES) if (declares(src, n)) app.push(`${relative(SRC, file)}: ${n}`);
     }
     expect(app).toEqual([]);
+    /* V1b: v1 kopije 5K/10K/maratona su obrisane; svaki v2 drži sopstvenu kopiju procene stanja i vremena (iste vrednosti,
+       `v2/app/*.node.test.ts` (c)). Tri imena su v1 pomoćnici bez para u v2 (run/walk zbog bola, prozor poravnanja,
+       sesija iz opisa) — v2 ih ne koristi (prilagođavanje iz činjenica, sesija iz strukture). */
+    const V1_ONLY = new Set(['runWalkForPain', 'REALIGN_DAY_WINDOW', 'sessionFromDescription']);
     for (const root of GENERATORS) {
       const own = [...files].filter(([f]) => inside(f, root) && !isTest(f));
-      const missing = NAMES.filter((n) => !own.some(([, src]) => declares(src, n)));
+      const names = root.endsWith('/v2') ? NAMES.filter((n) => !V1_ONLY.has(n)) : NAMES;
+      const missing = names.filter((n) => !own.some(([, src]) => declares(src, n)));
       expect(missing, relative(SRC, root)).toEqual([]);
     }
   });

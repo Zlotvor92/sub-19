@@ -1,0 +1,56 @@
+razlika cilja (bez F2 − sa F2) [km]: n 101, 0.4 0.4 0.4 0.7 0.7 0.7 0.7 0.7 0.7 0.7 0.7 0.7 0.9 0.9 0.9 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.1 1.2 1.2 1.2 1.2 1.2 1.2 1.3 1.3 1.3 1.3 1.3 1.3 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.4 1.6 1.6 1.6 1.6 1.8 1.8 1.8 2.2 2.2 2.2 2.2 2.2 2.2 2.2 2.2 2.2 2.6 2.6 2.6 2.7 3 3 3 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 4 4 4
+base/alone: ok, QUALITY_HARD nema: 176
+base/fatigue: CILJ OBIMA PROMENJEN: 10
+base/fatigue: bez F2 bi doza rasla: 88
+base/fatigue: ok, QUALITY_HARD applied, nedelja 1 posle: 132
+base/fatigue: ok, QUALITY_HARD applied:false: 44
+base/rpe9: CILJ OBIMA PROMENJEN: 12
+base/rpe9: bez F2 bi doza rasla: 118
+base/rpe9: ok, QUALITY_HARD applied, nedelja 1 posle: 176
+base/skip: CILJ OBIMA PROMENJEN: 2
+base/skip: bez F2 bi doza rasla: 2
+base/skip: ok, QUALITY_HARD applied, nedelja 1 posle: 49
+base/skip: ok, QUALITY_HARD applied:false: 127
+base/under: ok, QUALITY_HARD applied:false: 176
+development/alone: ok, QUALITY_HARD nema: 164
+development/fatigue: CILJ OBIMA PROMENJEN: 12
+development/fatigue: bez F2 bi doza rasla: 53
+development/fatigue: ok, QUALITY_HARD applied, nedelja 1 posle: 52
+development/fatigue: ok, QUALITY_HARD applied, nedelja 2 posle: 48
+development/fatigue: ok, QUALITY_HARD applied:false: 56
+development/fatigue: ok, QUALITY_HARD nema: 8
+development/rpe9: CILJ OBIMA PROMENJEN: 19
+development/rpe9: bez F2 bi doza rasla: 109
+development/rpe9: ok, QUALITY_HARD applied, nedelja 1 posle: 108
+development/rpe9: ok, QUALITY_HARD applied, nedelja 2 posle: 48
+development/rpe9: ok, QUALITY_HARD nema: 8
+development/skip: CILJ OBIMA PROMENJEN: 15
+development/skip: bez F2 bi doza rasla: 80
+development/skip: ok, QUALITY_HARD applied, nedelja 1 posle: 79
+development/skip: ok, QUALITY_HARD applied, nedelja 2 posle: 47
+development/skip: ok, QUALITY_HARD applied:false: 30
+development/skip: ok, QUALITY_HARD nema: 8
+development/under: ok, QUALITY_HARD applied:false: 156
+development/under: ok, QUALITY_HARD nema: 8
+development: nema nedelje: 12
+specific/alone: ok, QUALITY_HARD nema: 176
+specific/fatigue: CILJ OBIMA PROMENJEN: 10
+specific/fatigue: bez F2 bi doza rasla: 26
+specific/fatigue: ok, QUALITY_HARD applied, nedelja 1 posle: 16
+specific/fatigue: ok, QUALITY_HARD applied, nedelja 2 posle: 88
+specific/fatigue: ok, QUALITY_HARD applied:false: 48
+specific/fatigue: ok, QUALITY_HARD nema: 24
+specific/rpe9: CILJ OBIMA PROMENJEN: 11
+specific/rpe9: bez F2 bi doza rasla: 40
+specific/rpe9: ok, QUALITY_HARD applied, nedelja 1 posle: 64
+specific/rpe9: ok, QUALITY_HARD applied, nedelja 2 posle: 88
+specific/rpe9: ok, QUALITY_HARD nema: 24
+specific/skip: CILJ OBIMA PROMENJEN: 10
+specific/skip: bez F2 bi doza rasla: 26
+specific/skip: ok, QUALITY_HARD applied, nedelja 1 posle: 20
+specific/skip: ok, QUALITY_HARD applied, nedelja 2 posle: 80
+specific/skip: ok, QUALITY_HARD applied:false: 52
+specific/skip: ok, QUALITY_HARD nema: 24
+specific/under: ok, QUALITY_HARD applied:false: 152
+specific/under: ok, QUALITY_HARD nema: 24
+27 s

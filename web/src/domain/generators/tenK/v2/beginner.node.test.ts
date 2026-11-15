@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
 import { planRule } from './policy.ts';
+import { pacesFromVdot } from './paces.ts';
 import { startLevel } from './quality.ts';
 import { inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, ReasonCode, TenKV2Plan } from './types.ts';
@@ -121,8 +122,10 @@ describe('D28: početnik — plan', () => {
   });
 
   it('D16 ne važi: početni nivo = prvi nivo lestvice (D31: prva nedelja kvaliteta T 1,5 km)', () => {
-    expect(doseOf(startLevel('T_continuous', 50)!)).toBe(3000);
-    expect(doseOf(startLevel('T_continuous', 50, true)!)).toBe(1500);
+    // D37 (P5 F4): T 80 % plafona (5000 m) → 4,0 km; početnik i dalje prvi nivo.
+    const pc = pacesFromVdot(40);
+    expect(doseOf(startLevel('T_continuous', 50, pc)!)).toBe(4000);
+    expect(doseOf(startLevel('T_continuous', 50, pc, true)!)).toBe(1500);
     const p = plan(beg(4, { weeks: 14, km: 35, vdot: 40 }));
     expect(quality(p.weeks[2]!)[0]!.workout.dose!.doseM).toBe(1500);
   });
@@ -130,8 +133,9 @@ describe('D28: početnik — plan', () => {
   it('rast +5 % (min 1,0, max 2,0 km); vrh = min(1,3 × start, start + 10, max nedelje); dugi ≤ 90 min sporim E; WU/CD 15/10 min', () => {
     const g = plan(beg(4, { weeks: 18, km: 35, vdot: 45 }));
     const t = g.weeks.filter(steady).map((w) => w.targetKm);
-    // 35 → +1,8 (5 % = 1,75) → +1,8 → +1,9; redovan plan: +2,1 (6 %).
-    expect(t.slice(0, 4)).toEqual([35, 36.8, 38.6, 40.5]);
+    // 35 → +1,8 (5 % = 1,75) → +1,8 → +1,9; redovan plan: +2,1 (6 %). P8 G1 (D39): korak ≤ (vrh 45 − poslednji) /
+    // preostale ne-rasteretne nedelje baze i razvoja → +1,3 / +1,2 / +1,3.
+    expect(t.slice(0, 4)).toEqual([35, 36.3, 37.5, 38.8]);
     expect(g.peakCapKm).toBe(45);
     const p = plan(beg(4, { weeks: 18, km: 35, vdot: 30 }));
     const p15 = plan(beg(3, { weeks: 12, km: 15, easy: 450 }));
@@ -140,7 +144,7 @@ describe('D28: početnik — plan', () => {
         .filter(steady)
         .map((w) => w.targetKm)
         .slice(0, 3)
-    ).toEqual([15, 16, 17]);
+    ).toEqual([15, 15.9, 16.8]); // P8 G1 (D39): ranije 15 / 16 / 17.
     expect(p15.peakCapKm).toBe(19.5);
     expect(plan(beg(3, { weeks: 12, km: 30, vdot: 40 })).peakCapKm).toBe(39);
     for (const q of [p, p15])
@@ -219,50 +223,49 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
     expect(km(true)).toEqual([1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]);
     expect(km(false)).toEqual([2000, 2500, 3000, 3500, 4000, 4500, 5000]);
     expect(ladderLevels('T_cruise', true)).toEqual(ladderLevels('T_cruise'));
-    expect(startLevel('T_continuous', 14.9, true)).toBeNull();
-    expect(doseOf(startLevel('T_continuous', 15, true)!)).toBe(1500);
-    expect(startLevel('T_continuous', 19.9)).toBeNull();
+    // P8 G2 (D40): plafon zone nije ispod prvog nivoa lestvice — 1,5 km (početnik) i 2,0 km staju i pri 14,9 / 19,9 km.
+    const pc = pacesFromVdot(40);
+    expect(doseOf(startLevel('T_continuous', 14.9, pc, true)!)).toBe(1500);
+    expect(doseOf(startLevel('T_continuous', 15, pc, true)!)).toBe(1500);
+    expect(doseOf(startLevel('T_continuous', 19.9, pc)!)).toBe(2000);
   });
 
-  it('3 dana, 15 km, 12 ned (7:30): T 1,5 km u svakoj nedelji izgradnje posle uvoda (razvoj/specifično umesto T cruise 2,0 / RP 2,4 km); rasterećenje ned 4 bez kvaliteta, ned 9 T 1,5 km; taper bez kvaliteta', () => {
+  it('3 dana, 15 km, 12 ned (7:30): T 1,5 km u bazi i razvoju (umesto T cruise 2,0 km); P8 G2 (D40): RP 2 × 1200 m u specifičnoj fazi, T 1,5 km u rasterećenju ned 4 i 9, taper RP 2 × 1000 m i oštrenje', () => {
     const p = plan(beg(3, { weeks: 12, km: 15, easy: 450 }));
     expect(p.weeks.map(t)).toEqual([
       '-',
       '-',
       'T_continuous:1.5',
-      '-',
       'T_continuous:1.5',
-      'T_continuous:1.5',
-      'T_continuous:1.5',
-      'T_continuous:1.5',
+      // P8 S3 (D49): plafon T početnika max(udeo × cilj; 3,0 km) — lestvica napreduje (ranije T 1,5 km do specifične faze).
+      'T_cruise:2x1000',
+      'T_cruise:2x1200',
+      'T_cruise:3x1000',
+      'RP:2x1200',
       'T_cruise:1.5',
-      'T_continuous:1.5',
-      '-',
-      '-'
+      'RP:3x800',
+      'RP:2x1000',
+      // P8 G5 (D44): oštrenje 2 jednake deonice ≤ 12 min rada.
+      'RP_sharpener:2x900'
     ]);
     const build = p.weeks.filter(steady).filter((w) => w.index > 2);
-    expect(build.map((w) => w.targetKm)).toEqual([17, 18, 19, 19.5, 19.5, 19.5]);
-    for (const w of build.filter((x) => x.phase !== 'base'))
-      expect(
-        w.notes.some((n) => n.startsWith('T kontinuirano umesto')),
-        `ned ${w.index}`
-      ).toBe(true);
-    // Ned 4: 0,8 × 17 = 13,6 km, plafon 1,36 km < 1,5 km; ned 9: 15,6 km, plafon 1,56 km. Taper 0,75 ×
-    // 19,5 = 14,6 km: ni RP 2,0 ni T 1,5 km ne staju.
+    // P8 G1 (D39): vrh 19,5 km u poslednjoj ne-rasteretnoj nedelji razvoja (ranije 17 → 18 → 19 → 19,5).
+    expect(build.map((w) => w.targetKm)).toEqual([16.8, 17.7, 18.6, 19.5, 19.5, 19.5]);
     expect([p.weeks[3]!.targetKm, p.weeks[8]!.targetKm, p.weeks[10]!.targetKm]).toEqual([
-      13.6, 15.6, 14.6
+      13.4, 15.6, 14.6
     ]);
+    expect(p.weeks[11]!.days.some((d) => d.role === 'sharpener')).toBe(true);
     const w = (rule: string): number[] =>
       p.warnings.filter((x) => x.rule === rule).map((x) => x.week!);
     expect([w('BUILD_NO_QUALITY'), w('DELOAD_NO_QUALITY'), w('TAPER_NO_QUALITY')]).toEqual([
       [],
-      [4],
-      [11]
+      [],
+      []
     ]);
     expect(errors(p)).toEqual([]);
   });
 
-  it('4 dana, 18 km, 10 ned (8:00): specifično T 2,0 km ↔ 2 × 1000 m (RP 2,4 km > plafon); rasterećenje T 1,5 km (≈ 60 % od 2,0, min 1,5); taper T 1,5 km (RP 2 × 1000 m > plafon), bez oštrenja', () => {
+  it('4 dana, 18 km, 10 ned (8:00): rasterećenje T 1,5 km (≈ 60 % od 2,0, min 1,5); P8 G2 (D40): specifično RP 2 × 1200 m / 3 × 800 m (ranije T 2,0 km ↔ 2 × 1000 m), taper RP 2 × 1000 m i oštrenje (ranije T 1,5 km, bez oštrenja)', () => {
     const p = plan(beg(4, { weeks: 10, km: 18, easy: 480 }));
     expect(p.weeks.map(t)).toEqual([
       '-',
@@ -270,33 +273,34 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
       'T_continuous:1.5',
       'T_cruise:2x1000',
       'T_cruise:1.5',
-      'T_continuous:2',
-      'T_continuous:2x1000',
-      'T_continuous:2',
-      'T_continuous:1.5',
-      '-'
+      'RP:2x1200',
+      'RP:3x800',
+      'RP:2x1200',
+      'RP:2x1000',
+      'RP_sharpener:2x800'
     ]);
-    expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.4]);
-    expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper: RP 2 × 1000 m ne staje'))).toBe(true);
-    expect(p.weeks[9]!.days.some((d) => d.role === 'sharpener')).toBe(false);
+    // P8 G1b (D45): korak < 3 % tekućeg cilja se ne primenjuje (23,2 → 23,4 izostaje).
+    expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.2]);
+    expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper: RP ≈ 60 %'))).toBe(true);
+    expect(p.weeks[9]!.days.some((d) => d.role === 'sharpener')).toBe(true);
     expect(errors(p)).toEqual([]);
   });
 
-  it('odstupanje: T 1,5 km nema drugu strukturu — ponavljanje uz napomenu i u bazi (3 dana, 18 ned, 15 km: ned 3 / 5 / 6)', () => {
+  it('P8 S3 (D49): plafon T početnika max(udeo × cilj; 3,0 km) — lestvica u bazi napreduje 1,5 → 2,0 → 2,5 km (ranije T 1,5 km ponovljen uz napomenu; 3 dana, 18 ned, 15 km: ned 3 / 5 / 6)', () => {
     const p = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
     const base = p.weeks.filter((w) => w.phase === 'base' && steady(w) && w.index > 2);
     expect(base.map((w) => [w.index, w.targetKm, t(w)])).toEqual([
-      [3, 17, 'T_continuous:1.5'],
-      [5, 18, 'T_continuous:1.5'],
-      [6, 19, 'T_continuous:1.5']
+      // P8 G1 (D39): 17 / 18 / 19 → 16,2 / 16,8 / 17,3 km; G1b (D45): korak < 3 % se ne primenjuje (ned 6 ostaje 16,8).
+      [3, 16.2, 'T_continuous:1.5'],
+      [5, 16.8, 'T_continuous:2'],
+      [6, 16.8, 'T_continuous:2.5']
     ]);
-    for (const w of base.slice(1)) {
-      expect(quality(w)[0]!.workout.dose!.step).toBe('repeat');
-      expect(w.notes.some((n) => n.includes('T 1,5 km ponovljen'))).toBe(true);
-    }
+    for (const w of base.slice(1)) expect(quality(w)[0]!.workout.dose!.step).toBe('next');
+    expect(p.weeks.some((w) => w.notes.some((n) => n.includes('T 1,5 km ponovljen')))).toBe(false);
     expect(errors(p)).toEqual([]);
+    // Validator: isti T trening kao prethodne nedelje izgradnje u bazi (plato) je greška.
     const q = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
-    q.weeks[4]!.notes = q.weeks[4]!.notes.filter((n) => !n.includes('ponovljen'));
+    quality(q.weeks[4]!)[0]!.workout = structuredClone(quality(q.weeks[2]!)[0]!.workout);
     expect(errors(q)).toEqual(expect.arrayContaining(['IDENTICAL_WEEKS', 'BASE_PLATEAU']));
   });
 
@@ -305,11 +309,12 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
     const a = fresh();
     quality(a.weeks[3]!)[0]!.workout.dose!.ladder = 'T_continuous';
     expect(errors(a)).toContain('PHASE_QUALITY');
+    // P8 G2 (D40): RP 2 × 1200 m staje u specifičnoj fazi — T kontinuirano tu je greška; taper RP 2 × 1000 m.
     const b = fresh();
-    quality(b.weeks[5]!)[0]!.workout.dose!.ladder = 'RP';
+    quality(b.weeks[5]!)[0]!.workout.dose!.ladder = 'T_continuous';
     expect(errors(b)).toContain('PHASE_QUALITY');
     const c = fresh();
-    quality(c.weeks[8]!)[0]!.workout.dose!.doseM = 2000;
+    quality(c.weeks[8]!)[0]!.workout.dose!.doseM = 1500;
     expect(errors(c)).toContain('TAPER_QUALITY');
     const d = fresh();
     quality(d.weeks[4]!)[0]!.workout.dose!.doseM = 2000;

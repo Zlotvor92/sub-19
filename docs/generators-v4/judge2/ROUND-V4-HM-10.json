@@ -1,0 +1,312 @@
+{
+ "krug": "ROUND-V4-HM-10",
+ "stanje": "02e06e1",
+ "sudija": "drugi (nezavisni)",
+ "planovi": {
+  "p01": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 8,
+    "Q7": 8
+   },
+   "ukupno": 74.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 3/5: subota 4 km/4,5 km dan pred dugi",
+    "ned 11: 3 teška od 4 dana (RP 3x3 km, prag 25 min, dugi 20,5)",
+    "ned 8 rasterećenje sa 22 % brzog rada"
+   ]
+  },
+  "p02": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 8,
+    "Q7": 8
+   },
+   "ukupno": 74.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 8: prvi RP odmah 12 km u nedelji",
+    "intervali 4:00 brži od 5K tempa 4:05",
+    "prognoza 1:36:03 vs Riegel 1:33:55 (oprezno)"
+   ]
+  },
+  "p03": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 6,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 8,
+    "Q7": 8
+   },
+   "ukupno": 70.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi 47–51 % nedelje svih 16 nedelja",
+    "ned 11 dugi 2:15 za 25 km/3 dana"
+   ]
+  },
+  "p04": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 6,
+    "Q3": 7,
+    "Q4": 7,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 8
+   },
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "sub-ned-pon-uto zaredom; ned 15: 373 od 446 min u 4 dana",
+    "ned 5–17 skoro iste (56–65 km, dugi 2:10)",
+    "dva testa, tempo trke ostaje 5:53"
+   ]
+  },
+  "p05": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 8,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 8,
+    "Q7": 8
+   },
+   "ukupno": 76.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 9: posle testa samo prag, 4 lagana po 17 km",
+    "tekst „RP≈prag ne u istoj nedelji\" vs ned 13 prag + 13 km RP",
+    "lagani dani identični"
+   ]
+  },
+  "p06": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 6,
+    "Q5": 6,
+    "Q6": 5,
+    "Q7": 6
+   },
+   "ukupno": 63.0,
+   "dao_bih": "ne",
+   "zamerke": [
+    "ned 8: dugi 9 km (−42 %) 2 ned. pred trku",
+    "kvalitet tanak (prag 10 min, 3x3 min, ned 6 nula)",
+    "upozorenje „49 km… 2 od 7 nedelja\" nejasno"
+   ]
+  },
+  "p07": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 6,
+    "Q3": 8,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 8
+   },
+   "ukupno": 73.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 7: dugi 21,5 (10 RP) → pon 12 km → uto prag 3x12",
+    "ned 4: tri kvaliteta u 4. nedelji"
+   ]
+  },
+  "p08": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 5,
+    "Q5": 8,
+    "Q6": 6,
+    "Q7": 7
+   },
+   "ukupno": 66.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "start 41,2 km za trkača od 45; 8/11 nedelja ispod 45",
+    "ned 1–11 između 41 i 47 km",
+    "„nedelja stiže do 62,4 km\" nejasno"
+   ]
+  },
+  "p09": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 7,
+    "Q6": 8,
+    "Q7": 7
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "tempo trke „napor 6/10\" i na trci",
+    "nema napomene posle trke"
+   ]
+  },
+  "p10": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 6,
+    "Q3": 6,
+    "Q4": 7,
+    "Q5": 7,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 64.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 15 dugi 2:15 = 45 % nedelje",
+    "uto lagano 85 min za trkača od 25 km",
+    "predlog „46,6 km\" bez nedelje"
+   ]
+  },
+  "p11": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 8,
+    "Q5": 7,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 73.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "prvi RP tek ned 15",
+    "ned 16 „prag 2 x 4 min\"",
+    "nema posle trke"
+   ]
+  },
+  "p12": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 6,
+    "Q3": 7,
+    "Q4": 7,
+    "Q5": 6,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 67.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 14: RP 2x21 min = najveća doza 14 dana pred trku",
+    "ned 12 prag 2x5 min u 47 min",
+    "„početnik\" sa 45 km i dugim 2:10"
+   ]
+  },
+  "vlasnik-v1": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 6,
+    "Q5": 8,
+    "Q6": 6,
+    "Q7": 7
+   },
+   "ukupno": 69.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi testera 14,5→11,5→15→11,5",
+    "prag 16 km u upozorenju krut",
+    "brz rad 20–24 % u ned 4,5,7"
+   ]
+  },
+  "vlasnik-v2": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 2→3 +39 % i dva kvaliteta 15–18 dana posle HM",
+    "ned 1 oporavak označen „gradnja\"",
+    "nema posle trke"
+   ]
+  }
+ },
+ "prosek_p01_p12": 70.0,
+ "prosek_sa_vlasnikom": 70.07,
+ "scenariji": {
+  "s01": 8.5,
+  "s02": 6.5,
+  "s03": 8.5,
+  "s04": 6.5,
+  "s05": 6,
+  "s06": 6,
+  "s07": 5.5,
+  "s08": 7.5,
+  "s09": 6.5,
+  "s10": 8.5,
+  "s11": 8,
+  "s12": 8,
+  "s13": 7,
+  "s14": 7.5,
+  "s15": 5.5,
+  "s16": 6.5,
+  "s17": 8.5,
+  "s18": 4.5,
+  "s19": 6,
+  "s20": 7.5,
+  "s21": 10,
+  "s22": 9.5,
+  "s23": 10,
+  "s24": 8.5,
+  "s25": 7.5,
+  "s26": 6,
+  "s27": 5.5
+ },
+ "prosek_scenarija": 7.26,
+ "parovi": {
+  "P1": 8.5,
+  "P2": 7.5,
+  "P3": 7
+ },
+ "prosek_parova": 7.67,
+ "ispravke": [
+  "povratak posle pauze/bola: trajanje ~1,5–2x pauze, lagani >=60 % uobičajenih, ne brisati ključni RP (s05,s06,s07,s15,s27)",
+  "juče trka (s18): oporavak dira samo prve 2–3 nedelje; ned 5–8 dobile 30-min lagane dane",
+  "svaka promena tempa/forme -> blok PROMENE i brojač != 0 (s02,s04,s22)",
+  "5 dana: odmor posle dugog, ne 4 dana zaredom sa dugim i kvalitetom (p04,p07)",
+  "3 dana: dugi <= ~45 % nedelje, spora grupa dugi <= ~2:00 (p03,p10)",
+  "sužavanje: najveća doza RP ne u ned -2 (p12); minimalna doza kvaliteta (p11,p12); dugi u ned -2 >= ~60 % vrha (p06)",
+  "upozorenja: tačni brojevi (P3A 65,4 km, p06 49 km), predlog mora dostići prag (s19), pragovi po nivou",
+  "doslednost teksta: posle trke svuda, oporavak ne „gradnja\", „dugi 35 min\" (s27), prag ne zvati RP (s09), start ispod obima uz razlog (p08)",
+  "nema povećanja doze posle bola (s13: prag 2x13 -> 2x14)",
+  "minimalna dužina laganog trčanja (4 km/24 min kod 40 km nedeljno; p01, s05)"
+ ],
+ "za_pregled_vlasnika": [
+  "vlasnik-v2",
+  "s18",
+  "s07"
+ ],
+ "procitano_van_dozvoljenog": "ništa"
+}

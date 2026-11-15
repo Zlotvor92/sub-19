@@ -4,6 +4,7 @@
    a ne na uvozu. */
 
 import { belowTargetShown } from './text.ts';
+import { shortRestWeek } from './week.ts';
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
@@ -11,6 +12,7 @@ import * as policy from './policy.ts';
 import { inputOf, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, Paces, PlanDay, PlanWeek, ReasonCode, Weekday } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { iMaxShareOf } from './workouts.ts';
 
 const P = policy.FIVE_K_V2_POLICY;
 const D3: Weekday[] = ['tue', 'thu', 'sun'];
@@ -94,12 +96,17 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
     const plan = planOf(
       inputOf({ weeks: 12, km: 30, distanceM: 5000, timeSec: 1230, days: ['mon', 'wed', 'sat'] })
     );
-    // 5k-v2.12.0 (T1): nedelja sa oznakom granice laganog ima lagane = 0,8 × dugi i planirano < cilj; ostale = cilj.
+    // 5k-v2.12.0 (T1): nedelja sa oznakom granice laganog ima lagane = 0,7 × dugi (K3-C) i planirano < cilj; ostale = cilj.
     for (const w of plan.weeks) {
       const long = w.days.find((d) => d.role === 'long');
       if (w.easyCappedAtLong && long) {
         for (const d of w.days.filter((x) => x.role === 'easy'))
-          expect(d.workout.km).toBeCloseTo(Math.floor(long.workout.km * 8 + 1e-9) / 10, 6);
+          // 5k-v2.15.0 (P8 b): u rasterećenju je dugi na granici 0,8 × poslednji dugi, pa lagan sme do dugog.
+          expect(d.workout.km).toBeCloseTo(
+            // 5k-v2.16.0 (K3-C): redovan plan sa 3 dana lagan ≤ 0,70 × dugi (bilo 0,8).
+            w.deload ? long.workout.km : Math.floor(long.workout.km * 7 + 1e-9) / 10,
+            6
+          );
         expect(w.plannedKm).toBeLessThan(w.targetKm);
       } else expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
     }
@@ -116,7 +123,8 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
             const days = { 3: D3, 4: D4, 5: D5 }[n];
             const r = generateFiveKV2(inputOf({ weeks: w, km, distanceM: 5000, timeSec, days }));
             if (!r.ok || r.plan.planType === 'runWalk') continue;
-            for (const x of r.plan.weeks.filter((y) => y.phase !== 'race')) {
+            // 5k-v2.15.0 (P8 b): rasterećenje sa dugim na granici (0,8 × poslednji dugi) sme lagan = dugi (planirano < cilj).
+            for (const x of r.plan.weeks.filter((y) => y.phase !== 'race' && !y.deload)) {
               weeks++;
               const long = x.days.find((d) => d.role === 'long');
               if (
@@ -129,7 +137,12 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
               r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
             ).toEqual(
               r.plan.weeks
-                .filter((x) => x.easyCappedAtLong && belowTargetShown(x.plannedKm, x.targetKm))
+                .filter(
+                  (x) =>
+                    x.easyCappedAtLong &&
+                    belowTargetShown(x.plannedKm, x.targetKm) &&
+                    !shortRestWeek(x)
+                )
                 .map((x) => x.index)
             );
           }
@@ -163,7 +176,8 @@ describe('Odluka 3: bez višeg nivoa — ista doza druge strukture (vrhunac I i 
   it('4 dana, 15 km, VDOT ~53, 11 ned: I nije zadržan identičan; druga struktura iste doze', () => {
     const plan = planOf(inputOf(FAST_SMALL_11));
     expect(plan.weeks.some((w) => w.notes.some((n) => n.includes('I zadržan')))).toBe(false);
-    const peak = plan.weeks.filter((w) => w.phase === 'peak' && !w.deload);
+    // 5k-v2.14.0 (P5 F1): bez nedelje kontrolnog trčanja.
+    const peak = plan.weeks.filter((w) => w.phase === 'peak' && !w.deload && !w.test);
     // 5k-v2.12.0 (T4): I kreće od ≥ 80 % budžeta, pa ista doza druge strukture nije uvek potrebna (ranije: jeste).
     for (let i = 1; i < peak.length; i++) {
       const a = roleDay(peak[i - 1]!, 'q1')!.workout;
@@ -176,15 +190,16 @@ describe('Odluka 3: bez višeg nivoa — ista doza druge strukture (vrhunac I i 
   it('3 dana, 15 km, VDOT ~59, 16 ned: plan (ranije QUALITY_INFEASIBLE); I/RP neopadajući, bez ponavljanja', () => {
     const plan = planOf(inputOf({ weeks: 16, km: 15, distanceM: 5000, timeSec: 1100, days: D3 }));
     expect(errorsOf(plan)).toEqual([]);
-    expect(
-      plan.weeks.some((w) =>
-        w.notes.some((n) =>
-          /ista količina kao prošle nedelje \(obim nedelje ne dozvoljava više\), (kraći oporavak|drugačija podela)/.test(
-            n
-          )
-        )
-      )
-    ).toBe(true);
+    // 5k-v2.14.0 (P5 F1): nedelja 11 (ranije ista doza druge strukture) je kontrolno trčanje; I/RP i dalje neopadajući.
+    expect(plan.weeks.find((w) => w.test)?.index).toBe(11);
+    const main = plan.weeks
+      .filter((w) => (w.phase === 'peak' || w.phase === 'sharpen') && !w.deload && !w.test)
+      .map((w) => quality(w)[0]!.workout);
+    for (let i = 1; i < main.length; i++)
+      if (main[i]!.qualityType === main[i - 1]!.qualityType)
+        expect(main[i]!.workKm.I + main[i]!.workKm.RP).toBeGreaterThanOrEqual(
+          main[i - 1]!.workKm.I + main[i - 1]!.workKm.RP - 1e-9
+        );
   });
 });
 
@@ -263,7 +278,7 @@ describe('Odluka 4: bez rezultata — E iz korisnikovog tempa, kvalitet po oseć
   });
 });
 
-describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)', () => {
+describe('Odluka 5: kontrolno trčanje 3 km u 4. ili 5. nedelji (ne rasteretnoj; P8 G7)', () => {
   it.each([
     ['4 dana, 12 ned', EX.feel4],
     ['3 dana, 10 ned', EX.feel3]
@@ -272,15 +287,20 @@ describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)
     const tests = plan.weeks.filter((w) => w.days.some((d) => d.workout.qualityType === 'TEST_3K'));
     expect(tests).toHaveLength(1);
     const w = tests[0]!;
-    expect([3, 4]).toContain(w.index);
+    // 5k-v2.15.0 (P8 G7): test ne ide pre nedelje 4 — prva ne-rasteretna nedelja ≥ 4 iste faze.
+    expect(w.index).toBeGreaterThanOrEqual(P.feel.test.minWeek);
+    expect(w.index).toBeLessThanOrEqual(5);
     expect(w.deload).toBe(false);
     expect(w.test).toBe(true);
-    if (w.index === 4) expect(plan.weeks[2]!.deload).toBe(true);
+    for (const x of plan.weeks.slice(P.feel.test.minWeek - 1, w.index - 1))
+      expect(x.deload).toBe(true);
+    // 5k-v2.15.0 (P8 G7): test je jedini kvalitet nedelje.
+    expect(quality(w)).toHaveLength(1);
     const t = quality(w).find((d) => d.workout.qualityType === 'TEST_3K')!.workout;
     expect(t.blocks.map((b) => b.kind)).toEqual(['warmup', 'test', 'cooldown']);
     expect(t.segments.find((x) => x.kind === 'test')!.km).toBe(3);
     expect(t.workKm).toEqual({ E: 0, T: 0, I: 0, R: 0, RP: 0 });
-    expect(plan.notes.some((n) => n.includes('ostaje po osećaju') && n.includes('adaptacij'))).toBe(
+    expect(plan.notes.some((n) => n.includes('po osećaju') && n.includes('Unesi rezultat'))).toBe(
       true
     );
   });
@@ -295,12 +315,14 @@ describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)
     );
   });
 
-  it('plan sa rezultatom nema test; validator: test premešten → TEST_WEEK', () => {
+  it('plan sa rezultatom < 10 ned nema test (≥ 10: P5 F1); validator: test premešten → TEST_WEEK', () => {
     expect(
-      planOf(inputOf({ weeks: 12, km: 25, distanceM: 5000, timeSec: 1500, days: D4 })).weeks.some(
+      planOf(inputOf({ weeks: 9, km: 25, distanceM: 5000, timeSec: 1500, days: D4 })).weeks.some(
         (w) => w.test
       )
     ).toBe(false);
+    const r12 = planOf(inputOf({ weeks: 12, km: 25, distanceM: 5000, timeSec: 1500, days: D4 }));
+    expect(r12.weeks.filter((w) => w.test).map((w) => w.phase)).toEqual(['peak']);
     const plan = planOf(raw(EX.feel4));
     const w = plan.weeks.find((x) => x.test)!;
     w.test = false;
@@ -337,7 +359,7 @@ describe('Odluka 7: isti procentualni budžeti, bez donjeg praga 70%', () => {
         sum.T += d.workout.workKm.T;
         sum.R += d.workout.workKm.R;
       }
-      expect(sum.I).toBeLessThanOrEqual(w.targetKm * P.quality.iMaxShare + 1e-6);
+      expect(sum.I).toBeLessThanOrEqual(w.targetKm * iMaxShareOf(w.targetKm) + 1e-6);
       expect(sum.T).toBeLessThanOrEqual(w.targetKm * P.quality.tMaxShare + 1e-6);
       expect(sum.R).toBeLessThanOrEqual(w.targetKm * P.quality.rMaxShare + 1e-6);
     }
@@ -422,7 +444,8 @@ describe('Odluka 9: početnik — rast ≤ 5%, dugi ≤ 60 min, vrh ≤ 1,2 × s
   it.each([
     ['bez rezultata, 3 dana, 12 km', EX.beg3],
     ['sa rezultatom, 4 dana, 18 km', EX.begRes4],
-    ['bez rezultata, 4 dana, 30 km, 16 ned', { ...EX.beg3, days: D4, km: 30, weeks: 16 }]
+    // 5k-v2.15.0 (P8 e): 30 km je iznad kapaciteta početnika 4 dana na 7:30 (28 km) → plan bez oznake početnika.
+    ['bez rezultata, 4 dana, 28 km, 16 ned', { ...EX.beg3, days: D4, km: 28, weeks: 16 }]
   ] as const)('%s', (_, s) => {
     const plan = planOf(raw(s));
     expect(plan.peakKm).toBeLessThanOrEqual(Math.floor(plan.startKm * 1.2 * 10 + 1e-9) / 10);
@@ -489,7 +512,9 @@ function checkStanding(plan: FiveKV2Plan, n: 3 | 4 | 5): void {
   // 5k-v2.12.0 (T1): planirano < cilj (upozorenje) samo u nedelji sa granicom laganog 0,8 × dugi.
   expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
     plan.weeks
-      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .filter(
+        (w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w)
+      )
       .map((w) => w.index)
   );
   for (const w of plan.weeks) {

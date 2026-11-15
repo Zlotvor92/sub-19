@@ -1,0 +1,255 @@
+{
+ "distanca": "HM",
+ "krug": 15,
+ "stanje": "b8ad0bb6",
+ "prethodno": "e1136a16",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p03": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 78.5,
+   "plan_stara": 78.5,
+   "plan_za_ulaz_prethodna": 81,
+   "plan_za_ulaz": 81,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80.5,
+   "plan_stara": 80.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80.5,
+   "plan_stara": 80.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p08": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p10": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 78.5,
+   "plan_stara": 78.5,
+   "plan_za_ulaz_prethodna": 80.5,
+   "plan_za_ulaz": 80.5,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  }
+ },
+ "plan_za_ulaz_kriterijumi": {
+  "p03": {
+   "bezbednost": 8,
+   "iskoriscenost": 8,
+   "iskrenost": 8.5,
+   "posle_trke": 8
+  },
+  "p10": {
+   "bezbednost": 8,
+   "iskoriscenost": 8,
+   "iskrenost": 8.5,
+   "posle_trke": 8
+  }
+ },
+ "vlasnik": {
+  "v1": {
+   "prethodna": 78,
+   "sada": 78,
+   "status": "prenet",
+   "prolazi": false
+  },
+  "v2": {
+   "prethodna": 81.5,
+   "sada": 81.5,
+   "status": "prenet",
+   "prolazi": true
+  }
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "9/10",
+   "sada": "9/10"
+  },
+  "plafon": {
+   "prethodno": "2/2",
+   "sada": "2/2"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 80.1,
+  "sada": 80.2
+ },
+ "B": {
+  "prethodno": 83.4,
+  "sada": 83.5,
+  "scenariji": {
+   "s01": 85,
+   "s02": 85,
+   "s03": 85,
+   "s04": 82,
+   "s05": 82,
+   "s06": 83,
+   "s07": 82,
+   "s08": 81,
+   "s09": 82,
+   "s10": 84,
+   "s11": 84,
+   "s12": 84,
+   "s13": 80,
+   "s14": 79,
+   "s15": 80,
+   "s16": 79,
+   "s17": 82,
+   "s18": 82.5,
+   "s19": 82,
+   "s20": 81,
+   "E6": 90.8,
+   "s25": 82,
+   "s26": 83,
+   "s27": 82
+  },
+  "promenjeni": {
+   "s18": [
+    82,
+    82.5
+   ],
+   "s19": [
+    81,
+    82
+   ]
+  },
+  "neuradjeno_isto_kao_R23": [
+   "s16",
+   "s27",
+   "s20"
+  ]
+ },
+ "C": {
+  "prethodno": 84.0,
+  "sada": 84.2,
+  "parovi": {
+   "P1": 85,
+   "P2": 83.5,
+   "P3": 84
+  }
+ },
+ "zbirna": {
+  "prethodno": 81.9,
+  "sada": 82.0
+ },
+ "regresije": [
+  "P2 B: ispali predlog kraće distance (10 km) i stavka o stažu; rečenica 'te nedelje …' bez prethodnika",
+  "p06 ned 4: tempo trke 2 × 2,5 km (bilo 2 × 3,5 km); upozorenje o laganim danima ne odgovara ned 2-3"
+ ],
+ "runda": "R25",
+ "kalibracija": {
+  "stanje": "e1136a16",
+  "HM p06": {
+   "R23": 76.5,
+   "moja": 77.5
+  },
+  "10K p03": {
+   "R23": 79.5,
+   "moja": 78
+  },
+  "MAR p04": {
+   "R23": 79.5,
+   "moja": 77.5
+  },
+  "5K p12": {
+   "R23": 77,
+   "moja": 73.5,
+   "napomena": "razlika > 3, zapisano, nije štimovano"
+  },
+  "nacin": "ocene promenjenih = R23 + učinak izmene"
+ },
+ "promenjeni_fajlovi": [
+  "p06",
+  "pairs/p1a",
+  "pairs/p2b",
+  "scenarios/s18",
+  "scenarios/s19"
+ ],
+ "van_spiska_c": [
+  "pairs/p1a"
+ ],
+ "dan_manje": {
+  "p06": "nema dana manje; 5 treninga u svim nedeljama gradnje; upozorenje staro i delom netačno"
+ }
+}

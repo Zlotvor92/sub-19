@@ -8,3 +8,5 @@ test-results
 # Keš eslint/prettier (`npm run check`, v. docs/testing/TEST-SPEED.md); podrazumevano u node_modules/.cache/.
 .eslintcache
 .prettier-cache
+# Izveštaj vitesta (json reporter) — generisan, ne prati se
+.vitest

@@ -1,0 +1,322 @@
+{
+ "round": "V4-10K-05",
+ "state": "ef506f4c",
+ "distance": "10K",
+ "plans": {
+  "p01": {
+   "scores": [
+    8,
+    8,
+    7.5,
+    8,
+    7.5,
+    7,
+    8
+   ],
+   "total": 77.5,
+   "verdict": "da",
+   "complaints": [
+    "cilj 45:05 traži 4:31/km, a svih 33,4 km tempa trke (ned 9–16) je na 4:36; jedini test u 10. ned",
+    "tri vremena u zaglavlju (45:05, 44:59, 46:00)",
+    "napomena „Dugi je lagan\" uz dugi sa brzim završetkom (ned 3, 9, 11)"
+   ],
+   "good": [
+    "ned 12–14: 4×1,6 / 7×1 / 4×1,6 km u tempu trke",
+    "obim 41,6→54 km (+30 % za 12 ned)"
+   ]
+  },
+  "p02": {
+   "scores": [
+    8,
+    8,
+    7,
+    7,
+    7.5,
+    6.5,
+    8
+   ],
+   "total": 75.0,
+   "verdict": "da",
+   "complaints": [
+    "20:25 na 5 km = 42:34 po Riegelu; plan piše 43:21 bez objašnjenja umanjenja",
+    "ned 5: 42 min brzog od 190 (22 %); 6×1 km (11,7 km) duži od dugog (11 km)",
+    "sužavanje od 6. od 8 ned"
+   ],
+   "good": [
+    "test u 4. ned pa vrh",
+    "upozorenje o obimu konkretno"
+   ]
+  },
+  "p03": {
+   "scores": [
+    8,
+    8.5,
+    6.5,
+    7,
+    7.5,
+    8,
+    8
+   ],
+   "total": 76.5,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "najviše 4 km tempa trke po treningu, 12 km u celom planu",
+    "rasterećenje ned 4: 21,3 posle 23,7 km (−10 %)"
+   ],
+   "good": [
+    "dugi po vremenu 65→86 min",
+    "napomena da su prag i tempo trke isti"
+   ]
+  },
+  "p04": {
+   "scores": [
+    8,
+    8,
+    7.5,
+    7,
+    7.5,
+    7.5,
+    8
+   ],
+   "total": 77.0,
+   "verdict": "da",
+   "complaints": [
+    "ned 5–11 u rasponu 53,9–56,9 km; rast do vrha +15 % za 14 ned",
+    "četiri dana zaredom sub–uto, sre i pet odmor",
+    "16. ned sužavanje i dalje 4×1,6 km + 4×1 km"
+   ],
+   "good": [
+    "dva testa (ned 4 i 12)",
+    "plafon dugog objašnjen"
+   ]
+  },
+  "p05": {
+   "scores": [
+    7.5,
+    7,
+    8.5,
+    8,
+    7.5,
+    7.5,
+    8
+   ],
+   "total": 77.0,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "ned 8→9: 86→106,6 km (+24 %), +33 % nad 80 za 9 ned; 10×1 km (20,3 km) + dugi 21 km",
+    "rasterećenje ned 4: 81,9 posle 90,9 km (−10 %)",
+    "ned 10: 87,5 km sa 4×2 km + 7×800 m + 20 km"
+   ],
+   "good": [
+    "specifičnost 6×1,2 / 10×1 / 4×2 km",
+    "tempa se slažu sa tabelama"
+   ]
+  },
+  "p06": {
+   "scores": [
+    6.5,
+    8.5,
+    5.5,
+    6,
+    7.5,
+    7.5,
+    6
+   ],
+   "total": 68.0,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "najviše 4 km tempa trke po treningu (14,5 min rada); p02 ima 6 km",
+    "4. ned „vršna nedelja\" je nedelja testa (10 % brzog)",
+    "tri upozorenja se sudaraju",
+    "lagani dani 5 km/24 min, 13×200 m"
+   ],
+   "good": [
+    "pošteno kaže da 5 dana ne staje"
+   ]
+  },
+  "p07": {
+   "scores": [
+    8,
+    7.5,
+    8.5,
+    8,
+    7.5,
+    7.5,
+    8
+   ],
+   "total": 79.0,
+   "verdict": "da",
+   "complaints": [
+    "ned 5: 68 min brzog (20 %), tri teška dana",
+    "nedelja testa 60,9 km, više od gradnje pre nje"
+   ],
+   "good": [
+    "8×1 km pa 4×2 km u tempu trke",
+    "jasan vrh i silazak"
+   ]
+  },
+  "p08": {
+   "scores": [
+    8,
+    8,
+    7.5,
+    7,
+    7.5,
+    8,
+    8
+   ],
+   "total": 77.5,
+   "verdict": "da",
+   "complaints": [
+    "dugi 41 % nedelje i do 1 h 47, a p04 kaže plafon 1 h 40",
+    "jedan brzi trening nedeljno 18 ned"
+   ],
+   "good": [
+    "upozorenje za 3 dana sa tačnim predlogom",
+    "4×2 km i 5×1,6 km u tempu trke"
+   ]
+  },
+  "p09": {
+   "scores": [
+    8,
+    7.5,
+    7.5,
+    8,
+    7.5,
+    8.5,
+    8
+   ],
+   "total": 78.0,
+   "verdict": "da",
+   "complaints": [
+    "raspon 44:23–47:48 uzak za nisku pouzdanost",
+    "1. ned 11×45 s uzbrdo + 20 min praga za nepoznatu formu; obim procenjen a raste +29 %"
+   ],
+   "good": [
+    "rad po osećaju sa opisom napora",
+    "test u 4. ned"
+   ]
+  },
+  "p10": {
+   "scores": [
+    7.5,
+    8,
+    7,
+    7.5,
+    7.5,
+    8.5,
+    8
+   ],
+   "total": 76.5,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "ned 10: 7×3 min ≈ 3,8 km ≈ 13 % od 28,9 km",
+    "15 min praga u 1. ned za nepoznatu formu"
+   ],
+   "good": [
+    "trka po osećaju sa jasnim pravilom",
+    "dugi do 90 min"
+   ]
+  },
+  "p11": {
+   "scores": [
+    8,
+    8,
+    6.5,
+    6.5,
+    7.5,
+    7.5,
+    8
+   ],
+   "total": 74.5,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "ned 5: fartlek 54 min/7,8 km (38 % nedelje), nedelja +34 %",
+    "10,8 km tempa trke u 18 ned",
+    "8 ned osnove za 14,8→20 km, tri rasterećenja",
+    "nema upozorenja o obimu (vrh 24,7 km)"
+   ],
+   "good": [
+    "blag ulaz",
+    "dugi do 75 min ≈ 10,4 km"
+   ]
+  },
+  "p12": {
+   "scores": [
+    7.5,
+    8,
+    7.5,
+    7.5,
+    7.5,
+    8.5,
+    8
+   ],
+   "total": 77.5,
+   "verdict": "da uz izmenu",
+   "complaints": [
+    "ned 8→9: tempo trke 3,6→6,4 km (+78 %), trening 75 min",
+    "prag 2×7 → 20 min u komadu → 3×7 (ned 3–5)"
+   ],
+   "good": [
+    "dve nedelje samo lagano na početku",
+    "posle testa prelazi na tempa"
+   ]
+  }
+ },
+ "plans_avg": 76.2,
+ "scenarios": {
+  "s01": 9,
+  "s02": 9,
+  "s03": 8.5,
+  "s04": 8,
+  "s05": 8.5,
+  "s06": 7.5,
+  "s07": 7.5,
+  "s08": 7,
+  "s09": 9,
+  "s10": 9,
+  "s11": 6.5,
+  "s12": 6,
+  "s13": 8.5,
+  "s14": 8,
+  "s15": 6,
+  "s16": 5.5,
+  "s17": 8.5,
+  "s18": 8.5,
+  "s19": 8,
+  "s20": 8,
+  "s21": 10,
+  "s22": 10,
+  "s23": 10,
+  "s24": 9.5,
+  "s25": 7,
+  "s26": 6,
+  "s27": 6.5
+ },
+ "scenarios_avg": 7.98,
+ "pairs": {
+  "p1": 7.5,
+  "p2": 8,
+  "p3": 7.5
+ },
+ "pairs_avg": 7.67,
+ "top_fixes": [
+  "donja granica i rok važenja za „prvi brzi trening svake vrste manji\" (2×700 m)",
+  "ravnomerna rampa posle bola",
+  "u povratku prednost tempu trke; propušten trening ne smanjuje sledeći ispod propuštenog",
+  "prvi trening posle pauze ne duži od prvobitnog; dugi posle propuštenih ne raste",
+  "razlikovati 5 dana bolesti, 7 dana bolesti i put",
+  "više tempa trke kod malog obima; ublažiti skok kod p12",
+  "ograničiti skokove (p05 +24 %, p11 fartlek, p10 7×3 min, prvi prag 20 min)",
+  "jedna prognoza i jedno objašnjenje u zaglavlju",
+  "zamena za otpali test; ishrana i voda na dan trke",
+  "urednost oznaka, napomena, brojeva ponavljanja, plafona dugog, upozorenja"
+ ],
+ "owner_review": [
+  "p06",
+  "p05",
+  "p11",
+  "s16"
+ ],
+ "reading_rule": "nije prekršeno; viđeni redovi MORA DA SE RAZLIKUJE/BROJEVI u zaglavljima parova (posle zapisanih očekivanja) i broj promena u redu DOGAĐAJ s21–s24 i PROMENA s01"
+}

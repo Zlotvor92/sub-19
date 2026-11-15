@@ -83,21 +83,22 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'H10',
-    rule: '4–6 dana: baza Q1 R, Q2 T kontinuirano; razvoj Q1 I, Q2 T cruise; specifično Q1 RP, Q2 T cruise. 3 dana (H15): jedan kvalitet (Q1) — baza T kontinuirano, razvoj T cruise, specifično RP; bez I i R. Lestvice: R 6×200 · 8×200 · 6×300 · 10×200 · 8×300 · 8×400 | T kont. 2,0 · 2,5 · 3,0 · 4,0 · 5,0 · 6,0 · 7,0 km | T cruise 2×1200 · 3×1000 · 2×1600 · 4×1000 · 3×1600 · 4×1500 · 4×1600 · 5×1600 · 3×3000 | I 2×1000 · 3×800 · 3×1000 · 4×1000 · 4×1200 · 5×1000 · 5×1200 | RP 2×2000 · 2×2500 · 2×3000 · 2×4000 · 3×3000 · 2×5000 · 3×4000. Druga struktura iste doze: T kontinuirano ili 2–5 jednakih deonica ≥ 1000 m; RP 2–5 jednakih deonica ≥ 2000 m ili kontinuirano do 10 km; I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; R deonice 200 / 300 / 400 m. Deonice deljive sa 100 m, a kad takve podele nema sa 50 m (pouka 11).',
+    rule: '4–6 dana: baza Q1 R, Q2 T kontinuirano; razvoj Q1 I, Q2 T cruise; specifično Q1 RP, Q2 T cruise. 3 dana (H15): jedan kvalitet (Q1) — baza T kontinuirano, razvoj T cruise, specifično RP; bez I i R. Lestvice: R 6×200 · 8×200 · 6×300 · 10×200 · 8×300 · 8×400 | T kont. 2,0 · 2,5 · 3,0 · 4,0 · 5,0 · 6,0 · 7,0 km | T cruise 2×1200 · 3×1000 · 2×1600 · 4×1000 · 3×1600 · 4×1500 · 4×1600 · 5×1600 · 3×3000 | I 2×1000 · 3×800 · 3×1000 · 4×1000 · 4×1200 · 5×1000 · 5×1200 | RP 2×2000 · 2×2500 · 2×3000 · 2×4000 · 3×3000 · 2×5000 · 3×4000 · 3×5000 (P1-S2). Druga struktura iste doze: T kontinuirano ili 2–5 jednakih deonica ≥ 1000 m; RP 2–5 jednakih deonica ≥ 2000 m ili kontinuirano do 10 km; I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; R deonice 200 / 300 / 400 m. Deonice deljive sa 100 m, a kad takve podele nema sa 50 m (pouka 11).',
     place: 'workouts.ts (lestvice, structuresForDose), quality.ts (izbor)',
     rationale:
       'Heuristika redosleda razvoja (brzina/ekonomija → prag/VO2max → specifičnost polumaratona). Tumačenje (HI1): broj deonica druge strukture 2–5 i korak 100/50 m preuzeti iz 10K v2 D10/D22 (MASTER H10 navodi samo najmanju deonicu po zoni); prihvataju se samo tačne podele (doza se ne menja). Nema druge strukture → slot ponavlja trening uz napomenu (druga nedelja se razlikuje po drugom slotu).'
   },
   {
     id: 'H11',
-    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, RP 15 %. Ne važi za trkačku nedelju (H8).',
-    place: 'policy.ts caps; proverava quality.ts (izbor) i validate.ts (ZONE_CAP)',
+    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, RP po pojasu cilja nedelje — < 40 km 15 %, ≥ 40 km 20 % (P1-S2). Važi i za blok RP u dugom (P1-S1). Ne važi za trkačku nedelju (H8).',
+    place:
+      'policy.ts caps; quality.ts capShare/capM (jedna funkcija); proverava quality.ts (izbor), specific.ts chooseBlockKm (blok) i validate.ts (ZONE_CAP)',
     rationale:
-      'R/I/T prema Danielsu (sekundarni izvor, ne dokaz); RP 15 % heuristika (polumaratonski tempo je bliži T nego I). Nema drugih limita za iste zone (Uslov 2). Najniži nivo svake lestvice staje u plafon pri najmanjem obimu reda (30 km; pouka 10): R 1200 ≤ 1500, I 2000 ≤ 2400, T 2000 ≤ 3000, T cruise 2400 ≤ 3000, RP 4000 ≤ 4500 m.'
+      'R/I/T prema Danielsu (sekundarni izvor, ne dokaz); RP 15 % heuristika (polumaratonski tempo je bliži T nego I). Nema drugih limita za iste zone (Uslov 2). Najniži nivo svake lestvice staje u plafon pri najmanjem obimu reda (30 km; pouka 10): R 1200 ≤ 1500, I 2000 ≤ 2400, T 2000 ≤ 3000, T cruise 2400 ≤ 3000, RP 4000 ≤ 4500 m (pojas < 40 km). P1-S2: pojas ≥ 40 km 20 % je heuristika, odluka organizatora P1 (posle P0: vrh RP je držao plafon 15 % u 53 % planova); pojas < 40 km ostaje 15 % (odluka posle P1-STOP: sa 20 % i na dnu obima 84 nedelje specifične faze > 25 % km bržih od E).'
   },
   {
     id: 'H12',
-    rule: 'Po slotu: sledeći nivo ako staje u plafon (≤ 1 nivo nedeljno), inače ista doza druge strukture (nema je — ponavljanje uz napomenu); doza ne pada van rasterećenja/tapera/trke; početni nivo = najviši nivo ≤ 60 % plafona zone (najmanje prvi nivo) na prvoj nedelji slota i na prvoj nedelji nove zone (I u razvoju, RP u specifičnoj); prelazi T cruise ≥ poslednje T kontinuirano, RP ≥ max(početni nivo, poslednje I; 3 dana: poslednje T, HI6); glavna doza (T + I + RP) ne opada kroz ne-rasteretne nedelje izgradnje; nema identičnih uzastopnih ne-rasteretnih nedelja; baza bez platoa (T raste ili menja strukturu). H11 ispred H12 samo u nedelji ograničenoj kapacitetom (pouka 12): kad nijedan cilj nedelje nije izvodljiv uz „doza ne pada", doza van plafona ide na najviši nivo lestvice u plafonu (napomena, DOSE_DROPPED).',
+    rule: 'Po slotu: sledeći nivo ako staje u plafon (≤ 1 nivo nedeljno), inače ista doza druge strukture (nema je — ponavljanje uz napomenu); doza ne pada van rasterećenja/tapera/trke; početni nivo = najviši nivo ≤ 60 % plafona zone (najmanje prvi nivo) na prvoj nedelji slota i na prvoj nedelji nove zone (I u razvoju, RP u specifičnoj); prelazi T cruise ≥ poslednje T kontinuirano, RP ≥ max(početni nivo, poslednje I; 3 dana: poslednje T, HI6); glavna doza (T + I + RP treninga + blok RP u dugom, P1) ne opada kroz ne-rasteretne nedelje izgradnje — nedelja tipa B sa poslednjom B, ostale sa poslednjom ne-B (O1, P1-H12); nema identičnih uzastopnih ne-rasteretnih nedelja; baza bez platoa (T raste ili menja strukturu). H11 ispred H12 samo u nedelji ograničenoj kapacitetom (pouka 12): kad nijedan cilj nedelje nije izvodljiv uz „doza ne pada", doza van plafona ide na najviši nivo lestvice u plafonu (napomena, DOSE_DROPPED).',
     place:
       'quality.ts (pickSlot, startLevel, carries); validate.ts (DOSE_*, START_LEVEL, MAIN_DOSE_DECREASE, IDENTICAL_WEEKS, BASE_PLATEAU)',
     rationale:
@@ -494,19 +495,262 @@ const DECISIONS: readonly Decision[] = [
       'lengths.ts buildLengthsT1, buildLengths, buildEasyMin10, buildEasyCap10, t1MinWeek; week.ts buildDayLimit, secondQualityEasy, easyDays, T1_REST_NOTE, freeKind (C12), sharpenerAllowed (T3); quality.ts restartTaperT; steps.ts newStartAt; generate.ts (newStart); volume.ts capacityLimits/capacityMessage (easy); validate.ts EASY_BUILD, EASY_BUILD_MIN_WEEK, ROLES (t1Rest), WEEK1_BELOW_START, TAPER_QUALITY, PHASE_QUALITY, RACE_SHARPENER; adapt.ts factKmOf (C4), dayId dana šablona; input.ts RECENT_LONG_OVER_WEEKLY; gridInvariants (EASY_BUILD, K2, DAYS_COUNT), adaptInvariants (minimum u koraku 0,1 km, pouka 25)',
     rationale:
       'coach-hm-mar 1b #4 i measure.ts HM 400 200 100: lagan ≥ 0,9 × dugi 3 906 → 0 / 24 852 planova; coach-HM pauza 35 (taper bez kvaliteta, trkačka bez oštrenja); consistency C4/C12; plauzibilnost L1. Brojevi pre → posle u docs/hm-v2/reports/SEGMENT-10-IMPLEMENTATION.md.'
+  },
+  /* ---------- Segment P1 (hm-v2.9.0): specifičnost polumaratona — odluke organizatora (briefs/P1-hm-specificnost.md,
+     P1-odluke-posle-stop.md). Heuristike, bez trenerske provere na stvarnim trkačima. ---------- */
+  {
+    id: 'P1-S1',
+    rule: 'Specifičan dugi — samo redovan plan 4–6 dana (3 dana i početnik nemaju nedelju B). Raspored iz okvira nedelja: poslednja ne-rasteretna nedelja specifične faze (pred taper) je tip B, unazad se smenjuju A, B, … (specific.scheduledType). Tip A kao do sada (Q1 RP, Q2 T cruise, dugi lagan). Tip B: Q1 = RP trening po lestvici bez prekida (isti izbor kao u nedelji A), Q2 je lagan dan (mehanizam pouke 35: stanje T slota se ne menja, oslobođen obim raspoređuje vlasnik dužina lengths.ts), dugi ima završni blok kontinuirano u RP — lestvica 4 → 6 → 8 km, jedan nivo po nedelji B (posle poslednjeg bloka), najviši nivo ≤ tog koji staje: ≤ 40 % dužine dugog, trajanje (lagan deo sporim E + blok RP) ≤ granica dugog (150 min), blok ≤ plafon RP (H11), i dan Q1 koji je ≤ lagan dugi ostaje ≤ dugi sa blokom (pouka 32). Dužina dugog ostaje ona iz lengths.ts. Nedelja B koja ne može da se sastavi (dužine ili blok) je A uz napomenu (P-a); raspored ostalih se ne pomera. Nedelja B samo bez ograničenja koraka, bez testa i sa ciljem po pravilu (ne povratak/nov start, S3). Plan po osećaju: blok nosi RPE zone RP (6–7). Rasterećenje, taper i trkačka nedelja: dugi lagan. Dugi sa blokom je zahtevan dan (H9 važi kao i za lagan dugi).',
+    place:
+      'specific.ts (scheduledType, chooseBlockKm, blockFits, bAllowed, mainDoseM, mainDoseRef — jedino mesto); week.ts buildWeek (B ili A uz B_MISSING_NOTE); workouts.ts longBlockWorkout, longBlockKm; quality.ts advance/weekPicksOf (blockM); generate.ts (raspored); validate.ts LONG_BLOCK, B_WEEK_T, B_WEEK_ORDER, B_WEEK_MISSING, RPE, ROLES, LIMITS; gridInvariants.ts',
+    rationale:
+      'Heuristika, odluka organizatora P1 (posle P1-STOP 89f31c8: nedelja B bez RP treninga je vraćala ukupni RP na nivo hm-v2.8.0). Merenje mreže P0 (192 ulaza): ukupno RP medijana 30 → 43 km, dugih sa blokom 0 → 2, 0 odbijanja (docs/generators-v2/perfection/reports/P1-REPORT.md).'
+  },
+  {
+    id: 'P1-S2',
+    rule: 'Plafon RP po pojasu cilja nedelje (cilj < 40 km 15 %, ≥ 40 km 20 %) i lestvica RP do 3 × 5000 m (2 × 5000 m je postojao). Početni nivo RP (≤ 60 % plafona) se računa od plafona pojasa. Druga struktura iste doze po H10 (kontinuirano do 10 km).',
+    place: 'policy.ts caps.RP, ladders.RP; quality.ts capShare, capM, startLevel',
+    rationale:
+      'Heuristika, odluka organizatora P1 (P0: najveći RP trening 8 km, 37,9 % trke; plafon 15 % drži vrh RP u 53 % planova). Pojas: posle P1-STOP (nedelje > 25 % km bržih od E na dnu obima).'
+  },
+  {
+    id: 'P1-S3',
+    rule: 'Adaptacija: (a) bol / zabrana kvaliteta / dan odmora (A3/A4) — nedelja sa ograničenjima koraka nema nedelju B, dugi je lagan; dugi sa blokom je kvalitet za LIMITS; (b) umor (A5) ne broji dugi sa blokom RP kao lagan trening; (c) prinudno rasterećenje, povratak (cilj samo naniže, A8) i nov start (A3): dugi lagan dok nedelja nije redovna ne-rasteretna specifična; (d) raspored A/B se posle koraka računa iz okvira nedelja (prinudno rasterećenje i nov start daju nov raspored) — jedno mesto, specific.scheduledType; upisani dani (≤ asOf, zaključani, urađeni) su činjenice.',
+    place:
+      'specific.ts bAllowed, scheduledType; generate.ts (regular = cilj po pravilu); assess.ts (A5); validate.ts LIMITS',
+    rationale:
+      'Heuristika, odluka organizatora P1 (S3 iz zadatka; raspored iz okvira po odluci posle P1-STOP).'
+  },
+  {
+    id: 'P1-T',
+    rule: 'Taper (dopuna H7, odluka posle P1-STOP 2): RP tapera = najviši nivo lestvice ≤ min(≈ 60 % poslednje RP doze treninga, plafon RP cilja tapera, H11), najmanje 2 × 2000 m (postojeći izuzetak H7 za najniži nivo); spušteno zbog plafona — napomena. Oštrenje trkačke nedelje kao do sada (H8, ≤ RP doza tapera).',
+    place:
+      'quality.ts taperDoses (reducedStructure maxM), week.ts (napomena), validate.ts TAPER_QUALITY (ista funkcija)',
+    rationale:
+      'Heuristika, odluka organizatora posle P1-STOP 2 (opcija b): taper < 40 km (plafon 15 %) posle RP izabranog pod 20 % ostajao je bez kvaliteta i bez oštrenja u 1365 / 25 122 planova mreža 02 i 03.'
+  },
+  /* ---------- Segment P5 (hm-v2.10.0): forma, kvalitet u adaptaciji, ubrzanja, početna doza — odluke organizatora
+     (briefs/P5-forma-ubrzanja-pocetna-doza.md). Heuristike, bez trenerske provere na stvarnim trkačima. ---------- */
+  {
+    id: 'P5-F1',
+    rule: 'Kontrolni test u planu sa rezultatom: plan sa rezultatom koji nije početnik i ima ≥ 12 nedelja dobija tačno jedan test — isti test kao plan po osećaju (5 km kontrolisano maksimalno, WU/CD po H14, u obimu nedelje, ne u dozi, bez plafona H11) — u poslednjoj ne-rasteretnoj nedelji faze razvoja, na danu Q1 umesto tog kvaliteta; progresija slota se posle testa nastavlja od stanja pre testa (H16), glavna doza preskače nedelju testa. Kraći planovi i početnik bez testa. Rezultat ulazi postojećim putem adaptacije (A1: nov rezultat → tempo od sledeće nedelje). Adaptacija (A13): test plana sa rezultatom se premešta istim pravilom kao po osećaju, dok nema novog rezultata (steps.framesFor: stepVdotAt). Napomena nedelje: čemu test služi i da se rezultat unese.',
+    place:
+      'periodize.ts testKindOf (jedina odluka vrste testa), testWeekOf, periodize; generate.ts, adapt.ts, adaptInvariants.ts, validate.ts (TEST); steps.ts framesFor (A13); week.ts RESULT_TEST_NOTE; gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: plan sa rezultatom nema nijednu tačku merenja forme, tempo se ne menja kroz plan). Test pre specifične faze da RP i T specifične faze slede stvarnu formu. Merenje: docs/generators-v2/perfection/reports/P5-HM-REPORT.md.'
+  },
+  {
+    id: 'P5-F2',
+    rule: 'Kvalitet u adaptaciji (korak QUALITY_STRAIN): činjenice su zapisi dana čija je uloga u planu kvalitet (Q1, Q2, dugi sa blokom RP; ne test). Okidač: dva uzastopna takva dana (po datumu, oba u poslednjih 14 dana do asOf, potpuno pokrivena, A10), svaki neodrađen (tog datuma nijedno trčanje — ni zapis dana ni trčanje van plana, npr. uvoz; odluka 10. 11. 00:41) ili sa RPE ≥ 9 (zapis tog dana). Efekat: nedelja n (prva puna nedelja posle asOf), kad je ne-rasteretna nedelja izgradnje, ne podiže dozu nijednog slota — bez sledećeg nivoa (ista doza druge strukture, inače ponavljanje uz napomenu); prelaz u istoj zoni (T kontinuirano ↔ T cruise) uzima istu dozu druge strukture kad postoji; prelaz u novu zonu (I u razvoju, RP u specifičnoj) ide po H12 (početni nivo nije rast); blok RP u dugom ostaje na poslednjem nivou (bez prethodnog — prvi nivo). Cilj obima se ne menja; „doza ne opada" ostaje. Razlog u reasons i poruka korisniku (traka). Prioritet: ispod bola, pauze, umora i manjka izvršenja (A7 — aktivan uslov → applied false). Isti zapisi ne prave nov korak (step.qualitySeen). Taper, trkačka nedelja i rasterećenje: bez efekta.',
+    place:
+      'assess.ts qualityStrain (okidač), assess (korak: qualityHold, qualitySeen); steps.ts holdAt; generate.ts ctxAt (hold); quality.ts pickSlot/pickBuild (hold); specific.ts wantBlockKm/chooseBlockKm (hold); week.ts HOLD_NOTE; validate.ts DOSE_HOLD (i izuzeci DOSE_STALL, IDENTICAL_WEEKS, BASE_PLATEAU, SECOND_QUALITY, LONG_BLOCK uz hold); adapt.ts (traka CHANGE); app/adapt.ts (naziv uslova)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: RPE i izvršenje kvalitetnog treninga nemaju efekat u adaptaciji). Tumačenje taba: „sledeća nedelja izgradnje" = nedelja n kao kod ostalih koraka; kad je n rasterećenje, taper ili trka — bez efekta (applied false).'
+  },
+  {
+    id: 'P5-F3',
+    rule: 'Ubrzanja na laganom danu: u svakoj nedelji osim trkačke (tamo dan pred trku, H8) i uvoda početnika tačno jedan lagan dan dobija ubrzanja na kraju — baza 4 × 20 s, od razvoja (razvoj, specifična, taper, i rasterećenje te faze) 6 × 20 s; početnik uvek 4 × 20 s. Dan: lagan dan sa najvećim razmakom u danima od prethodnog zahtevnog dana (kvalitet, dugi, test — i iz prethodne nedelje), pri jednakom razmaku raniji; ne dan bola ili odmora koraka (A4: „bez kvaliteta i ubrzanja") ni zaštićen dan (adaptacija; zaštićen dan sa ubrzanjima ih zadržava, drugog nema). Dužina dana ostaje ona koju daje lengths.ts (ubrzanja i oporavak su deo laganog trčanja, nisu rad zone ni dodatni km); struktura kao dan pred trku (R tempo, oporavak isti metraž džogom). Nedelja bez laganog dana: bez ubrzanja.',
+    place:
+      'policy.ts strides; workouts.ts easyStridesWorkout, stridesOf; week.ts stridesReps, stridesDate, stridesExcluded, withStrides (jedno mesto); generate.ts (posle sastava nedelje); validate.ts STRIDES; gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: HM bez ubrzanja na laganim danima). Neuromuskularni podsticaj bez opterećenja; 5K v2 ih već ima.'
+  },
+  {
+    id: 'P5-F4',
+    rule: 'Početna doza T i I: početni nivo T (kontinuirano i cruise) i I = najviši nivo lestvice ≤ 80 % plafona zone (H11) za cilj nedelje (do sada 60 %), najmanje prvi nivo. R i RP ostaju 60 %. Početnik bez promene (prvi nivo, HI10). Sva ostala pravila progresije (H12) ostaju; WU/CD se ne skraćuje (Uslov 3). Dopuna (odluka organizatora 10. 11. 01:28, sve distance): početni nivo = najviši ≤ 80 % čiji dan nije duži od dugog (drugi član plafona, pouka 32); kad nijedan nivo iznad nivoa po 60 % ne staje — nivo po 60 % (dalje kao do sada). Deo „ne izaziva pouku 35" nije ugrađen (traži novo mesto odluke — P-a): na HM F4 broj nedelja sa laganim drugim danom kvaliteta smanjuje.',
+    place:
+      'policy.ts startLevel.capShare, fallbackShare; quality.ts startLevel, startFit (pickSlot); validate.ts START_LEVEL (ista funkcija)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: prvi T trening ≈ 9–12 min rada uz 35 min WU/CD, 12–16 % trajanja dana). Mali udeo rada se rešava većom početnom dozom, ne kraćim WU/CD.'
+  },
+  /* ---------- Segment P8 (hm-v2.11.0): ispravke po slepoj oceni i izveštaju glavnog trenera (krug 1) — odluke organizatora
+     (briefs/P8-ispravke-po-slepoj-oceni.md, P8-dopuna-po-glavnom-treneru.md). Heuristike, bez trenerske provere na
+     stvarnim trkačima. ---------- */
+  {
+    id: 'P8-G1',
+    rule: 'Vrh obima = min(postojeće pravilo vrha H6/H17; start × faktor po dužini pripreme — ≤ 12 ned 1,30, 13–15 ned 1,35, ≥ 16 ned 1,40; satni plafon nedelje — cilj km × srednji lagan tempo ≤ 7,5 h za VDOT < 40, 8,5 h za 40–49,9, 9,5 h za ≥ 50; po osećaju procena VDOT-a); start iznad plafona → vrh = start. Korak rasta ne-rasteretne nedelje izgradnje = min(korak H6; (vrh − poslednji ne-rasteretni cilj) / broj preostalih ne-rasteretnih nedelja do kraja faze razvoja, uključujući tekuću), na 0,1 km; korak manji od 3 % tekućeg cilja se ne primenjuje (nedelja zadržava cilj, rast se prenosi). U specifičnoj fazi ostatak do vrha ide korakom H6. Pravilo samo usporava rast; kapacitet, rasterećenja i povratni rast adaptacije ostaju. Tempo za satni plafon je tempo plana na startu (izmena tempa u adaptaciji ne menja vrh).',
+    place:
+      'policy.ts volume.peakFactorByWeeks, peakHours, minStepShare; volume.ts peakCap10, peakHoursCap10, growLeft, step10, nominal10, nextBuild10, enterWeek (jedini vlasnik); generate.ts i validate.ts ih zovu; gridInvariants.ts (nezavisno: PEAK_CAP_RULE, BEGINNER_PEAK)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (plato obima: vrh u nedelji 5–7) i glavnog trenera (75 km za trkača od 2:04; opterećenje se plaća u satima). Merenje: docs/generators-v2/perfection/reports/P8-HM-REPORT.md.'
+  },
+  {
+    id: 'P8-G2',
+    rule: 'Najniži nivo lestvice uvek staje: plafon zone treninga = max(doza prvog nivoa lestvice; min(udeo H11, minuti G4)). Važi u izgradnji (redovan plan i početnik — prvi nivo njegove lestvice, pa HI10 „T kontinuirano umesto lestvice faze" više ne nastupa zbog plafona) i u taperu (RP 2 × 2000 m, T 2,0 km / početnik 1,5 km). U taperu najmanja doza iznad udela važi samo kad taper sa tim danom kao jedinim kvalitetom ima izvodljive dužine; inače ishod kao pre (T početnika, pa taper bez kvaliteta) — ne odbijanje. Rasterećenje i jedan kvalitet adaptacije (A9) bez poda. U trkačkoj nedelji važi G5. „Dan kvaliteta ≤ dugi" ostaje (izuzetak najnižeg nivoa postoji).',
+    place:
+      'quality.ts capM (floorM), ladderFloorM, ladderCapM, startLevel, pickSlot, firstLevelOverCap, taperDoses; week.ts taperDoseFits, TAPER_RP_MIN_M, taperTFloorM; validate.ts (iste funkcije: ZONE_CAP, DOSE_*, START_LEVEL, TAPER_QUALITY); gridInvariants.ts (nezavisno ZONE_CAP)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (spori sa 3 dana i početnik: taper i specifična faza bez trkačkog tempa zbog plafona udela).'
+  },
+  {
+    id: 'P8-G4',
+    rule: 'Plafon jednog treninga usred nedelje u minutima rada, po tempu zone te nedelje — novi član iste funkcije plafona zone: T ≤ 30 min (cilj nedelje ≥ 80 km: 40 min); I ≤ 20 min za VDOT < 40, inače 24 min; RP ≤ 45 min; R bez plafona u minutima. Blok RP u dugom nije trening usred nedelje (drže ga granice bloka i dugog). Nivo lestvice koji prelazi minute se ne bira — najviši nivo koji staje (isti mehanizam kao udeo).',
+    place:
+      'policy.ts caps.workSec; quality.ts capSec, capM (jedna funkcija, član minuta kad je dat tempo nedelje); week.ts, validate.ts (isti pozivi); specific.ts chooseBlockKm zove bez tempa; gridInvariants.ts (nezavisno ZONE_CAP)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz glavnog trenera (RP 3 × 5000 m = 88 min kod trkača od 2:04, 56 min kod brzog).'
+  },
+  {
+    id: 'P8-G5',
+    rule: 'Oštrenje trkačke nedelje: dve jednake deonice u trkačkom tempu, ukupno ≤ 12 min rada po tempu nedelje — deonica najduža deljiva sa 100 m, najviše 2000 m, najmanje 400 m (ni 2 × 400 m ne staje → bez oštrenja; ubrzanja dana pred trku ostaju); oporavak 2:00; i dalje ≤ RP doza tapera i na najkasnijem danu ≥ 3 dana pre trke (H8). Rasterećenje: jedini kvalitet T ≈ 60 % poslednje ne-rasteretne doze ISTE zone — plan sa jednim kvalitetom (3 dana) čita poslednju T dozu, ne dozu slota (u specifičnoj fazi je u slotu RP). Taper ≈ 60 % poslednje doze zone (H7) ostaje; najmanja doza 2 × 2000 m sme biti iznad 60 % (napomena to kaže).',
+    place:
+      'policy.ts raceWeek.sharpener; workouts.ts sharpenerRepM, sharpenerWorkout; week.ts sharpenerAllowed, raceWeek; quality.ts deloadDose; validate.ts RACE_SHARPENER (ista funkcija), REP_MIN/RP_FLOOR (oštrenje izuzeto); gridInvariants.ts (nezavisno SHARPENER, rasterećenje 3 dana)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz glavnog trenera (oštrenje 2 × 2000 m = 24 min rada kod sporog trkača tri dana pred trku).'
+  },
+  {
+    id: 'P8-G6',
+    rule: 'Lagan dan prema dugom: u nedelji izgradnje lagan ≤ 0,70 × dugi iste nedelje za plan sa 4 i više dana (3 dana ostaje 0,80). Višak cilja koji zato ne staje spušta se postojećim mehanizmom izvodljivog cilja (H6) i saopštava jednom po planu (CAPACITY_LIMITED / WEEK_FITTED).',
+    place:
+      'policy.ts lengths.easyLongMaxShare4, planRule.easyLongMaxShare; lengths.ts buildEasyCap10 (pravilo plana), buildLengthsT1; volume.ts capacityLimits, capacityMessage; validate.ts EASY_BUILD (ista funkcija); gridInvariants.ts (nezavisno EASY_BUILD)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz glavnog trenera (lagani dani 80 % dugog — „dva duga" u nedelji). Merenje pada vrha: nijedan plan > 10 % (najviše 8,4 %).'
+  },
+  {
+    id: 'P8-G7',
+    rule: 'Nedelja testa: test 5 km je jedini kvalitet nedelje — drugi dan kvaliteta je lagan (stanje slota se ne menja); važi za plan sa rezultatom i plan po osećaju. Test ne ide pre nedelje 4: nedelja testa je poslednja svoje faze, pa plan u kome bi pala ranije nema test (napomena plana).',
+    place:
+      'policy.ts test.minWeek; periodize.ts testWeekOf (jedina odluka nedelje testa); week.ts buildWeekIn (Q2 lagan u nedelji testa); validate.ts ROLES, TEST; gridInvariants.ts (nezavisno TEST_ONCE, TEST_ONLY_QUALITY)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz glavnog trenera i slepe ocene (test + T + dugi 21–22 km iste nedelje; test u nedelji 3).'
+  },
+  {
+    id: 'P8-HMb',
+    rule: 'Nedelja sa blokom RP u dugom: nivo bloka se bira tako da rad u trkačkom tempu te nedelje (RP trening + blok) bude ≤ 22 % VREMENA nedelje (dani kvaliteta + lagani srednjim laganim tempom + dugi sa blokom); ne staje ni prvi nivo → nedelja je tip A (postojeća napomena).',
+    place:
+      'policy.ts specific.rpWeekTimeShare; specific.ts rpTimeShareOk, chooseBlockKm (jedini vlasnik bloka); week.ts i validate.ts (LONG_BLOCK, B_WEEK_MISSING) zovu istu funkciju',
+    rationale:
+      'Heuristika, odluka organizatora P8 po sudu glavnog trenera (umesto 25 % km): nedelje sa blokom su imale 23–30 % brzih km.'
+  },
+  {
+    id: 'P8-G3',
+    rule: 'Tekst za trkača: napomena testa kaže šta trkač radi sa rezultatom; napomena nedelje sa blokom kaže da je tempo trening zamenjen laganim trčanjem; napomena tapera ne tvrdi „≈ 60 %" za najmanju dozu (posebna rečenica); korisnički tekst (userText) bez internih oznaka i reči sastavljanja. Tehničke napomene koje validator čita ostaju u planu (userWeekNotes ih ne prikazuje).',
+    place:
+      'week.ts TEST_NOTE, RESULT_TEST_NOTE, napomene bloka i tapera; userText.ts PLAIN; generate.ts (napomena plana bez testa)',
+    rationale: 'Odluka organizatora P8, nalaz slepe ocene (jasnoća teksta 3–6 / 10).'
+  },
+  /* ---------- P8 završetak (hm-v2.12.0): odluke organizatora po reports/P8-HM-STOP.md (10. 11. 2026). ---------- */
+  {
+    id: 'P8-G8',
+    rule: 'Dugi početnika do distance (STOP S2 → O2): plafon udela dugog početnika = max(udeo reda H15; min(50 % cilja nedelje, 16 km)) u svim nedeljama; ostale granice dugog ostaju (135 min, 24 km, skok pouke 28, lagani ≥ 4 km i ≥ 20 min, dugi rasterećenja 0,8 ×, tapera 0,6 ×).',
+    place:
+      'policy.ts beginner.longReachShare, longReachKm, planRule.longReach; lengths.ts longShareCap10 (jedno mesto; validator LONG_SHARE i konstruktor čitaju istu funkciju); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P8 po nalazu glavnog trenera (početnik 11 km najduži dugi pred polumaraton). Merenje (mreža početnika 1890): najduži dugi ≥ 16 km 792 → 1326, ≥ 14 km 1239 → 1680, 0 odbijanja.'
+  },
+  {
+    id: 'P8-G6b',
+    rule: 'Plan sa oznakom početnika: lagan ≤ 0,80 × dugi bez obzira na broj dana (0,70 važi samo za redovan plan sa 4 i više dana).',
+    place:
+      'policy.ts planRule (easyLongMaxShare početnika); lengths.ts buildEasyCap10 čita pravilo plana',
+    rationale:
+      'Odluka organizatora posle STOP-a: početnik sa 4–5 dana uz 0,70 gubi planirani obim (planirani vrh < 0,9 × granice vrha: 51 → 0 od 1890 planova).'
+  },
+  {
+    id: 'P8-HMc',
+    rule: 'Mesto testa (STOP S4, S5 → O2): kontrolni test plana sa rezultatom je u PRETPOSLEDNJOJ ne-rasteretnoj nedelji razvoja (poslednja nosi vrh obima po G1); kad je pretposlednja pre nedelje 4 ili je nema — poslednja (≥ 4). Plan po osećaju: poslednja nedelja baze, a kad je ona pre nedelje 4 (priprema 10–12 nedelja) — prva ne-rasteretna nedelja razvoja (≥ 4), umesto I treninga. Uvek jedini kvalitet te nedelje (G7).',
+    place:
+      'periodize.ts testWeekOf (jedina odluka nedelje testa); validate.ts TEST (ista funkcija); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Odluka organizatora posle STOP-a. Merenje: test u nedelji najvećeg cilja obima 84 / 112 → 17 / 128 planova mreže P0; planova po osećaju bez testa 1728 → 0 od 6336.'
+  },
+  /* ---------- K3 (hm-v2.13.0): izmene po sudu glavnog trenera, krug 2 (coach/ROUND-02.md § 4). ---------- */
+  {
+    id: 'K3-A',
+    rule: 'Dugi početnika na pravom mestu: u ne-rasteretnoj nedelji specifične faze dugi početnika nije kraći od najdužeg dugog izgradnje do tada. Cilj nedelje se zato sme podići iznad granice izgradnje najviše 10 % (izvodljiv cilj naviše, H6); kad ni tako ne staje — nedelja po H6 kao pre. Najduži dugi tako pada u poslednje ne-rasteretne nedelje pred taper.',
+    place:
+      'policy.ts beginner.specHoldOverPeak; volume.ts specHold10, holdCap10 (jedno mesto); generate.ts construct (pretraga cilja sa pragom dugog); validate.ts VOLUME_PEAK (ista funkcija); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Glavni trener, krug 2 (§ 3e, § 4.1): početnik p11 dostiže 13,2 km u razvoju pa u specifičnoj fazi pada na 11,4 km (RP trening sa WU/CD duži od T, lagani na 4 km). Merenje (mreža početnika 1890): pad dugog u specifičnoj 312 → 0, najduži van poslednje 3 ne-rasteretne nedelje 258 → 0, 0 odbijanja.'
+  },
+  {
+    id: 'K3-B',
+    rule: 'Taper ≤ 60 %: RP tapera ≤ 60 % poslednje RP doze i kad je najniži nivo lestvice (2 × 2000 m) veći — tada kraća struktura van lestvice, 2 deonice od ⌊60 % × poslednja / 2⌋ (korak 100 m, najmanje 1000 m; npr. 2 × 1500 m posle 5 km, 2 × 1200 m posle 4 km). Kraća struktura staje samo uz izvodljive dužine tapera (inače ishod kao pre: T početnika HI10 ili taper bez kvaliteta). Oštrenje trkačke nedelje ostaje kao uz najniži nivo (≤ 2 × 2000 m). Zamenjuje odluku STOP S1 → O1.',
+    place:
+      'policy.ts taper.rpShort; quality.ts taperRpFloor (jedno mesto), taperDoses; week.ts taper (strogo za kraću strukturu), sharpenerAllowed; validate.ts TAPER_QUALITY, REP_MIN, RP_FLOOR, RACE_SHARPENER (iste funkcije); gridInvariants.ts (nezavisno TAPER_RP, SHARPENER)',
+    rationale:
+      'Glavni trener, krug 2 (§ 2 nalaz 3, § 4.4): p03/p10 taper RP 25–26 min = 80 % doze. Merenje (mreže R/F/B 25 122 plana): taper > 60 % poslednje doze 10 617 → 0, 0 novih odbijanja; p03 24,7 → 18,6 min, p10 26,2 → 19,7 min, p11 23,5 → 14,1 min.'
+  },
+  {
+    id: 'K3-E',
+    rule: 'Brz trkač (VDOT tempa nedelje ≥ 50 i cilj nedelje ≥ 80 km): blok RP u dugom raste dva nivoa lestvice 4 → 6 → 8 km po nedelji B (ostali jedan nivo), dok blok staje u granice (≤ 40 % dugog, trajanje dugog), plafon RP cilja nedelje i ≤ 22 % vremena nedelje u RP.',
+    place:
+      'policy.ts specific.fast; specific.ts fastBlock, wantBlockKm, chooseBlockKm (jedno mesto); validate.ts LONG_BLOCK (ista funkcija); k3.node.test.ts (nezavisno)',
+    rationale:
+      'Glavni trener, krug 2 (§ 3a): za VDOT ≥ 50 pri ≥ 80 km/ned blok u dugom 4 → 6 → 8 km (danas 4 → 6). Merenje (mreže R/F): brzih 2943 planova, blok medijana 6 → 8 km (nizovi 4/6 → 6/8), 0 odbijanja; p05 4/6 → 6/8 km.'
+  },
+  /* ---------- K4 (hm-v2.14.0): stavke A i B glavnog trenera, krug 3 (coach/ROUND-03.md § 3). ---------- */
+  {
+    id: 'K4-A1',
+    rule: 'Redovan plan 3 dana ima nedelju B kao 4–6 dana (isti raspored specific.scheduledType, ista lestvica bloka 4 → 6 → 8 km, iste granice bloka): u nedelji B jedini dan kvaliteta je LAGAN dan (stanje Q1 se ne menja, kao Q2 u pouci 35), dugi nosi završni blok RP najnižeg nivoa po pravilu (jedan nivo po nedelji B). Glavna doza nedelje B se poredi sa poslednjom B (O1). Kasni razvoj bez bloka (raspored je samo specifična faza).',
+    place:
+      'specific.ts bAllowed (jedno mesto: 3 dana otvoreno); week.ts buildWeekIn (bEasyQ1); validate.ts ROLES (roleOf q1), LONG_BLOCK, B_WEEK_MISSING (3 dana bez dana kvaliteta); gridInvariants.ts (POUKA35 / DOSE_DECREASE za 3 dana)',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka A): 3 dana su najslabiji HM planovi (jedan podražaj, dugi isti 10+ nedelja). Merenje (mreže R/F/B, 25 122 plana): 3 dana R 2640 + F 990 planova dobija 1–2 nedelje sa blokom (zbir bloka medijana 10 km), 0 novih odbijanja, vrh < −10 % 0; 4–6 dana i početnik bez promene. p03/p10 4/4 km, p08 4/6 km.'
+  },
+  {
+    id: 'K4-A2',
+    rule: 'Talas dugog (redovan plan 3 dana): plafon = najduži dugi plana bez talasa; kad dugi stoji na plafonu u više od 3 ne-rasteretne nedelje izgradnje zaredom, plafon se troši OD KRAJA unazad — nedelja po rasporedu B ostaje na plafonu, ostale se smenjuju (plafon, 0,85 ×, …), plafon najviše 3 puta; ostale nedelje plafona imaju dugi ≤ ⌊0,85 × plafon⌋ (lagane, bez bloka; napomena WAVE_NOTE). Cilj nedelje talasa ostaje po pravilu (doza, rast obima i vrh se ne menjaju); kad lagani ≤ 0,8 × kraći dugi ne nose ostatak, planirano < cilj (lengths.waveLengths). Plan sa talasom važi kad zadrži isti plafon i ne spušta dozu kvaliteta (korak „drop" kog plan bez talasa nema) — inače plan bez talasa. Adaptacija: započete nedelje talasa prethodnog plana su činjenica, budućnost bez talasa; kad validator to ne prihvati — i bez upisanog talasa. 3 dana: tip (A/B) nedelje koja je cela prošla je činjenica upisanog plana; zaštićen dugi sa blokom se ne sudi po novom rasporedu (B_WEEK_ORDER).',
+    place:
+      'policy.ts specific.wave; lengths.ts longWave (jedno mesto odluke), waveCap10, waveLengths, WAVE_NOTE; generate.ts construct (dva prolaza, priorWave), constructWith (granica dugog kao pouka 28, pastType); week.ts (ctx.wave); validate.ts rollAt, LONG_WAVE, PLANNED_VS_TARGET, B_WEEK_ORDER; gridInvariants.ts WAVE',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka A): dugi 24 km svake nedelje na 3 dana. Merenje (mreže R/F, 3 dana): plafon > 3 zaredom 2535 planova → talas u 2262; 273 bez talasa (sudar sa lancem doza ili pad plafona); cilj obima bez promene, planirano izgradnje medijana −1,7 % (p10 −3,7 %, najviše −10,2 %), 0 novih odbijanja. p08 24 km u ned 12/15/18 (bilo 12, 14–16, 18), ned 14/16 20,4 km; p03/p10 15,7 km 3 puta.'
+  },
+  {
+    id: 'K4-B',
+    rule: 'Mali obim (sve distance, HM): u planu u kom bi najkraći lagan dan bio < 30 min u više od 2 ne-rasteretne nedelje izgradnje (plan bez tog pravila), u svakoj ne-rasteretnoj nedelji izgradnje bez ograničenja koraka čiji je najkraći lagan < 30 min taj dan (jedan po nedelji, među jednakima kasniji) je „odmor ili 20 min lagano po želji": dan šablona bez treninga (oblik T1 / dana odmora), napomena nedelje OPT_NOTE sa danom; njegovi km prelaze u ostale lagane do granice (≤ udeo × dugi), ostatak je planirano < cilj bez upozorenja po nedelji; nedelja ne pada ispod minimuma (H15). Jedna rečenica u napomeni plana. Broj dana i raspored (ekrani) se ne menjaju. Adaptacija: plan sa takvim nedeljama ostaje takav (činjenica plana).',
+    place:
+      'policy.ts lengths.optEasySec/optWeeks; lengths.ts optEasy (jedno mesto odluke), shortEasyPlan, OPT_NOTE; week.ts buildWeekIn (opt); generate.ts construct (uslov iz plana bez pravila), OPT_PLAN_NOTE; validate.ts ROLES (optRest), OPT_EASY, PLANNED_VS_TARGET; gridInvariants.ts OPT_EASY, DAYS_COUNT; adaptInvariants.ts',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka B): dan od 3–5 km ne vredi izlaska. Merenje (mreže R/F/B, 25 122 plana): lagan < 30 min u > 2 nedelje izgradnje 4297 → 389 planova (ostaju: nedelja bi pala ispod minimuma ili lagan i posle prenosa < 30 min); pogođeno 4240 planova, 28 500 nedelja; 0 novih odbijanja, vrh obima bez promene. Manjak obima ide u planirano < cilj: medijana po planu R-d4 30,9 km, R-d5 3,0 km, R-d6 ≈ 0; p06 −4,1 km (6 nedelja), p11 −2,0 km (14 nedelja).'
+  },
+  /* ---------- W1 (hm-v2.15.0): plan za bilo koji broj nedelja, uz upozorenje (nalog vlasnika, 11. 11. 2026). ---------- */
+  {
+    id: 'W1-A',
+    rule: 'Kratak plan (1 ≤ N < MIN; MIN 10, početnik 12): plan se pravi. Faze i rasterećenja = poslednjih N nedelja rasporeda najkraćeg plana istog tipa trkača (MIN nedelja; trkačka nedelja, taper, specifična, razvoj, baza otpada prva), rasterećenje po položaju u zadržanom rasporedu osim u nedeljama 1–2 (traži prethodnu izgradnju, H5). Uvod početnika: samo nedelje uvoda virtuelnog plana koje postoje (introWeeks − (MIN − N), ≥ 0). Obim i doze unapred od nedelje 1 po postojećim pravilima (start = trenutni obim, korak H6/G1, doza od početnog nivoa F4, dugi po udelu); test samo kad po G7 staje. Taper bez prethodne izgradnje: osnova = trenutni obim; taper ne pada ispod minimuma nedelje (H15). Provere koje pretpostavljaju pun plan važe za ono što postoji: WEEK1_BELOW_START samo za ne-rasteretnu izgradnju u nedelji 1; pretraga H5 (mesto, niz) ne važi za odsečen raspored (proverava ga DELOAD_SCHEDULE). Plan nosi činjenicu `layout` (adaptacija je čita iz upisanog plana, pouka 29). Planovi N ∈ [MIN, MAX] bajt-isti.',
+    place:
+      'periodize.ts layoutOf (jedino mesto odluke), minWeeksOf, withIntro, periodize; input.ts (bez PLAN_TOO_SHORT/BEGINNER_SHORT); volume.ts nominal10 (taper); generate.ts (plan.layout); validate.ts (PHASES, DELOAD_SCHEDULE, H5, WEEK1_BELOW_START, LAYOUT); steps.ts baseFrames; adapt.ts / written.ts (layout iz upisanog plana); w1.node.test.ts',
+    rationale:
+      'Nalog vlasnika 11. 11. 2026 („dozvoli svima da generišu plan za koliko god hoće nedelja uz upozorenje"), brief W1-bilo-koja-duzina-plana.md. Merenje: reports/W1-HM-REPORT.md.'
+  },
+  {
+    id: 'W1-B',
+    rule: 'Dug plan (MAX < N ≤ 52; MAX 20): K = N − MAX nedelja osnovne pripreme + standardni plan od MAX nedelja (njegove faze i rasterećenja H4/H5, pomereni za K). Osnovna priprema: faza baze, oznaka nedelje `prep`, bez dana kvaliteta (dan kvaliteta lagan, kao uvod), ubrzanja na jednom laganom danu (F3), dugi po pravilu; cilj = trenutni obim (bez rasta), svaka četvrta nedelja (4, 8, …) rasterećenje 0,8 × (H5). Osnovna priprema ne menja osnov rasta ni vrh (standardni deo kreće od istog trenutnog obima). H5 se proverava za standardni deo kao zaseban segment (od nedelje K + 1). Adaptacija: nov start ukida pripremu preostalih nedelja (A12); povratak posle smanjenja u pripremi rastom H6 do trenutnog obima. N > 52: odbijanje PLAN_TOO_LONG („najviše 52 nedelje").',
+    place:
+      'policy.ts input.weeksHardMax, prep.deloadEvery; periodize.ts layoutOf, periodize (prep), rePeriodize; volume.ts nominal10, leaveWeek, adaptNominal10, leaveAdaptWeek; week.ts (intro || prep, PREP_NOTE); validate.ts (LAYOUT, intro, H5 segment); input.ts; w1.node.test.ts',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-B). Merenje: reports/W1-HM-REPORT.md.'
+  },
+  {
+    id: 'W1-C',
+    rule: 'Upozorenje plana van opsega dužine: tačno jedno upozorenje PLAN_LENGTH (validator, kanal plan.warnings) i ista rečenica u napomeni plana (aplikacija ih prikazuje jednom, bez ponavljanja). Kratak: „Skraćena priprema: plan ima N nedelja, a za pun ciklus za polumaraton preporučuje se najmanje MIN. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta." Dug: „Plan je duži od preporučenih MAX nedelja: prvih K nedelja je osnovna priprema na sadašnjem obimu, a puna priprema za polumaraton počinje u nedelji K+1." Padeži broja nedelja po broju; broj nedelje po weekLabel. Napomena početnika ostaje. Kratak plan nema upozorenje LONG_RUN_SHORT (upozorenje dužine ga pokriva).',
+    place:
+      'periodize.ts lengthWarning (jedno mesto teksta); generate.ts (napomena plana); validate.ts PLAN_LENGTH (upozorenje; greška kad napomena nema rečenicu), LONG_RUN_SHORT; w1.node.test.ts',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-C).'
+  },
+  {
+    id: 'W1-D',
+    rule: 'Adaptacija i prenos plana po W1-A/B kao svakog drugog: raspored faza (kratak: plan od fullWeeks; dug: prepWeeks) je činjenica upisanog plana (HmV2Plan.layout → Written.layout → layoutOf), ne računa se ponovo iz dužine (pouka 29); validator adaptiranog plana čita istu činjenicu. Nov start (A12) ukida osnovnu pripremu preostalih nedelja. Kao izvor predaje plan ne šalje svoju politiku; kao cilj (kasna predaja < 10 nedelja, rana > 20) gradi plan po W1-A/B.',
+    place:
+      'generate.ts construct (prior.layout); adapt.ts (Written.layout); written.ts; validate.ts (lay iz plan.layout kad je adaptacija); periodize.ts rePeriodize; adaptInvariants.ts (plan bez tapera); w1Invariants.ts, w1.node.test.ts (mreža W1-D)',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-D). Merenje: reports/W1-HM-REPORT.md.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.8.0',
+  version: 'hm-v2.15.0',
+
+  /** W1-B: osnovna priprema dugog plana — svaka deloadEvery-ta nedelja rasterećenje (faktor H5). */
+  prep: { deloadEvery: 4 },
 
   /** H1 (dani i obim: H15). */
   input: {
-    /** < 10 nedelja: trajno odbijanje (preporuka 10K). */
+    /** Najkraći plan punog ciklusa; W1-A: kraći plan se pravi uz upozorenje (periodize.layoutOf). */
     weeksMin: 10,
-    /** > 20 nedelja: počni kasnije. */
+    /** Najduži standardni plan; W1-B: duži plan = osnovna priprema + standardni plan od weeksMax nedelja. */
     weeksMax: 20,
+    /** W1-B: tehnička granica — duži plan se odbija. */
+    weeksHardMax: 52,
     resultMaxAgeDays: 84,
     resultDistancesM: [5000, 10000, 21097.5, 42195] as readonly number[],
     vdotMin: 30,
@@ -572,8 +816,10 @@ export const HM_V2_POLICY = {
     }
   },
 
-  /** H16: test (samo plan po osećaju koji nije početnik). */
-  test: { km: 5 },
+  /** H16: test (plan po osećaju koji nije početnik); P5-F1: i plan sa rezultatom (ne početnik) sa ≥ resultMinWeeks
+      nedelja — poslednja ne-rasteretna nedelja razvoja. */
+  /** G7 (P8): test ne ide pre nedelje minWeek; u nedelji testa test je jedini kvalitet. */
+  test: { km: 5, resultMinWeeks: 12, minWeek: 4 },
 
   /** H17: JEDINA tabela početnika (udeo dugog, minimum i max nedelje: red H15 za isti broj dana). */
   beginner: {
@@ -593,6 +839,12 @@ export const HM_V2_POLICY = {
     longMaxSec: 8100,
     /** Upozorenje LONG_RUN_SHORT kad je najduži dugi < longWarnKm. */
     longWarnKm: 14,
+    /** G8 (P8, odluka posle STOP S2): dugi početnika sme do longReachShare cilja nedelje da bi dostigao longReachKm. */
+    longReachShare: 0.5,
+    longReachKm: 16,
+    /** K3-A: specifična faza — cilj ne-rasteretne nedelje sme iznad granice izgradnje najviše ovaj udeo granice da bi
+        dugi ostao ≥ najdužeg dugog izgradnje do tada. */
+    specHoldOverPeak: 0.1,
     /** HI10: prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja i tapera [km]. */
     tFirstKm: 1.5
   },
@@ -638,7 +890,21 @@ export const HM_V2_POLICY = {
     growthMinKm: 1.0,
     growthMaxKm: 4.0,
     peakFactor: 1.4,
-    peakAddKm: 20
+    peakAddKm: 20,
+    /** G1 (P8): faktor vrha prema startu po dužini pripreme (prvi red čiji maxWeeks ≥ broj nedelja plana). */
+    peakFactorByWeeks: [
+      { maxWeeks: 12, factor: 1.3 },
+      { maxWeeks: 15, factor: 1.35 },
+      { maxWeeks: Infinity, factor: 1.4 }
+    ] as readonly { maxWeeks: number; factor: number }[],
+    /** G1 (P8): satni plafon nedelje — cilj km × srednji lagan tempo ≤ sati, po VDOT-u plana (po osećaju: procena). */
+    peakHours: [
+      { fromVdot: 0, hours: 7.5 },
+      { fromVdot: 40, hours: 8.5 },
+      { fromVdot: 50, hours: 9.5 }
+    ] as readonly { fromVdot: number; hours: number }[],
+    /** G1 (P8): korak rasta manji od ovog udela tekućeg cilja se ne primenjuje (rast ide na sledeću nedelju). */
+    minStepShare: 0.03
   },
 
   /** H7. */
@@ -646,6 +912,9 @@ export const HM_V2_POLICY = {
     factor: 0.7,
     doseShare: 0.6,
     rpMin: { reps: 2, repM: 2000 } as Rep,
+    /** K3-A/K3-B: kad je ≈ 60 % poslednje RP doze ispod rpMin — kraća struktura van lestvice: 2 deonice od
+        ⌊60 % × poslednja / 2⌋ (korak roundM), najmanje minRepM (2 × 1500 m posle 5 km, 2 × 1200 m posle 4 km). */
+    rpShort: { reps: 2, minRepM: 1000, roundM: 100 },
     tMinKm: 2.0,
     longFactor: 0.6
   },
@@ -654,7 +923,16 @@ export const HM_V2_POLICY = {
   raceWeek: {
     /** Dana trčanja uključujući trku = min(broj dana, maxRunDays). */
     maxRunDays: 5,
-    sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
+    /** G5 (P8): dve jednake deonice u trkačkom tempu, ukupno ≤ maxWorkSec rada (12 min) po tempu nedelje; deonica
+        deljiva sa roundM, najviše repM (2000 m), najmanje minRepM (ispod toga bez oštrenja — ubrzanja dana pred trku). */
+    sharpener: {
+      reps: 2,
+      repM: 2000,
+      recoverySec: 120,
+      maxWorkSec: 720,
+      minRepM: 400,
+      roundM: 100
+    },
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },
@@ -706,7 +984,8 @@ export const HM_V2_POLICY = {
       { reps: 2, repM: 4000 },
       { reps: 3, repM: 3000 },
       { reps: 2, repM: 5000 },
-      { reps: 3, repM: 4000 }
+      { reps: 3, repM: 4000 },
+      { reps: 3, repM: 5000 }
     ] as readonly Rep[]
   },
 
@@ -731,7 +1010,29 @@ export const HM_V2_POLICY = {
   },
 
   /** H11: jedan plafon po zoni, po treningu, udeo ciljnog obima nedelje. */
-  caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.15 },
+  caps: {
+    R: 0.05,
+    I: 0.08,
+    T: 0.1,
+    /** P1-S2: RP po pojasu cilja nedelje — < 40 km 15 %, ≥ 40 km 20 %. */
+    RP: [
+      { fromKm: 0, share: 0.15 },
+      { fromKm: 40, share: 0.2 }
+    ] as readonly { fromKm: number; share: number }[],
+    /** G4 (P8): rad jednog treninga usred nedelje u sekundama, po tempu zone te nedelje — T 30 min (cilj nedelje
+        ≥ 80 km: 40 min); I 20 min za VDOT < 40, inače 24 min; RP 45 min. Blok RP u dugom nije trening usred nedelje. */
+    workSec: {
+      T: [
+        { fromKm: 0, sec: 1800 },
+        { fromKm: 80, sec: 2400 }
+      ] as readonly { fromKm: number; sec: number }[],
+      I: [
+        { fromVdot: 0, sec: 1200 },
+        { fromVdot: 40, sec: 1440 }
+      ] as readonly { fromVdot: number; sec: number }[],
+      RP: 2700
+    }
+  },
 
   /** H13 (udeo dugog: H15). longMaxKm: odluka organizatora HM-01 → 02 (≈ 1,15 × trka). */
   lengths: {
@@ -742,7 +1043,13 @@ export const HM_V2_POLICY = {
     /** T1 (krug T, organizator 23. 10.): u nedelji izgradnje lagan ≤ ovaj udeo dugog iste nedelje (km) i
         ≥ max(easyMinKm, easyMinSec laganim tempom). */
     easyLongMaxShare: 0.8,
-    easyMinSec: 1200
+    /** G6 (P8): plan sa 4 i više dana — lagan ≤ ovaj udeo dugog iste nedelje (3 dana ostaje easyLongMaxShare). */
+    easyLongMaxShare4: 0.7,
+    easyMinSec: 1200,
+    /** K4-B: plan u kom bi najkraći lagan dan bio < optEasySec u više od optWeeks nedelja izgradnje — taj dan je
+        „odmor ili 20 min lagano po želji" (ne računa se u obim nedelje). */
+    optEasySec: 1800,
+    optWeeks: 2
   },
 
   /** Pouka 28 (HI7): dugi svake nedelje ≤ max(factor × L, L + addKm), L = najduži dugi prethodnih
@@ -783,6 +1090,13 @@ export const HM_V2_POLICY = {
     painEasyFactor: 0.7,
     fatigueRpe: 7,
     fatigueCount: 2,
+    /** P5-F2: zahtevan trening (Q1, Q2, dugi sa blokom; ne test) preskočen ili sa RPE ≥ strainRpe — dva uzastopna u
+        poslednjih strainLookbackDays dana → sledeća nedelja izgradnje bez rasta doze. */
+    strainRpe: 9,
+    strainCount: 2,
+    strainLookbackDays: 14,
+    strainMessage:
+      'Poslednja dva zahtevna treninga su bila preteška ili preskočena — doza ove nedelje ne raste; ako tempo deluje pretežak, unesi nov rezultat ili uradi test.',
     overShare: 1.15,
     returnGrowth: 0.1,
     returnGrowthMinKm: 1.0,
@@ -792,8 +1106,35 @@ export const HM_V2_POLICY = {
       'Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4).'
   },
 
-  /** H12: početni nivo slota ≤ udeo plafona zone (H11). */
-  startLevel: { capShare: 0.6 },
+  /** P1-S1 (hm-v2.9.0): specifična faza redovnog plana 4–6 dana — smena nedelja A/B (poslednja ne-rasteretna nedelja
+      izgradnje je B, unazad A, B, …); tip B: RP trening ostaje, Q2 lagan, završni blok dugog u RP (lestvica km, jedan
+      nivo po nedelji B), blok ≤ blockMaxLongShare dužine dugog. */
+  specific: {
+    blockKm: [4, 6, 8] as readonly number[],
+    blockMaxLongShare: 0.4,
+    /** P8-HM (b): u nedelji sa blokom rad u trkačkom tempu (RP trening + blok) ≤ ovaj udeo VREMENA nedelje. */
+    rpWeekTimeShare: 0.22,
+    /** K3-E: brz trkač (VDOT ≥ vdotMin i cilj nedelje ≥ weekKmMin) — `steps` nivoa bloka po nedelji B (4 → 6 → 8 km
+        dok granice bloka, plafon RP i 22 % vremena dozvoljavaju). */
+    fast: { vdotMin: 50, weekKmMin: 80, steps: 2 },
+    /** K4-A2: talas dugog (redovan plan 3 dana) — dugi na plafonu > `run` ne-rasteretnih nedelja zaredom → plafon
+        najviše `maxAtCap` puta (od kraja unazad, smena), ostale nedelje plafona `share` × plafon. */
+    wave: { run: 3, maxAtCap: 3, share: 0.85 }
+  },
+
+  /** P5-F3 (hm-v2.10.0): ubrzanja na kraju jednog laganog dana nedelje izgradnje i tapera (ne trkačka nedelja, ne uvod
+      početnika, ne dan bola/odmora) — baza 4 × 20 s, od razvoja 6 × 20 s, početnik uvek 4 × 20 s; deo laganog
+      trčanja (dužina dana ostaje, nije rad zone). */
+  strides: { sec: 20, baseReps: 4, laterReps: 6, beginnerReps: 4 },
+
+  /** H12: početni nivo slota ≤ udeo plafona zone (H11); P5-F4: T (kontinuirano i cruise) i I 80 %, R i RP 60 %. */
+  startLevel: {
+    capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as Readonly<
+      Record<'R' | 'I' | 'T' | 'RP', number>
+    >,
+    /** P5-F4 × pouka 32: kad nijedan nivo iznad ovog udela ne staje u trajanje dugog — nivo po ovom udelu. */
+    fallbackShare: 0.6
+  },
 
   /** H14. */
   workout: {
@@ -861,6 +1202,10 @@ export interface PlanRule extends DayRule {
   readonly beginner: boolean;
   /** H13/H17: plafon dugog sporim E [s]. */
   readonly longMaxSec: number;
+  /** T1/G6: u nedelji izgradnje lagan ≤ ovaj udeo dugog (3 dana i početnik 0,8; redovan plan 4+ dana 0,7). */
+  readonly easyLongMaxShare: number;
+  /** G8: početnik — dugi sme do `share` cilja nedelje da bi dostigao `km` (redovan plan nema polje). */
+  readonly longReach?: { readonly share: number; readonly km: number };
   /** H13/H17: upozorenje kad je najduži dugi plana < longWarnKm. */
   readonly longWarnKm: number;
   /** H6/H17: rast nedelje izgradnje i granica vrha. */
@@ -883,11 +1228,13 @@ export function planRule(count: number, experience: 'beginner' | 'regular'): Pla
   const d = dayRule(count);
   if (!d) return null;
   const P = HM_V2_POLICY;
+  const easyShare = count >= 4 ? P.lengths.easyLongMaxShare4 : P.lengths.easyLongMaxShare;
   if (experience === 'regular')
     return {
       ...d,
       beginner: false,
       longMaxSec: P.lengths.longMaxSec,
+      easyLongMaxShare: easyShare,
       longWarnKm: P.lengths.longWarnKm,
       growth: P.volume.growth,
       growthMinKm: P.volume.growthMinKm,
@@ -910,6 +1257,9 @@ export function planRule(count: number, experience: 'beginner' | 'regular'): Pla
     kmMax: row.kmMax,
     beginner: true,
     longMaxSec: b.longMaxSec,
+    // G6 (odluka posle STOP): plan sa oznakom početnika — lagan ≤ 0,80 × dugi bez obzira na broj dana.
+    easyLongMaxShare: P.lengths.easyLongMaxShare,
+    longReach: { share: b.longReachShare, km: b.longReachKm },
     longWarnKm: b.longWarnKm,
     growth: b.growth,
     growthMinKm: b.growthMinKm,

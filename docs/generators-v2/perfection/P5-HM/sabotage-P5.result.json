@@ -1,0 +1,189 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P5-HM/sabotage-P5.json",
+ "head": "44c9c27",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 26.6,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P5-F1 plan sa rezultatom bez testa",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F1: kontrolni test u planu sa rezultatom > ≥ 12 nedelja, ne početnik: tačno jedan test, poslednja ne-rasteretna nedelja razvoja, dan Q1, napomena",
+    "message": "AssertionError: expected [] to deeply equal [ 6 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "96ab29f76654c4d0c0b1ae0f1293faadf5b104529580ace1fc8a9e3967187879",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.3
+  },
+  {
+   "index": 2,
+   "name": "P5-F1 test u prvoj nedelji razvoja",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F1: kontrolni test u planu sa rezultatom > ≥ 12 nedelja, ne početnik: tačno jedan test, poslednja ne-rasteretna nedelja razvoja, dan Q1, napomena",
+    "message": "AssertionError: expected [ 4 ] to deeply equal [ 6 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "37407cdc89872f1c684148789e34a37dc1773f11c35ef7d8eac788a8a74239c0",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.3
+  },
+  {
+   "index": 3,
+   "name": "P5-F2 nedelja bez rasta ipak uzima sledeći nivo",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F2: kvalitet u adaptaciji > dva uzastopna RPE ≥ 9 → nedelja n bez rasta doze (napomena, traka); cilj obima isti",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "c5669e78be8b980590d231e36eca49544f32a6d70a5fb383e9d878039dab3da8",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.4
+  },
+  {
+   "index": 4,
+   "name": "P5-F2 prioritet: bol ne nadjačava",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F2: kvalitet u adaptaciji > prioritet: bol i umor nadjačavaju (applied false); nepotpuna pokrivenost — bez okidača",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "666aa5f7035c1ba12381e017297b75037fc6360519ada07506ce5cb410d0112d",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.4
+  },
+  {
+   "index": 5,
+   "name": "P5-F3 od razvoja 4 umesto 6 ubrzanja",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F3: ubrzanja na laganom danu > svaka nedelja osim trkačke i uvoda: tačno jedan lagan dan; baza/početnik 4 × 20 s, od razvoja 6; km dana isti",
+    "message": "AssertionError: expected 4 to be 6 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "472e4b6ec9792ffbf4573131a1a6aba494cc7f06fddaf30758ec33e1414cfd02",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.3
+  },
+  {
+   "index": 6,
+   "name": "P5-F3 dan ubrzanja: prvi lagan dan umesto najudaljenijeg",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F3: ubrzanja na laganom danu > svaka nedelja osim trkačke i uvoda: tačno jedan lagan dan; baza/početnik 4 × 20 s, od razvoja 6; km dana isti",
+    "message": "AssertionError: expected '2026-12-29' to be '2026-12-31' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "113b58963f80f1f6a345fa7a762f15f79227f776749ec994bf7a27e94045083f",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.3
+  },
+  {
+   "index": 7,
+   "name": "P5-F4 početni nivo T 60 %",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts",
+    "test": "P5-F4: početni nivo T i I ≤ 80 % plafona > prva nedelja T i prvi I: najviši nivo ≤ 80 % plafona; R i RP ostaju 60 %; početnik prvi nivo",
+    "message": "AssertionError: expected 2500 to be greater than 2672.000001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "fb8cefb00e13af4fc06003fa1d0202a3f6005c5137b2b15921439b0de00ed096",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.3
+  }
+ ]
+}

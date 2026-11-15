@@ -6,6 +6,7 @@
      su procenjeni sredinom E opsega (vreme × E tempo). */
 
 import { daysRule, FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
+import { raceTimeForVdot } from './paces.ts';
 import { userText } from './text.ts';
 import type {
   Basis,
@@ -172,11 +173,18 @@ export function buildWorkout(
 
 /* ---------- Budžeti i veličine ---------- */
 
+/** 5k-v2.13.0 (P4 S1): udeo I (uključujući RP) za cilj nedelje — poslednji red `iMaxShareByTargetKm` sa fromKm ≤ cilj. */
+export function iMaxShareOf(targetKm: number): number {
+  let share: number = P.quality.iMaxShareByTargetKm[0].share;
+  for (const r of P.quality.iMaxShareByTargetKm) if (targetKm + 1e-9 >= r.fromKm) share = r.share;
+  return share;
+}
+
 /** Budžet [km] = udeo × cilj nedelje, zaokružen NANIŽE na 10 m (zaokruživanje ne sme da probije udeo). */
 export function qualityBudgets(targetKm: number): QualityBudgets {
   const floor2 = (x: number): number => Math.floor(x * 100 + 1e-9) / 100;
   return {
-    I: floor2(targetKm * P.quality.iMaxShare),
+    I: floor2(targetKm * iMaxShareOf(targetKm)),
     T: floor2(targetKm * P.quality.tMaxShare),
     R: floor2(targetKm * P.quality.rMaxShare)
   };
@@ -187,6 +195,129 @@ export function warmupBand(targetKm: number): { warmupKm: number; cooldownKm: nu
   let band: { warmupKm: number; cooldownKm: number } = P.warmup.bands[0];
   for (const b of P.warmup.bands) if (targetKm >= b.fromWeekKm) band = b;
   return { warmupKm: band.warmupKm, cooldownKm: band.cooldownKm };
+}
+
+/** 5k-v2.15.0 (P8 c): budžet prvog I treninga posle R faze = budžet I × firstIShareOfBudget, naniže na 10 m (konstruktor
+    sa rezultatom i po osećaju, validator PEAK_MAIN_FLOOR). */
+export const firstIBudget = (budgetI: number): number =>
+  Math.floor(budgetI * P.quality.firstIShareOfBudget * 100 + 1e-9) / 100;
+
+/** 5k-v2.15.0 (P8 b, G2): zona rada vrste kvaliteta (granica rasterećenja/tapera po zoni). */
+export function capZoneOf(type: QualityType): 'I' | 'RP' | 'T' | 'R' {
+  if (type === 'R' || type === 'R_sharpen') return 'R';
+  if (type === 'I') return 'I';
+  if (type === 'T_short' || type === 'T_cruise') return 'T';
+  return 'RP';
+}
+
+/** 5k-v2.15.0 (P8 G2): budžet [km] najnižeg nivoa lestvice vrste (najmanji smislen trening po pravilima: minReps ×
+    najkraće dozvoljeno ponavljanje na tempu; kratak T: shortTMinKm / shortTShareOfBudget); Infinity = nema ga. */
+export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase, _targetKm = 0): number {
+  const q = P.quality;
+  const reps = (
+    opts: readonly number[],
+    pace: number,
+    min: number,
+    maxSec: number,
+    minSec = 0
+  ): number => {
+    const ok = opts.filter((o) => o * pace <= maxSec + 1e-9 && o * pace + 1e-9 >= minSec);
+    return ok.length ? Math.round(Math.min(...ok) * min * 100) / 100 : Infinity;
+  };
+  switch (type) {
+    case 'R':
+      return reps(q.repOptionsKm.R, p.R, q.minReps.R, q.rRepMaxSec);
+    case 'R_sharpen':
+      return reps(q.repOptionsKm.Rsharpen, p.R, q.minReps.R, q.rRepMaxSec);
+    case 'I':
+      return reps(q.repOptionsKm.I, p.I, q.minReps.I, q.iRepMaxSec, q.iRepMinSec);
+    case 'RP':
+      return reps(q.repOptionsKm.RP, p.RP, q.minReps.RP, q.iRepMaxSec);
+    case 'T_cruise':
+      return reps(q.repOptionsKm.Tcruise, p.T, q.minReps.T, tMaxSec(phase));
+    case 'T_short':
+      return Math.ceil((q.shortTMinKm / q.shortTShareOfBudget) * 100) / 100;
+    case 'RP_sharpener':
+      return q.raceSharpener.reps * q.raceSharpener.minRepKm;
+    default:
+      return Infinity;
+  }
+}
+
+/** 5k-v2.15.0 (P8 dopuna G4): plafon jednog treninga u km = minuti rada (quality.minuteCap) / tempo zone; Infinity za
+    vrste bez plafona (R, oštrenje trkačke nedelje — G5). */
+export function minuteCapKm(type: QualityType, p: Paces, targetKm = 0): number {
+  const m = P.quality.minuteCap;
+  const km = (min: number, pace: number): number =>
+    Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
+  if (type === 'I')
+    return km(
+      iDoseRange(p.vdot, targetKm)?.hi ?? (p.vdot < m.iSlowVdot ? m.iSlowMin : m.iMin),
+      p.I
+    );
+  if (type === 'RP') return km(m.rpMin, p.RP);
+  if (type === 'T_short' || type === 'T_cruise') return km(m.tMin, p.T);
+  return Infinity;
+}
+
+/** 5k-v2.16.0 (K3-A) — JEDINO mesto opsega rada jednog I treninga [min] po cilju nedelje (quality.iDose): null ispod
+    fromKm (važi G4); VDOT < iSlowVdot samo plafon (lo 0); inače pojas { lo: cilj vrha, hi: plafon }. */
+export function iDoseRange(vdot: number, targetKm: number): { lo: number; hi: number } | null {
+  const d = P.quality.iDose;
+  if (targetKm + 1e-9 < d.fromKm) return null;
+  if (vdot < P.quality.minuteCap.iSlowVdot) return { lo: 0, hi: d.slowHi };
+  let band: { lo: number; hi: number } = d.bands[0];
+  for (const b of d.bands) if (targetKm + 1e-9 >= b.fromKm) band = b;
+  return { lo: band.lo, hi: band.hi };
+}
+
+/** 5k-v2.16.0 (K3-A): budžet I nedelje vrhunca — sa donjom granicom opsega (iDoseRange) budžet je plafon minuta I
+    (gornja granica), inače udeo nedelje (qualityBudgets). Konstruktor (vdotWeekQuality) i validator (I_SHARE,
+    PEAK_MAIN_FLOOR). */
+export function iPeakBudget(budgetI: number, targetKm: number, p: Paces): number {
+  const r = iDoseRange(p.vdot, targetKm);
+  return r && r.lo > 0 ? Math.max(budgetI, minuteCapKm('I', p, targetKm)) : budgetI;
+}
+
+/** 5k-v2.16.0 (K3-A): budžet PRVOG I lanca (P8 c) uz opseg sa donjom granicom — najmanje lo / peakMainMinShare (izbor
+    sa radom ≥ peakMainMinShare budžeta je tada ≥ lo), najviše budžet I vrhunca; bez opsega firstIBudget. Konstruktor
+    (vdotWeekQuality) i validator (PEAK_MAIN_FLOOR). */
+export function firstIPeakBudget(budgetI: number, targetKm: number, p: Paces): number {
+  const r = iDoseRange(p.vdot, targetKm);
+  if (!r || r.lo <= 0) return firstIBudget(budgetI);
+  const lo = Math.ceil(((r.lo * 60) / p.I / P.quality.peakMainMinShare) * 100 - 1e-9) / 100;
+  return Math.min(budgetI, Math.max(firstIBudget(budgetI), lo));
+}
+
+/** 5k-v2.15.0 (P8 G2, G4) — JEDNA funkcija plafona zone (sa rezultatom): min(max(udeo × cilj, prvi nivo), minuti);
+    u trkačkoj nedelji bez prvog nivoa (G5). Kratak T: budžet je osnov za udeo (rad = udeo × budžet). */
+export function zoneBudget(
+  type: QualityType,
+  budget0: number,
+  p: Paces,
+  phase: Phase,
+  targetKm = 0
+): number {
+  const first = phase === 'race' ? 0 : firstLevelBudget(type, p, phase);
+  const cap = minuteCapKm(type, p, targetKm);
+  const capB = type === 'T_short' ? cap / P.quality.shortTShareOfBudget : cap;
+  return Math.min(Math.max(budget0, Number.isFinite(first) ? first : 0), capB);
+}
+
+/** 5k-v2.15.0 (P8 b, G2): budžet sesije pod granicom zone `capWork` (rad u km; kratak T: rad = udeo budžeta, pa
+    budžet = rad / shortTShareOfBudget) — min(budžet, max(granica, prvi nivo lestvice)). Bez granice: budžet. JEDINO
+    mesto (rasterećenje i taper, sa rezultatom). */
+export function cappedBudget(
+  type: QualityType,
+  budgetKm: number,
+  capWork: number | undefined,
+  p: Paces,
+  phase: Phase
+): number {
+  if (capWork === undefined) return budgetKm;
+  const cap = type === 'T_short' ? capWork / P.quality.shortTShareOfBudget : capWork;
+  const floor2 = (x: number): number => Math.floor(x * 100 + 1e-9) / 100;
+  return Math.min(budgetKm, Math.max(floor2(cap), firstLevelBudget(type, p, phase)));
 }
 
 export interface RepChoice {
@@ -306,6 +437,42 @@ export function chooseProgressiveReps(
 export function roundRecoverySec(sec: number): number {
   const step = P.quality.recovery.roundSec;
   return Math.max(step, Math.round(sec / step) * step);
+}
+
+/** 5k-v2.15.3 (P8 završetak, odluka 2 — dopuna organizatora; heuristika: p07 3 × 1000 → 6 × 800 m u jednoj nedelji nije
+    dozvoljeno, ali ni najsitniji korak nije namera): sledeća I doza posle doze `prev` — najveći nivo lestvice (ponuda I,
+    ponavljanja u granicama, staje u plafon zone `budgetKm`, workouts.zoneBudget) čiji je rad ≤ iStepMaxGrowth × rad
+    prethodne I nedelje, a najmanje sledeći veći nivo; pri jednakom radu ranija (duža) opcija. Nema većeg nivoa → null.
+    JEDINO mesto koraka I u vrhuncu. */
+export function iStepUp(
+  budgetKm: number,
+  p: Paces,
+  prev: PrevDose,
+  targetKm = 0
+): RepChoice | null {
+  const q = P.quality;
+  const prevWork = workOf(prev);
+  const top = prevWork * q.iStepMaxGrowth + 1e-9;
+  // 5k-v2.16.0 (K3-A): ispod donje granice opsega (iDoseRange) korak sme do najmanjeg nivoa ≥ donja granica.
+  const lo = ((iDoseRange(p.vdot, targetKm)?.lo ?? 0) * 60) / p.I;
+  let next: RepChoice | null = null;
+  let best: RepChoice | null = null;
+  let toLo: RepChoice | null = null;
+  for (const repKm of q.repOptionsKm.I) {
+    const sec = repKm * p.I;
+    if (sec > q.iRepMaxSec || sec < q.iRepMinSec) continue;
+    const most = Math.min(q.maxReps.I, Math.floor(budgetKm / repKm + 1e-9));
+    for (let reps = q.minReps.I; reps <= most; reps++) {
+      const c = { reps, repKm };
+      const w = workOf(c);
+      if (w <= prevWork + 1e-9) continue;
+      if (!next || w < workOf(next) - 1e-9) next = c;
+      if (w <= top && (!best || w > workOf(best) + 1e-9)) best = c;
+      if (lo > 0 && w + 1e-9 >= lo && (!toLo || w < workOf(toLo) - 1e-9)) toLo = c;
+    }
+  }
+  if (toLo && (!best || workOf(best) + 1e-9 < lo)) return toLo;
+  return best ?? next;
 }
 
 export type SessionResult =
@@ -442,12 +609,14 @@ function tSession(t: TDose, targetKm: number, p: Paces): SessionResult & { ok: t
  */
 export function qualitySession(
   type: QualityType,
-  budgetKm: number,
+  budget0: number,
   targetKm: number,
   p: Paces,
   phase: Phase,
   progression?: { prev: PrevDose | null }
 ): SessionResult {
+  // 5k-v2.15.0 (P8 G2, G4): plafon zone = min(max(udeo × cilj nedelje, prvi nivo lestvice vrste), plafon minuta).
+  const budgetKm = zoneBudget(type, budget0, p, phase, targetKm);
   const q = P.quality;
   const band = warmupBand(targetKm);
   const wu: BlockSpec = { kind: 'warmup', km: band.warmupKm };
@@ -492,11 +661,15 @@ export function qualitySession(
       ] as const;
       // 5k-v2.12.0 (T4): glavni I (vrhunac) / RP (oštrenje) trkača sa rezultatom — prvo najmanji korak naviše sa radom
       // ≥ peakMainMinShare budžeta; nema ga u ponudi → postojeći prag mainMinShareOfBudget (ne naglo, bez odbijanja).
+      // 5k-v2.15.1 (P8 završetak, odluka 2): I u vrhuncu posle prethodnog I (i smanjenog prvog) raste najviše jedan
+      // korak lestvice nedeljno — najmanji rad iz ponude strogo veći od prethodnog, bez donjeg praga budžeta.
       const c = progression
-        ? ((phase === 'peak' || phase === 'sharpen'
-            ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
-            : null) ??
-          chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict'))
+        ? isI && phase === 'peak' && progression.prev
+          ? iStepUp(budgetKm, p, progression.prev, targetKm)
+          : ((phase === 'peak' || phase === 'sharpen'
+              ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
+              : null) ??
+            chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict'))
         : chooseReps(...args);
       if (!c)
         return progression?.prev
@@ -525,16 +698,14 @@ export function qualitySession(
       return tSession(t, targetKm, p);
     }
     case 'RP_sharpener': {
-      const s = q.raceWeekSharpener;
-      const c = chooseReps(
-        budgetKm,
-        q.repOptionsKm.RPsharpener,
-        p.RP,
-        s.minReps,
-        s.maxReps,
-        q.iRepMaxSec
-      );
-      if (!c) return fail('Oštrenje RP');
+      // 5k-v2.15.0 (P8 dopuna G5): 2 jednake deonice, dužina deljiva sa 100 m (≥ 400 m), ukupno ≤ 12 min rada.
+      const s = q.raceSharpener;
+      // Budžet bira dužinu, ali ne ispod 400 m (najniži nivo); granica su minuti (G5).
+      const byMin = Math.min(s.maxWorkSec / s.reps, q.iRepMaxSec) / p.RP;
+      const fl = (x: number): number => Math.floor(x / s.stepKm + 1e-9) * s.stepKm;
+      const repKm = Math.min(Math.max(fl(budgetKm / s.reps), s.minRepKm), fl(byMin));
+      if (repKm + 1e-9 < s.minRepKm) return fail('Oštrenje RP');
+      const c: RepChoice = { reps: s.reps, repKm: Math.round(repKm * 10) / 10 };
       const recSec = roundRecoverySec(c.repKm * p.RP * q.recovery.rpTimeRatio);
       const blocks: BlockSpec[] = [
         wu,
@@ -576,6 +747,12 @@ export interface WeekDose {
   feel?: Partial<Record<FeelKind, FeelDose>>;
   /** 2.4.0 (feel.ts): ključ nedeljne doze baze (baseDoseKey) za brojanje iste doze. */
   key?: string;
+  /** 5k-v2.14.0 (P5 F2): R oštrenja (drugi kvalitet oštrenja) — za nedelju zadržane doze. */
+  rs?: RepChoice;
+  /** 5k-v2.16.0 (K3-C), 3 dana u bazi: koliko ne-rasteretnih nedelja zaredom (među nedeljama te vrste) je `main` (R) /
+      `t` (T) ista doza. */
+  rUses?: number;
+  tUses?: number;
 }
 
 /** 2.4.0: vrste kvaliteta bez brojčanog tempa (feel.ts); RP_SHORT = početnik sa rezultatom (VDOT RP). */
@@ -600,6 +777,9 @@ export type WeekQuality =
     }
   | { ok: false; message: string };
 
+/** 5k-v2.16.0 (K3-C): ista R doza (broj, dužina, oporavak). */
+const sameReps = (a: RepChoice, b: RepChoice): boolean =>
+  a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9 && a.recRatio === b.recRatio;
 const sameT = (a: TDose, b: TDose): boolean =>
   a.form === b.form && a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9;
 const tWork = (t: TDose): number => workOf(t);
@@ -644,6 +824,28 @@ function tOther(prev: TDose, budgetKm: number, phase: Phase, p: Paces): TDose | 
   return null;
 }
 
+/** 5k-v2.14.0 (P5 F2, Odluka 10): napomena nedelje zadržane doze. */
+export const HOLD_NOTE =
+  'Doza kvaliteta ostaje kao prethodne nedelje: poslednja dva zahtevna treninga su bila preteška ili preskočena.';
+
+/** 5k-v2.14.0 (P5 F2): zadržana doza ponavljanja — ista kao prethodna, ako staje u budžet nedelje i u najduže
+    ponavljanje na tekućem tempu (pouka 23); inače null (postojeći izbor). */
+function heldReps(
+  prev: RepChoice | null,
+  budgetKm: number,
+  pace: number,
+  maxSec: number
+): RepChoice | null {
+  return prev && workOf(prev) <= budgetKm + 1e-9 && repFits(prev, pace, maxSec) ? prev : null;
+}
+
+/** 5k-v2.14.0 (P5 F2): zadržan T — isti kao prethodni, ako staje u budžet i plafon T bloka faze. */
+function heldT(prev: TDose | null, budgetKm: number, phase: Phase, p: Paces): TDose | null {
+  return prev && tWork(prev) <= budgetKm + 1e-9 && Math.round(prev.repKm * p.T) <= tMaxSec(phase)
+    ? prev
+    : null;
+}
+
 /**
  * Baza (Odluka 3), jedan prolaz:
  * - R raste do budžeta (chooseProgressiveReps 'grow': duže ili isto ponavljanje, veći rad); bez rasta
@@ -658,13 +860,27 @@ function baseWeek(
   b: QualityBudgets,
   targetKm: number,
   p: Paces,
-  prev: WeekDose | null
+  prev: WeekDose | null,
+  hold = false
 ): WeekQuality {
   const q = P.quality;
   const rArgs = [b.R, q.repOptionsKm.R, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec, 0] as const;
   const pm = prev?.main ?? null;
   const fits = (c: RepChoice, budget: number): boolean =>
     workOf(c) <= budget + 1e-9 && workOf(c) + 1e-9 >= budget * q.mainMinShareOfBudget;
+  // 5k-v2.14.0 (P5 F2): nedelja zadržane doze — R i T kao prethodne nedelje (kad staju u budžet nedelje).
+  const hr = hold ? heldReps(pm, b.R, p.R, q.rRepMaxSec) : null;
+  const ht = hold ? heldT(prev?.t ?? null, b.T, 'base', p) : null;
+  if (hr && ht)
+    return {
+      ok: true,
+      q1: repsRSession('R', hr, targetKm, p).workout,
+      q2: tSession(ht, targetKm, p).workout,
+      easyStrides: true,
+      stridesOnly: false,
+      notes: [HOLD_NOTE],
+      dose: { main: hr, t: ht, same: (prev?.same ?? 0) + 1 }
+    };
   let r =
     chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, pm ? 'grow' : 'base') ??
     (pm && fits(pm, b.R) && repFits(pm, p.R, q.rRepMaxSec) ? pm : null) ??
@@ -733,8 +949,28 @@ function rDropNotes(budgetR: number, pm: RepChoice | null, r: RepChoice): string
     : [];
 }
 
-const altNote = (what: string, c: RepChoice): string =>
-  `${what}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), ${c.recRatio !== undefined ? 'kraći oporavak' : 'drugačija podela'}.`;
+/** 5k-v2.15.0 (P8 G3): da li ponuda ima veću dozu od `prev` (ponavljanja ≤ maxReps, trajanje u granicama) — tada
+    dozu drži obim nedelje (budžet), inače kraj ponude. Napomena tvrdi samo ono što važi. */
+function biggerInOffer(type: 'I' | 'RP', p: Paces, prev: PrevDose): boolean {
+  const q = P.quality;
+  const isI = type === 'I';
+  const pace = isI ? p.I : p.RP;
+  const w = workOf(prev);
+  return (isI ? q.repOptionsKm.I : q.repOptionsKm.RP).some(
+    (o) =>
+      o * pace <= q.iRepMaxSec + 1e-9 &&
+      o * pace + 1e-9 >= (isI ? q.iRepMinSec : 0) &&
+      o * (isI ? q.maxReps.I : q.maxReps.RP) > w + 1e-9
+  );
+}
+
+/** 5k-v2.15.0 (P8 G3): razlog zadržane doze — JEDINO mesto teksta (izvezeno radi testa: posle G4 kraj ponude se u mreži
+    generatora ne dostiže, pa se tvrdnja proverava neposredno). */
+export const why = (budget: boolean): string =>
+  budget ? 'obim nedelje ne dozvoljava više' : 'to je najveća doza ovog treninga u planu';
+
+const altNote = (what: string, c: RepChoice, budget = true): string =>
+  `${what}: ista količina kao prošle nedelje (${why(budget)}), ${c.recRatio !== undefined ? 'kraći oporavak' : 'drugačija podela'}.`;
 
 /**
  * 2.4.0 (Odluka 3): ista doza druge strukture za glavni I (vrhunac) / RP (oštrenje) kad ponuda nema viši
@@ -761,9 +997,12 @@ function altMain(type: 'I' | 'RP', budgetKm: number, p: Paces, prev: PrevDose): 
   if (other) return other;
   const w = workOf(prev);
   if (w > budgetKm + 1e-9 || w + 1e-9 < budgetKm * q.mainMinShareOfBudget) return null;
+  const pace = isI ? p.I : p.RP;
+  // 5k-v2.13.0 (P4, pouka 23): zadržane dužine ponavljanja staju u iRepMaxSec na TEKUĆEM tempu (posle sporijeg rezultata
+  // isti metri traju duže; kao validator I_REP i baza R).
+  if (!repFits(prev, pace, q.iRepMaxSec)) return null;
   const ratio = recRatioOf(type, prev) - q.denser.step;
   if (ratio + 1e-9 < q.denser.minRatio[type]) return null;
-  const pace = isI ? p.I : p.RP;
   const sec = (r: number): number => roundRecoverySec(prev.repKm * pace * r);
   if (sec(ratio) === sec(recRatioOf(type, prev))) return null;
   return { reps: prev.reps, repKm: prev.repKm, recRatio: ratio };
@@ -779,9 +1018,47 @@ function peakWeek(
   b: QualityBudgets,
   targetKm: number,
   p: Paces,
-  prev: WeekDose | null
+  prev: WeekDose | null,
+  hold = false,
+  test = false
 ): WeekQuality {
   const q = P.quality;
+  const shortest0 = Math.min(...q.repOptionsKm.Tcruise);
+  const tOf = (): TDose | null =>
+    b.T + 1e-9 >= q.minReps.T * shortest0
+      ? cruiseOf(b.T, 'peak', p)
+      : tContinuousStart(b.T, 'peak', p);
+  // 5k-v2.14.0 (P5 F1): nedelja kontrolnog trčanja (plan sa rezultatom) — test umesto I, drugi kvalitet T kao vrhunac;
+  // stanje I slota ostaje iz nedelje pre testa (progresija se nastavlja od njega).
+  if (test) {
+    const t = (hold ? heldT(prev?.t ?? null, b.T, 'peak', p) : null) ?? tOf();
+    if (!t)
+      return { ok: false, message: `T: budžet ${km(b.T)} km nije dovoljan uz kontrolno trčanje.` };
+    // 5k-v2.15.0 (P8 dopuna G7): test je jedini kvalitet nedelje — drugi dan lagan, stanje T slota ostaje.
+    void t;
+    return {
+      ok: true,
+      q1: testRun(targetKm, p),
+      q2: null,
+      easyStrides: true,
+      stridesOnly: false,
+      notes: [P.feel.resultTestWeekNote],
+      dose: prev ? { ...prev } : { main: null, t: null, same: 1 }
+    };
+  }
+  // 5k-v2.14.0 (P5 F2): nedelja zadržane doze — I i T kao prethodne nedelje.
+  const hi = hold ? heldReps(prev?.main ?? null, b.I, p.I, q.iRepMaxSec) : null;
+  const hts = hold ? heldT(prev?.t ?? null, b.T, 'peak', p) : null;
+  if (hi && hts)
+    return {
+      ok: true,
+      q1: intervalSession('I', hi, targetKm, p).workout,
+      q2: tSession(hts, targetKm, p).workout,
+      easyStrides: false,
+      stridesOnly: false,
+      notes: [HOLD_NOTE],
+      dose: { main: hi, t: hts, same: 1 }
+    };
   const up = qualitySession('I', b.I, targetKm, p, 'peak', { prev: prev?.main ?? null });
   let i: SessionResult & { ok: true };
   let held = false;
@@ -791,22 +1068,24 @@ function peakWeek(
   if (up.ok) i = up;
   else if (alt) {
     i = intervalSession('I', alt, targetKm, p);
-    notes.push(altNote('Vrhunac (I)', alt));
+    notes.push(altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!)));
   } else {
     const w = pm ? workOf(pm) : 0;
-    if (!pm || w > b.I + 1e-9 || w + 1e-9 < b.I * q.mainMinShareOfBudget)
+    // 5k-v2.13.0 (P4, pouka 23): zadržan I i dalje staje u iRepMaxSec na tekućem tempu.
+    if (
+      !pm ||
+      w > b.I + 1e-9 ||
+      w + 1e-9 < b.I * q.mainMinShareOfBudget ||
+      !repFits(pm, p.I, q.iRepMaxSec)
+    )
       return { ok: false, message: up.message };
     i = intervalSession('I', pm, targetKm, p);
     held = true;
     notes.push(
-      'Vrhunac: I ostaje isti kao prošle nedelje (obim nedelje ne dozvoljava više ni drugačiju podelu); T se menja.'
+      `Vrhunac: I ostaje isti kao prošle nedelje (${biggerInOffer('I', p, pm) ? 'obim nedelje ne dozvoljava više ni drugačiju podelu' : 'to je najveća doza ovog treninga u planu'}); T se menja.`
     );
   }
-  const shortest = Math.min(...q.repOptionsKm.Tcruise);
-  let t =
-    b.T + 1e-9 >= q.minReps.T * shortest
-      ? cruiseOf(b.T, 'peak', p)
-      : tContinuousStart(b.T, 'peak', p);
+  let t = tOf();
   if (held && t && prev?.t && sameT(t, prev.t)) t = tOther(prev.t, b.T, 'peak', p);
   if (!t)
     return {
@@ -845,12 +1124,33 @@ function baseWeekOne(
   b: QualityBudgets,
   targetKm: number,
   p: Paces,
-  prev: WeekDose | null
+  prev: WeekDose | null,
+  hold = false
 ): WeekQuality {
   const q = P.quality;
   const rArgs = [b.R, q.repOptionsKm.R, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec, 0] as const;
   const pm = prev?.main ?? null;
   const pt = prev?.t ?? null;
+  // 5k-v2.14.0 (P5 F2): nedelja zadržane doze — vrsta na redu (naizmenično R/T) sa poslednjom dozom te vrste.
+  if (hold) {
+    const want0: 'R' | 'T' = prev?.kind === 'R' ? 'T' : 'R';
+    const hr = want0 === 'R' ? heldReps(pm, b.R, p.R, q.rRepMaxSec) : null;
+    const ht = want0 === 'T' ? heldT(pt, b.T, 'base', p) : null;
+    if (hr)
+      return single(repsRSession('R', hr, targetKm, p).workout, [HOLD_NOTE], {
+        main: hr,
+        t: pt,
+        same: 1,
+        kind: 'R'
+      });
+    if (ht)
+      return single(tSession(ht, targetKm, p).workout, [HOLD_NOTE], {
+        main: pm,
+        t: ht,
+        same: 1,
+        kind: 'T'
+      });
+  }
   const fits = (c: RepChoice): boolean =>
     workOf(c) <= b.R + 1e-9 && workOf(c) + 1e-9 >= b.R * q.mainMinShareOfBudget;
   const pickR = (): RepChoice | null => {
@@ -861,8 +1161,18 @@ function baseWeekOne(
     // nema R (isti trening dve nedelje zaredom nije dozvoljen, QUALITY_REPEAT).
     if (c && prev?.kind === 'R' && c === pm)
       return chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'alt');
+    // 5k-v2.16.0 (K3-C): ista R doza najviše baseSameDoseMaxWeeks R nedelja zaredom (naizmenično sa T) — posle toga
+    // druga struktura iste ili veće doze; nema je → ista doza (bez odbijanja).
+    if (c && c === pm && (prev?.rUses ?? 1) >= q.baseSameDoseMaxWeeks)
+      return chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'alt') ?? c;
     return c;
   };
+  const usesOf = <T>(
+    x: T | null,
+    last: T | null,
+    n: number | undefined,
+    eq: (a: T, b: T) => boolean
+  ): number => (x && last && eq(x, last) ? (n ?? 1) + 1 : 1);
   const pickT = (): TDose | null => {
     // Prvi T: tContinuousStart; ako 70% budžeta ne prima minimum, a ceo budžet prima — minimum (1 km).
     if (!pt)
@@ -897,6 +1207,9 @@ function baseWeekOne(
       t = c ? { form: 'cruise', ...c } : tWork(pt) <= b.T + 1e-9 ? pt : null;
     }
     if (t && prev?.kind === 'T' && sameT(t, pt)) t = tOther(pt, b.T, 'base', p);
+    // 5k-v2.16.0 (K3-C): ista T doza najviše baseSameDoseMaxWeeks T nedelja zaredom → druga struktura (tOther).
+    else if (t && pt && sameT(t, pt) && (prev?.tUses ?? 1) >= q.baseSameDoseMaxWeeks)
+      t = tOther(pt, b.T, 'base', p) ?? t;
     return t;
   };
   const want: 'R' | 'T' = prev?.kind === 'R' ? 'T' : 'R';
@@ -916,7 +1229,9 @@ function baseWeekOne(
             main: r,
             t: pt,
             same: 1,
-            kind: 'R'
+            kind: 'R',
+            rUses: usesOf(r, pm, prev?.rUses, sameReps),
+            ...(prev?.tUses ? { tUses: prev.tUses } : {})
           }
         );
     } else {
@@ -926,7 +1241,9 @@ function baseWeekOne(
           main: pm,
           t,
           same: 1,
-          kind: 'T'
+          kind: 'T',
+          tUses: usesOf(t, pt, prev?.tUses, sameT),
+          ...(prev?.rUses ? { rUses: prev.rUses } : {})
         });
     }
   }
@@ -944,18 +1261,34 @@ function peakWeekOne(
   b: QualityBudgets,
   targetKm: number,
   p: Paces,
-  prev: WeekDose | null
+  prev: WeekDose | null,
+  hold = false,
+  test = false
 ): WeekQuality {
+  // 5k-v2.14.0 (P5 F1): kontrolno trčanje je jedini kvalitet nedelje; stanje I slota ostaje (progresija od njega).
+  if (test) return single(testRun(targetKm, p), [P.feel.resultTestWeekNote], prev);
+  // 5k-v2.14.0 (P5 F2): zadržana doza — isti I kao prethodne nedelje.
+  const hi = hold ? heldReps(prev?.main ?? null, b.I, p.I, P.quality.iRepMaxSec) : null;
+  if (hi)
+    return single(intervalSession('I', hi, targetKm, p).workout, [HOLD_NOTE], {
+      main: hi,
+      t: null,
+      same: 1
+    });
   const up = qualitySession('I', b.I, targetKm, p, 'peak', { prev: prev?.main ?? null });
   if (up.ok) return single(up.workout, [], { main: up.choice!, t: null, same: 1 });
   const pm = prev?.main;
   const alt = pm ? altMain('I', b.I, p, pm) : null;
   if (!alt) return { ok: false, message: up.message };
-  return single(intervalSession('I', alt, targetKm, p).workout, [altNote('Vrhunac (I)', alt)], {
-    main: alt,
-    t: null,
-    same: 1
-  });
+  return single(
+    intervalSession('I', alt, targetKm, p).workout,
+    [altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!))],
+    {
+      main: alt,
+      t: null,
+      same: 1
+    }
+  );
 }
 
 /**
@@ -977,7 +1310,13 @@ function deloadWeek(
   for (const type of chain) {
     const s = qualitySession(
       type,
-      r2(budgetOf(type) * P.quality.deloadBudgetScale),
+      cappedBudget(
+        type,
+        r2(budgetOf(type) * P.quality.deloadBudgetScale),
+        f.qcap?.[capZoneOf(type)],
+        p,
+        f.phase
+      ),
       targetKm,
       p,
       f.phase
@@ -1040,20 +1379,44 @@ export function vdotWeekQuality(
       const d = deloadWeek(f, b, targetKm, p, main[f.phase]);
       return one && d.ok && !d.stridesOnly ? { ...d, easyStrides: true } : d;
     }
+    // 5k-v2.14.0 (P5 F2, Odluka 10): nedelja zadržane doze (steps.holdWeek); (F1) kontrolno trčanje u vrhuncu.
+    const hold = f.hold === true;
     if (f.phase === 'base')
-      return one ? baseWeekOne(b, targetKm, p, prev) : baseWeek(b, targetKm, p, prev);
+      return one ? baseWeekOne(b, targetKm, p, prev, hold) : baseWeek(b, targetKm, p, prev, hold);
+    // 5k-v2.15.0 (P8 c): prvi I posle R faze — budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
+    // 5k-v2.16.0 (K3-A): budžet I vrhunca iz opsega po cilju nedelje (iPeakBudget).
+    const bI = f.phase === 'peak' ? { ...b, I: iPeakBudget(b.I, targetKm, p) } : b;
+    const bp = f.firstI ? { ...bI, I: firstIPeakBudget(bI.I, targetKm, p) } : bI;
     if (f.phase === 'peak')
-      return one ? peakWeekOne(b, targetKm, p, prev) : peakWeek(b, targetKm, p, prev);
+      return one
+        ? peakWeekOne(bp, targetKm, p, prev, hold, f.test)
+        : peakWeek(bp, targetKm, p, prev, hold, f.test);
     // 2.3.0: RP strogo raste; ako ponuda nema viši nivo u budžetu, ista ili veća doza druge strukture
     // (isto kao I u vrhuncu, 2.2.0 Odluka 5). Ranije: QUALITY_INFEASIBLE (npr. 15 km, 10 ned).
     const pm = prev?.main ?? null;
+    const hrp = hold ? heldReps(pm, b.I, p.RP, P.quality.iRepMaxSec) : null;
+    const hrs = hold ? heldReps(prev?.rs ?? null, b.R, p.R, P.quality.rRepMaxSec) : null;
+    if (hrp && (one || hrs)) {
+      const dose: WeekDose = { main: hrp, t: null, same: 1, ...(hrs ? { rs: hrs } : {}) };
+      const w = intervalSession('RP', hrp, targetKm, p).workout;
+      if (one) return single(w, [HOLD_NOTE], dose);
+      return {
+        ok: true,
+        q1: w,
+        q2: repsRSession('R_sharpen', hrs!, targetKm, p).workout,
+        easyStrides: false,
+        stridesOnly: false,
+        notes: [HOLD_NOTE],
+        dose
+      };
+    }
     let rp = qualitySession('RP', b.I, targetKm, p, 'sharpen', { prev: pm });
     const notes: string[] = [];
     if (!rp.ok && pm) {
       const alt = altMain('RP', b.I, p, pm);
       if (alt) {
         rp = intervalSession('RP', alt, targetKm, p);
-        notes.push(altNote('Oštrenje (RP)', alt));
+        notes.push(altNote('Oštrenje (RP)', alt, biggerInOffer('RP', p, pm)));
       }
     }
     if (!rp.ok) return rp;
@@ -1068,10 +1431,17 @@ export function vdotWeekQuality(
       easyStrides: false,
       stridesOnly: false,
       notes,
-      dose
+      dose: { ...dose, ...(rs.choice ? { rs: rs.choice } : {}) }
     };
   }
-  const rp = qualitySession('RP', b.I, targetKm, p, f.phase);
+  // 5k-v2.15.0 (P8 b): taper — RP i T pod granicom tapera (f.qcap), ne ispod prvog nivoa lestvice.
+  const rp = qualitySession(
+    'RP',
+    cappedBudget('RP', b.I, f.qcap?.RP, p, f.phase),
+    targetKm,
+    p,
+    f.phase
+  );
   if (!rp.ok) return rp;
   const tp =
     taperWeeks > 1
@@ -1079,7 +1449,13 @@ export function vdotWeekQuality(
       : 'Smanjenje obima pred trku';
   if (one) return single(rp.workout, [`${tp}: jedan kvalitet.`], null);
   if (f.taperStep === 1) {
-    const t = qualitySession('T_short', b.T, targetKm, p, f.phase);
+    const t = qualitySession(
+      'T_short',
+      cappedBudget('T_short', b.T, f.qcap?.T, p, f.phase),
+      targetKm,
+      p,
+      f.phase
+    );
     if (!t.ok) return t;
     return {
       ok: true,
@@ -1100,6 +1476,25 @@ export function vdotWeekQuality(
     notes: ['Smanjenje obima pred trku (2. od 2 nedelje): jedan kvalitet.'],
     dose: null
   };
+}
+
+/** Kontrolno trčanje (Odluka 5): WU, 3 km maksimalno ravnomerno, CD. Ne ulazi u udele I/T/R. 5k-v2.14.0 (P5 F1): isti
+    test i u planu sa rezultatom (ovde da ga koriste oba izbora kvaliteta; feel.ts ga uvozi). */
+export function testRun(targetKm: number, p: PaceModel): Workout {
+  const band = warmupBand(targetKm);
+  const e = P.feel.effort.test;
+  const rpe = e.rpeMin === e.rpeMax ? `RPE ${e.rpeMin}` : `RPE ${e.rpeMin}–${e.rpeMax}`;
+  return buildWorkout(
+    'quality',
+    'TEST_3K',
+    `Kontrolno trčanje: ${P.feel.test.km} km ${e.cue} (${rpe})`,
+    [
+      { kind: 'warmup', km: band.warmupKm },
+      { kind: 'test', km: P.feel.test.km, effort: e },
+      { kind: 'cooldown', km: band.cooldownKm }
+    ],
+    p
+  );
 }
 
 /** Lagan trk; `strides` = ubrzanja (podrazumevano quality.strides, 2.3.0 i stridesOnly 6 × 20 s). */
@@ -1138,30 +1533,88 @@ export function easyRun(
   );
 }
 
-export function longRun(totalKm: number, p: PaceModel): Workout {
+/** 5k-v2.16.0 (K3-C) — JEDINO mesto: ubrzanja na kraju dugog (long.sharpenStrides3) u ne-rasteretnoj nedelji oštrenja
+    redovnog plana sa 3 dana, bez ograničenja adaptacije; inače null. */
+export function longStridesOf(
+  f: Pick<WeekFrame, 'phase' | 'deload' | 'limits'>,
+  a: { days: number; beginner: boolean }
+): { reps: number; sec: number; recoverySec: number } | null {
+  return a.days === 3 && !a.beginner && f.phase === 'sharpen' && !f.deload && !f.limits
+    ? P.long.sharpenStrides3
+    : null;
+}
+
+export function longRun(
+  totalKm: number,
+  p: PaceModel,
+  strides: { reps: number; sec: number; recoverySec: number } | null = null
+): Workout {
+  if (!strides)
+    return buildWorkout(
+      'long',
+      null,
+      `Dugi lagano ${km(totalKm)} km`,
+      [{ kind: 'long', km: totalKm }],
+      p
+    );
+  // 5k-v2.16.0 (K3-C): ubrzanja na kraju dugog (isti oblik kao na laganom danu, easyRun).
+  const s: BlockSpec = {
+    kind: 'reps',
+    zone: 'R',
+    reps: strides.reps,
+    rep: { sec: strides.sec },
+    recovery: { sec: strides.recoverySec },
+    stride: true,
+    ...(p.vdot === null ? { effort: P.feel.effort.strides } : {})
+  };
+  const sKm = buildWorkout('long', null, '', [s], p).km;
   return buildWorkout(
     'long',
     null,
-    `Dugi lagano ${km(totalKm)} km`,
-    [{ kind: 'long', km: totalKm }],
+    `Dugi lagano ${km(totalKm)} km + ${strides.reps} × ${strides.sec} s ubrzanja`,
+    [{ kind: 'long', km: r2(totalKm - sKm) }, s],
     p
   );
 }
 
-/** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). */
-export function raceDay(p: PaceModel): Workout {
+/**
+ * 5k-v2.15.0 (P8 d) — JEDINO mesto WU/CD trkačkog dana: pojas za vrh obima plana (`peakKm`, warmupBand), pa ako bi
+ * trkački dan (WU + 5 km + CD) bio ≥ najdužeg treninga plana (`longestKm`), prvi pojas, pa warmup.raceMin; ni tada
+ * kraći → raceMin (ne može se izbeći). Konstruktor (generate) i validator (WARMUP) čitaju istu funkciju.
+ */
+export function raceWarmup(
+  peakKm: number,
+  longestKm: number
+): { warmupKm: number; cooldownKm: number } {
+  const race = P.paces.raceDistanceM / 1000;
+  const min = P.warmup.raceMin;
+  for (const b of [warmupBand(peakKm), P.warmup.bands[0], min])
+    if (b.warmupKm + race + b.cooldownKm + 1e-9 < longestKm)
+      return { warmupKm: b.warmupKm, cooldownKm: b.cooldownKm };
+  return { warmupKm: min.warmupKm, cooldownKm: min.cooldownKm };
+}
+
+/** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). 5k-v2.15.0: WU/CD iz
+    raceWarmup. */
+export function raceDay(p: PaceModel, band: { warmupKm: number; cooldownKm: number }): Workout {
+  // 5k-v2.15.0 (P8 dopuna G3): trkački dan se ispisuje kao trka (distanca, prognoza), zagrevanje/hlađenje kao preporuka.
+  const pred = p.vdot === null ? null : raceTimeForVdot(p.vdot, P.paces.raceDistanceM);
+  const t =
+    pred === null
+      ? ''
+      : ` — prognoza ${Math.floor(pred / 60)}:${String(Math.round(pred % 60)).padStart(2, '0')}`;
   return buildWorkout(
     'race',
     null,
-    'Trka 5K',
+    `Trka 5 km${t} (pre trke ${km(band.warmupKm)} km lagano, posle ${km(band.cooldownKm)} km)`,
     [
-      { kind: 'warmup', km: P.warmup.race.warmupKm },
+      { kind: 'warmup', km: band.warmupKm },
       {
         kind: 'race',
         km: P.paces.raceDistanceM / 1000,
         ...(p.vdot === null ? { effort: P.feel.effort.race } : {})
       },
-      { kind: 'cooldown', km: P.warmup.race.cooldownKm }
+      { kind: 'cooldown', km: band.cooldownKm }
     ],
     p
   );

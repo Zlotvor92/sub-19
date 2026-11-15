@@ -100,6 +100,7 @@ const CONDITION: Readonly<Record<AdaptReason['condition'], string>> = {
   PAUSE: 'pauza',
   PAIN: 'bol',
   FATIGUE: 'umor',
+  QUALITY_HARD: 'zahtevni treninzi preteški ili preskočeni',
   TEST_MOVED: `test ${P.test.km} km premešten`
 };
 

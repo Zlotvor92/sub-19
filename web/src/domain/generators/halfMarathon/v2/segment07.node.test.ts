@@ -106,9 +106,14 @@ describe('N6: RP nikad ispod najnižeg nivoa (2 × 2000 m)', () => {
     const p = plan('d3-11w-40km-v70-A-sun');
     const at = p.weeks[2]!.endDate;
     const r = ok(adaptHmV2(p, factsOf(p, 'pause35', at), at));
-    const rp = r.plan.weeks.flatMap((w) =>
-      w.days.filter((d) => d.workout.dose?.zone === 'RP').map((d) => d.workout.dose!.doseM)
-    );
+    // K3-B: taper sme kraću RP strukturu (≤ 60 % poslednje doze) — van provere poda.
+    const rp = r.plan.weeks
+      .filter((w) => w.phase !== 'taper')
+      .flatMap((w) =>
+        w.days
+          .filter((d) => d.workout.dose?.zone === 'RP' && d.role !== 'sharpener')
+          .map((d) => d.workout.dose!.doseM)
+      );
     expect(rp.length).toBeGreaterThan(0);
     expect(rp.filter((m) => m < 4000)).toEqual([]);
     const a = clone(r.plan);
@@ -151,8 +156,10 @@ describe('N10.1: ponavljanje doze — upozorenje IDENTICAL_WEEKS kad ni druga st
     const at = p.weeks[0]!.endDate;
     const r = ok(adaptHmV2(p, factsOf(p, 'under50', at), at));
     expect(errors(r.plan)).toEqual([]);
-    expect(r.plan.weeks.some((w) => w.notes.some((n) => n.includes('ponovljen')))).toBe(true);
-    expect(r.plan.warnings.map((v) => v.rule)).toContain('IDENTICAL_WEEKS');
+    // P8 G2: prvi nivo lestvice faze uvek staje, pa se T više ne ponavlja zbog plafona (bilo: ponovljen + upozorenje
+    // IDENTICAL_WEEKS); pravilo upozorenja ostaje u validatoru za slučaj ponavljanja.
+    expect(r.plan.weeks.some((w) => w.notes.some((n) => n.includes('ponovljen')))).toBe(false);
+    expect(r.plan.warnings.map((v) => v.rule)).not.toContain('IDENTICAL_WEEKS');
   });
 });
 

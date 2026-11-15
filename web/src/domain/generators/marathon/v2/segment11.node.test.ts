@@ -32,8 +32,10 @@ const longOf = (w: MarathonV2Plan['weeks'][number]) => w.days.find((d) => d.role
 const errors = (p: MarathonV2Plan) => validatePlan(p).filter((v) => v.severity === 'error');
 
 describe('T1: lagan ≤ 0,8 × dugi u izgradnji; najkraći max(5 km, 20 min)', () => {
-  it('4 dana, 45 km, VDOT 40: svaka nedelja izgradnje lagan ≤ 0,8 × dugi; cilj spušten uz CAPACITY_LIMITED', () => {
-    const p = planOf(grid('d4-14w-45km-v40-A-sat'));
+  // P5-F4 (marathon-v2.10.0): veća početna doza T/I nosi više km na danima kvaliteta, pa VDOT 40 više nije spušten
+  // (nedelja 1 staje u 45 km); isti slučaj sa sporijim trkačem (VDOT 35).
+  it('4 dana, 45 km, VDOT 35: svaka nedelja izgradnje lagan ≤ 0,8 × dugi; cilj spušten uz CAPACITY_LIMITED', () => {
+    const p = planOf(grid('d4-14w-45km-v35-A-sat'));
     for (const w of p.weeks.filter((x) => x.phase !== 'taper' && x.phase !== 'race' && !x.deload)) {
       const L = longOf(w)!;
       for (const d of w.days.filter((x) => x.role === 'easy'))
@@ -98,14 +100,14 @@ describe('T6 C6: posle bola progresija doze kreće ispočetka od r + 1', () => {
 });
 
 describe('T6 C11: pouka 35 i u nedelji testa', () => {
-  it('po osećaju 4 d, 50 km, skorašnji najduži 8 km: nedelja testa sa danom dužim od dugog — Q2 lagan, test ostaje', () => {
-    const c = feelInputs().find((x) => x.id === 'feel-d4-12w-50km-e270-B')!;
+  it('po osećaju 4 d, 50 km, skorašnji najduži 8 km: nedelja testa — Q2 lagan (P8-G7: test je jedini kvalitet), test ostaje', () => {
+    // P8-G7: plan od 12 nedelja nema test (pao bi u nedelju 3) — primer sa 17 nedelja.
+    const c = feelInputs().find((x) => x.id === 'feel-d4-17w-50km-e270-B')!;
     const p = planOf({ ...c.input, recentLongRunKm: 8 });
     const w = p.weeks.find((x) => x.days.some((d) => d.role === 'test'))!;
     const L = longOf(w)!;
     expect(L).toBeDefined();
     expect(w.days.some((d) => d.role === 'q2')).toBe(false);
-    expect(w.notes.some((n) => n.startsWith('Q2: dan kvaliteta je lagan'))).toBe(true);
     expect(errors(p)).toEqual([]);
   });
 });
@@ -204,11 +206,12 @@ describe('Odluke organizatora posle MAR-11: T2 MP otpada, oštrenje prema MP N�
       for (const d of w.days.filter((x) => x.workout.kind === 'quality'))
         expect(d.workout.sec).toBeLessThanOrEqual(longOf(w)!.workout.sec);
   });
-  it('M8: N−1 MP skraćen (T2) — trkačka ima oštrenje = min(2 × 2000 m, MP N−1), najmanje 2 × 1000 m', () => {
+  it('M8 + P8-G5: trkačka ima oštrenje = min(10 min rada, MP N−1), dve jednake deonice na 100 m, najmanje 2 × 400 m', () => {
     const p = planOf(grid('d4-12w-35km-v70-B-sat'));
     const mp = p.weeks.at(-2)!.days.find((d) => d.workout.dose?.zone === 'MP')!.workout.dose!.doseM;
     expect(mp).toBeLessThan(4000);
     const s = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
-    expect(s.workout.dose!.doseM).toBe(Math.max(2000, Math.floor(Math.min(4000, mp) / 200) * 200));
+    const cap = Math.min(4000, mp, Math.floor((600 / p.paces.MP) * 1000 + 1e-6));
+    expect(s.workout.dose!.doseM).toBe(Math.max(800, Math.floor(cap / 200) * 200));
   });
 });

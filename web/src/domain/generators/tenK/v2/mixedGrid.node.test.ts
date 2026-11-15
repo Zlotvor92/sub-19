@@ -63,23 +63,24 @@ describe('pouka 37: primer nalaza d3-8w-20km-v30-A-sat (umor, asOf prvi dan nede
       workouts: [...fat.workouts, { date: at, dayId: at, km: 0, durationSec: 0, completed: false }]
     });
     expect(missed.keptKm).toBeUndefined();
-    expect(kmOf(missed, at)).toBe(9.4);
+    // P8 G2 (D40): rasterećenje 17 km nosi T 2,0 km (lagan 4,2 + kvalitet 5,24; ranije lagani 9,4).
+    expect(kmOf(missed, at)).toBe(9.44);
     expect(kmOf(missed, at)).toBeGreaterThan(kmOf(built, at));
     const brk = run({ ...fat, breaks: [{ kind: 'break', from: at, to: at }] });
     expect(brk.keptKm).toBeUndefined();
-    expect(kmOf(brk, at)).toBe(9.4);
+    expect(kmOf(brk, at)).toBe(9.44);
   });
 
   it('pokrivenost: dan 1 poznat iz potpune pokrivenosti bez zapisa = 0 — preostali dani ostaju kakvi su sastavljeni', () => {
     const w = run({ ...fat, coverage: { from: addDays(at, -7), to: at, complete: true } });
     expect(w.keptKm).toBeUndefined();
-    expect(kmOf(w, at)).toBe(9.4);
+    expect(kmOf(w, at)).toBe(9.44);
     // Nepotpuna pokrivenost: dan nije poznat → planirani km (kao bez zapisa).
     const u = run({ ...fat, coverage: { from: addDays(at, -7), to: at, complete: false } });
     expect([u.keptKm, kmOf(u, at)]).toEqual([10.1, 6.9]);
   });
 
-  it('upisani km: dan 1 urađen 5 km → ostatak 12,0 ≥ sastavljeno 9,4 — bez dopune (manjak se ne nadoknađuje)', () => {
+  it('upisani km: dan 1 urađen 5 km → ostatak 12,0 ≥ sastavljeno 9,44 — bez dopune (manjak se ne nadoknađuje)', () => {
     const w = run({
       ...fat,
       workouts: [
@@ -88,10 +89,10 @@ describe('pouka 37: primer nalaza d3-8w-20km-v30-A-sat (umor, asOf prvi dan nede
       ]
     });
     expect(w.keptKm).toBeUndefined();
-    expect(kmOf(w, at)).toBe(9.4);
+    expect(kmOf(w, at)).toBe(9.44);
   });
 
-  it('upisani km: dan 1 urađen 12,5 km → ostatak 4,5 < najmanji preostali 6,0 — lagani 3,0 + 3,0, MIXED_OVER_TARGET', () => {
+  it('upisani km: dan 1 urađen 12,5 km → ostatak 4,5 < najmanji preostali — lagan 3,0 + T 2,0 km (P8 G2), MIXED_OVER_TARGET', () => {
     const facts = {
       ...fat,
       workouts: [
@@ -101,7 +102,8 @@ describe('pouka 37: primer nalaza d3-8w-20km-v30-A-sat (umor, asOf prvi dan nede
     };
     const r = ok(adaptTenKV2(p0, facts, at));
     const w = r.plan.weeks[2]!;
-    expect([w.keptKm, kmOf(w, at)]).toEqual([12.5, 6]);
+    // P8 G2 (D40): lagan 3,0 + T 2,0 km (5,24) — kvalitet ostaje (Z1: 12,5 + 3,0 + 5,24 = 20,7 … planirano 18,34 ≤ 1,1 × 17).
+    expect([w.keptKm, kmOf(w, at)]).toEqual([12.5, 8.24]);
     const v = r.plan.warnings.filter((x) => x.week === 3).map((x) => x.rule);
     expect(v).toEqual(['MIXED_OVER_TARGET']);
   });

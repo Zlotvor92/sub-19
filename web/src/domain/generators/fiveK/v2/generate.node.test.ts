@@ -110,7 +110,10 @@ describe('raspored: 4 dana, zahtevni dani nisu uzastopni', () => {
       if (w.phase !== 'race') {
         expect(w.days).toHaveLength(4);
         expect(w.days.filter((d) => d.role === 'long')).toHaveLength(1);
-        expect(w.days.filter((d) => d.hard)).toHaveLength(w.deload || w.taperStep === 2 ? 2 : 3);
+        // 5k-v2.15.0 (P8 G7): u nedelji kontrolnog testa test je jedini kvalitet (drugi dan kvaliteta lagan).
+        expect(w.days.filter((d) => d.hard)).toHaveLength(
+          w.deload || w.taperStep === 2 || w.test ? 2 : 3
+        );
       }
     }
     const hard = plan.weeks.flatMap((w) => w.days.filter((d) => d.hard).map((d) => d.date)).sort();
@@ -204,7 +207,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
     // 5k-v2.11.0 (C8, kao 10K): VDOT < 30 → plan po osećaju; bez laganog tempa MISSING_EASY_PACE.
     ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'MISSING_EASY_PACE'],
-    ['VDOT > 60', inputOf({ ...ok, distanceM: 5000, timeSec: 1000 }), 'VDOT_OUT_OF_RANGE'],
+    // 5k-v2.13.0 (P4 S2): gornja granica 70.
+    ['VDOT > 70', inputOf({ ...ok, distanceM: 5000, timeSec: 860 }), 'VDOT_OUT_OF_RANGE'],
     [
       'polumaraton',
       { ...inputOf(ok), recentResult: { distanceM: 21097, timeSec: 6000, date: '2026-10-20' } },

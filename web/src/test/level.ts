@@ -6,7 +6,8 @@
      Tvrdnje su iste; poredi se manje redova. Isti uzorak pri svakom pokretanju (bez slučajnosti).
    - PUN (`TEST_FULL=1`: `npm test`, `npm run check:full`, CI): svi redovi svih referenci. Veliki `it` je podeljen na
      delove u fajlovima `*.full.node.test.ts` (uključeni samo u punom nivou, v. vitest.config.ts) da se paralelizuju;
-     unija delova = ceo skup, bez preklapanja (`part`). */
+     unija delova = ceo skup, bez preklapanja (`part`).
+   Na CI-ju izmena bilo kog fajla u `src/test/` pokreće SVE (scripts/ciScope.mjs, TEST-SPEED.md § 13). */
 
 import { appendFileSync } from 'node:fs';
 

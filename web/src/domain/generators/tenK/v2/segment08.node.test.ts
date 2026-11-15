@@ -119,12 +119,13 @@ describe('T3: posle novog starta (pauza ≥ 35 dana)', () => {
 
 describe('T6', () => {
   it('C3: plan po osećaju, višak (over120) dan pre testa — test ostaje (na b9c4728 otpada)', () => {
-    // c3.ts: f-d3-8w-20km-e270-A-sat/over120@2026-11-11 (178 tokova na b9c4728 → 0).
+    // c3.ts: f-d3-8w-20km-e270-A-sat/over120@2026-11-11 (178 tokova na b9c4728 → 0). P8 G7 (D46): plan od 8 nedelja nema
+    // test (ne pre nedelje 4) — isti primer na 15 nedelja.
     const sc = SCHEDULES_BY_DAYS[3].A;
     const start = addDays('2026-11-02', -1);
     const g = generateTenKV2({
       startDate: start,
-      raceDate: addDays(start, 8 * 7 - 1),
+      raceDate: addDays(start, 15 * 7 - 1),
       runDays: sc.days,
       longRunDay: sc.long,
       currentWeeklyKm: 20,
@@ -181,7 +182,8 @@ describe('T6', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const t9 = r.plan.weeks[8]!.days.find((d) => d.workout.dose?.zone === 'T')!.workout.dose!;
-    expect(t9.doseM).toBe(2000);
+    // P5 (D37): početni nivo T 80 % plafona → 3 × 1000 m (bilo 2 × 1000 m).
+    expect(t9.doseM).toBe(3000);
     expect(errors(r.plan)).toEqual([]);
   });
 

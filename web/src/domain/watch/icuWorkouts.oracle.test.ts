@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan } from '@/test/generators';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { d6Snapshot } from '@/test/d6Snapshot';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
@@ -13,7 +13,7 @@ import {
   sessionFromDescription,
   thresholdPace,
   workoutsForWatch
-} from '../generators/fiveK/watch/icuWorkouts';
+} from '../generators/halfMarathon/watch/icuWorkouts';
 
 /* parity: icuTempo, icuTrajanje, icuRazdaljina, icuIzOpisa, icuTekstDana, icuDaniZaSlanje, icuPragTekst (app.js). */
 

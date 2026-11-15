@@ -1,0 +1,707 @@
+# Program „trenerski kvalitet v2" — organizator
+
+Nalog korisnika (9. 11. 2026): organizator vodi posao kroz zasebne sesije (tabove), jednu po jednu. Tab završi segment,
+pošalje izveštaj, organizator proveri i daje sledeću instrukciju. Cilj: v2 generatori (5K, 10K, HM, maraton) koji su
+dobri kao trener, ne samo kao bezbedan konstruktor plana.
+
+## Polazna ocena organizatora (HM v2, hm-v2.4.1, jedan plan + politika)
+
+Profil: 10 km 46:00 (VDOT 44,1), 40 km, 4 dana, 16 nedelja, cilj 1:40. Dobro: rast obima, rasterećenja, kotrljajuća
+granica dugog, pošten odnos prema cilju, odbijanje umesto degenerisanog plana, taper. Slabo:
+
+1. Mala doza kvaliteta: nedelja 1 T 2,0 km (≈ 9,5 min rada uz 35 min WU/CD); vrh T 2 × 2400 m, vrh I 4 × 1000 m.
+2. Malo rada u trkačkom tempu: najveći trening 8 km (≈ 38 % trke); uzrok plafon 15 % nedelje po treningu (H11).
+3. Dugi je uvek samo lagan; 5 nedelja platoa na 22,4 km.
+4. Tempo zamrznut: plan sa rezultatom nema test ni kontrolnu trku; menja ga samo nov rezultat koji korisnik unese.
+5. Adaptacija ne čita kako su odrađeni kvalitetni treninzi (samo % izvršenja, pauzu, bol, RPE laganih).
+6. Nema ubrzanja na laganim danima; WU/CD nije srazmeran treningu.
+
+Ostale tri distance organizator još nije merio — zato je prvi segment merna osnova (P0).
+
+## Pravila za svaki tab
+
+- `AGENTS.md` važi u celosti: radna grana `claude/generator-isolation-5k-10k-hm-marathon`, nova se ne pravi; vremena po
+  beogradskom vremenu; stalni uslovi 1–8; nivoi testova i sabotaže kako tamo piše.
+- Bez PR-a, mergea u `main`, deploya i promene prekidača. v1 se ne dira.
+- Trenerske brojeve odlučuje organizator. Kad zadato pravilo ne može da se ispuni zajedno sa postojećim (sudar pravila,
+  odbijanja, pad invarijanti) — STANI, izmeri, napiši `reports/<segment>-STOP.md` sa opcijama i brojevima. Ne biraj sam.
+- Svaka trenerska izmena: merenje pre/posle na mrežama distance, red u `policy.ts` (pravilo, mesto, obrazloženje sa
+  oznakom izvor ili heuristika), nova `policyVersion`, spisak promenjenih planova, sabotaža novog pravila.
+- Izveštaj: `docs/generators-v2/perfection/reports/<segment>-REPORT.md`, najviše 200 redova, svaka brojka sa komandom
+  koja je ponavlja. Odvoj izmereno od mišljenja.
+- Na kraju: commit + push na radnu granu, pa poruka organizatoru (ID sesije je u instrukciji) sa SHA i putanjom izveštaja.
+
+## Izbor modela po segmentu (nalog korisnika, 9. 11. 2026)
+
+Najjači dozvoljen model taba je Opus 5.5. Organizator za svaki segment bira najslabiji model koji ga pouzdano rešava
+uz precizan zadatak:
+
+- Opus 5.5: izmena pravila generatora, sudari pravila, adaptacija, dizajn merenja.
+- Sonnet 5.5: jasno omeđene izmene (tekst za korisnika, usklađivanje već odlučenog pravila, dopuna testa, ponavljanje
+  merenja postojećom skriptom).
+- Haiku 5.5: mehanički poslovi (pokretanje gotove skripte i prepis brojeva, formatiranje, provera spiska).
+
+Slabiji model dobija uži zadatak: tačni fajlovi i funkcije, očekivani izlaz, komanda provere, šta ne dira.
+
+## Testovi — štednja vremena (nalog korisnika, 9. 11. 2026)
+
+Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
+
+- Segment bez izmene `web/src/**` (merenje, izveštaj, dokumentacija): nijedan test.
+- U toku rada: samo namenski test fajla koji se menja (`npx vitest run <fajl>`), brz nivo.
+- Jednom na kraju segmenta: `npm run check` + `npx vitest run --changed <polazni SHA>` + pun nivo SAMO foldera dirane
+  distance (`TEST_FULL=1 npx vitest run --project node <folder>/v2`). Ne ponavljati posle izmena koje ne diraju taj kod.
+- Zabranjeno tabu: `npm run check:full`, pun nivo drugih distanci, projekat `v1` (v1 se ne dira), ceo skup sabotaža.
+  Sabotaža: samo novo pravilo, kroz `web/scripts/sabotage.mjs` sa `--bail=1`.
+- Više trenerskih izmena iste distance ide u jedan segment, da pun nivo te distance trči jednom, ne po izmeni.
+- Push koda pokreće CI (pun nivo): jedan push po segmentu, na kraju. Međukoraci se ne pushuju; push samo `docs/**` CI ne
+  pokreće.
+- Test koji traje > 15 min ili visi: prekini, zabeleži komandu i trajanje u izveštaj, ne pokreći ponovo bez odluke
+  organizatora.
+- Izveštaj navodi svaku pokrenutu komandu testa i njeno trajanje.
+
+## Granica korišćenja naloga (naučeno 10. 11. 2026)
+
+Pet Opus tabova uporedo potrošilo je petočasovnu granicu za ≈ 3,5 h; tabovi tada staju sa greškom 429 (status „failed",
+`usage_limit_reached`) i NE nastavljaju sami posle resetovanja. Pravila: najviše 3 Opus taba uporedo; tab radi lokalne
+commit-e posle svakog koraka; posle resetovanja organizator (satna provera) šalje svakom zaustavljenom tabu poruku
+„nastavi" — ne otvara nov tab dok stari ima lokalni rad.
+
+## Model tabova (nalog korisnika, 10. 11. 2026; ispravljeno u 06:00)
+
+Svi NOVI tabovi se otvaraju na `claude-fable-5-2` — odmah, ne tek posle sledećeg limita (potrošnja Fable-a se
+resetovanjem vraća u nedeljni limit; Opus ne). Tabovi koji već rade na Opusu završavaju svoj segment. Kad se dostigne
+nedeljni limit, korisnik radi „Fable reset" — organizator tada javlja i čeka. Najviše 4 teška taba uporedo.
+
+## Glavni trener (nalog korisnika, 10. 11. 2026, 05:32)
+
+Stalni tab na Fable 5.2: sesija `session_01GnHHiWk1PhzvzdGjhxZ5ob`, uloga „glavni trener". Organizator mu u krugovima
+šalje ispise novih planova (poruka u tu sesiju sa putanjom foldera); on vraća `coach/ROUND-NN.md` (+ .json): ocene po
+rubrici P7b, trenerski standard po distanci, deset najvažnijih izmena, sud o tekućim pravilima. Sme da koristi i
+instalira skillove trkačkog trenera i pretragu weba; ne menja kod. Organizator na osnovu izveštaja odlučuje izmene za
+sledeći krug i upisuje ih u dnevnik. Krug 1: 48 planova „posle P5" + sud o P8 (izdato). Tab se ne arhivira između krugova.
+
+## Redosled (privremen; zaključava se posle P0)
+
+| Segment | Sadržaj | Stanje |
+|---|---|---|
+| P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | gotovo (`53b2dd4`, `reports/P0-REPORT.md`) |
+| T1 | Brži CI i testovi: izbor po dometu izmene, E2E u 3 dela, keš zavisnosti | gotovo (`c4aff71`, `reports/T1-REPORT.md`) |
+| V1a | Uklanjanje v1: popis i plan (bez koda) | gotovo (`d7df09e`, `reports/V1a-REPORT.md`) |
+| V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova | gotovo (`322284b`, `reports/V1b-REPORT.md`) |
+| V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
+| P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP | gotovo (`3a57a15`, hm-v2.9.0, `reports/P1-REPORT.md`) |
+| P2 | Maraton: dugi sa MP blokom, dugi do 180 min / 32 km | gotovo (`320edc5`, marathon-v2.9.0, `reports/P2-REPORT.md`) |
+| P3 | 10K: plafon/lestvica RP, održavanje I | gotovo (`7484b05`, 10k-v2.11.0, `reports/P3-REPORT.md`) |
+| P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | gotovo (5k-v2.13.0, `reports/P4-REPORT.md`), čeka prijem |
+| P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | 5K gotovo (`3f96c04`, 5k-v2.14.0, `reports/P5-5K-REPORT.md`); MAR gotovo (`e033718`, marathon-v2.10.0, `reports/P5-MAR-REPORT.md`); HM gotovo (`8fca1ff`, hm-v2.10.0, `reports/P5-HM-REPORT.md`); 10K gotovo (`81b8cb1`, 10k-v2.12.0, `reports/P5-10K-REPORT.md`) |
+| P7a | Priprema slepe ocene: anonimni ispisi planova pre/posle — `briefs/P7a-priprema-slepe-ocene.md` (Sonnet 5.5) | gotovo (`a8f8dc0`; 48 ispisa, 0 odbijanja u obe verzije); 10K „posle" se ponavlja posle P5-10K |
+| P7b | Slepa trenerska ocena, 4 taba po distanci — `briefs/P7b-slepa-trenerska-ocena.md` (Opus 5.5: sud, ne mehanika) | gotovo, sve 4 (`P7/reviews/`, `P7/KEY-AND-RESULTS.md`) |
+| P8 | Ispravke po slepoj oceni, po distanci — `briefs/P8-ispravke-po-slepoj-oceni.md` | 5K, 10K (Opus), HM, MAR (Fable) u toku, sa dopunom po treneru |
+| P9 | Ponovljena slepa ocena (pre / posle P5 / posle P8) na istim profilima | čeka P8 |
+| P10 | Merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
+
+## Kada je gotovo
+
+Pragovi metrika se upisuju ovde posle P0. Uslov: svi pragovi ispunjeni na mrežama, 0 prekršaja invarijanti, 0 novih
+odbijanja realnih ulaza, slepa trenerska ocena pre/posle. Ograničenje koje tabovi ne mogu da uklone: da li pravila
+stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7 pravi merenje, ne dokaz).
+
+## Dnevnik odluka
+
+- 9. 11. 2026: program otvoren; P0 izdat (Opus 5.5, sesija session_01GnHHiWjtxT9rm68GZMbjHY).
+- 9. 11. 2026: korisnik — za manje poslove slabiji modeli uz precizno navođenje; testovi štedljivo (odeljak „Testovi").
+- 9. 11. 2026: korisnik — ubrzati testove i CI; izdat T1 (CI run 764: 12,7 min zida, ≈ 85 runner-minuta, sve na svaki push).
+- 9. 11. 2026: P0 primljen i proveren (profil (a) HM = nezavisno generisan plan organizatora; kopija izbora = jezgro u
+  > 99,7 % za 10K/HM/MAR). Nalazi za sve 4: dugi nikad nema deo brži od E (0/697); RP/MP trening 28–50 % trke; plan sa
+  rezultatom nema tačku merenja forme; 10K/HM/MAR bez ubrzanja; RPE/tempo kvaliteta bez efekta u adaptaciji.
+- 9. 11. 2026: odluka P1 (HM): smena nedelja A/B u specifičnoj fazi (RP trening / dugi sa RP blokom 4–6–8 km), plafon RP
+  15 → 20 %, lestvica RP do 3 × 5000 m. T/I početna doza, ubrzanja i WU/CD idu u P6 (sve distance), petlja forme u P5.
+- 9. 11. 2026: korisnik — v1 se briše; lični plan vlasnika mora da preživi; korisnici v1 planova generišu nov (baza: 19 v1 planova, 15 bez unosa, nijedan menjan posle 18. 10.). Deploy ostaje odluka korisnika.
+- 9. 11. 2026: P1 STOP (`89f31c8`): prvi nacrt S1 (nedelja B bez RP treninga) vraća ukupni RP na 30 km i sudara se sa H12 (102/192). Odluka: nedelja B zadržava RP trening, T dan postaje lagan (mehanizam pouke 35), blok u dugom 4–6–8 km; samo redovan plan 4–6 dana; poslednja nedelja izgradnje je B; H12 po O1; plafon RP 15 % ispod 40 km cilja, 20 % od 40 km (`briefs/P1-odluke-posle-stop.md`).
+- 9. 11. 2026: V1a primljen. Ispravka ranije tvrdnje organizatora: v2 je u produkciji podrazumevan od 24. 10. 2026.
+  (`vercel.json` buildCommand `VITE_V2_DEFAULT_ON=1`), ne v1. Odluke za V1b: (1) lični plan — opcija A vremenski
+  ograničena: HM v1 ostaje zamrznut samo za `meta.licni === true` do posle trke 13. 12. 2026, pa V1c; 5K/10K/maraton v1
+  se brišu u V1b; (2) baza se ne dira, postojeće ponašanje „Generiši nov plan" (briše unose starog plana) se u V1b ne
+  menja — korisnik obaveštava vlasnike v1 planova; (3) V1b čeka T1 i P1; (4) testovi koji prave ulaz v1 generatorom
+  prelaze na v2 generatore; zamrznute fiksture samo za testove prikaza starog (v1) formata plana, koji mora i dalje da
+  se otvara; (5) `docs/qa`: brišu se samo folderi koje nijedan živ test ne čita; (6) raspon nedelja ostaje odbijanje sa
+  porukom (već je tako u produkciji).
+- 9. 11. 2026 (noć): korisnik — raditi celu noć bez pitanja, odrešene ruke. Organizator: P2 i P3 izdati uporedo sa P1
+  (odvojeni folderi distanci). Redosled dalje: V1b (posle T1, P1, P2, P3) → P4 (5K) → P5 (petlja forme) → P6 (ubrzanja,
+  WU/CD) → P7. Granica koju organizator sam drži: ništa u `main`, bez deploya i bez izmene baze dok korisnik ne potvrdi.
+- 9. 11. 2026 (noć): P3 STOP (`9c0fa49`): nedelja B (I održavanja) ne staje u 14–22 % planova 4–6 dana (dan I ima manje km od T dana, nedelja na kapacitetu). Odluka: P-b — niži izvodljiv cilj do 3,0 km, inače nedelja A; lestvica RP + 4 × 1600, 5 × 1600 m; I održavanja = najveća I doza razvoja; D30 ostaje; ukupni RP 18,4 km prihvaćen.
+- 9. 11. 2026 (noć): P2 STOP (`9f4cbc8`): nedelja B bez MP treninga spušta ukupni MP 52 → 50 km; O2 (B zadržava MP trening) daje 69 km ali 177 nedelja > 25 % brzih km. Odluka: O3 (blok jedan nivo iznad max(blok, MP trening), MP trening nastavlja od max) + MP tapera od max; prag pada ukupnog MP ≤ 5 % po grupi (inače samo prijaviti); dugi ≤ 32 km uz 180 min; 3 dana i početnik bez nedelje B. Maraton se svesno razlikuje od HM (HM: B zadržava RP trening).
+- 9. 11. 2026 (noć): P1 STOP 2 (`0b6e944`): S1+S2 ugrađeni (ukupno RP 30 → 43 km, 2 duga sa blokom, 0 odbijanja, baza/razvoj bajt-isti); sudar pojasa plafona sa taperom (1365 planova bez kvaliteta u taperu). Odluka: RP tapera = najviši nivo ≤ min(60 %, plafon), min 2 × 2000 m; blok podleže plafonu RP; F 5–6 d bez B i 81 nedelja > 25 % prihvaćeni.
+- 10. 11. 2026 00:15: T1 primljen (tab je čekao dozvolu za poruku; izveštaj pročitan iz repoa). CI po dometu izmene: jedna distanca v2 12,7 → 5,6 min zida (≈ 90 → 32 runner-min), samo ekran 5,4 min (≈ 15 runner-min), `.claude/**` ne pokreće web poslove, „sve" 9,4–9,7 min. Pokrivenost „sve" ista (524 → 525 fajlova, razlika je nov test izbora). Otvoreno za V1b: 10 delova za „sve" (zid ≈ 8 min) i sabijanje lanca starih regresija 10K `earlyGrid` (≈ 8 % punog nivoa) — odluka: 10 delova da, sabijanje lanca ne (gubi dokaz uzroka starih izmena).
+- 10. 11. 2026 00:20: P1 primljen i proveren (organizator nezavisno generisao profil (a): poslednja nedelja izgradnje RP 2 × 5000 m + dugi 22,4 km sa 6 km RP; taper RP 2 × 2500 m + oštrenje). Ukupno RP 30 → 45 km, 2 duga sa blokom, 0 odbijanja, baza/razvoj bajt-isti; pun nivo HM v2 439/439, sabotaže 6/6. Prihvaćeno: fajl `marathon/v2/app/byteSame` (samo HM ključevi), prag lanaca u `segment07b`, B_WEEK_MISSING samo za plan bez adaptacije. Poznato, ostaje za P7: 16 nedelja tipa B sa 30–33 % brzih km (cilj 42–49 km).
+- 10. 11. 2026 00:30: P2 primljen (profil (a) pregledan: nedelje 10 i 13 dugi 24 km sa 8 i 12 km MP, MP trening 2 × 5000 m između). Ukupno MP 52 → 52 km (trening 36 → 20, blok 0 → 20); najduži dugi 24,2 → 26,2 km; nedelja > 25 % brzih 97 → 76; 0 novih odbijanja na 31 920 planova; pun nivo 528 testova, sabotaže 9/9. Potvrđena tumačenja T1 (izuzetak spuštene doze preko tipova), T2 (prelaz I → MP iznad bloka samo kad staje u plafon), T3 (tip nedelje u adaptaciji iz rasporeda, prošlost se ne preslaže). Prihvaćeno: 6 dana −8,1 % ukupnog MP (blok ≤ 50 % dugog). T na plafonu 10 % ostaje (Daniels), nije tema P6.
+- 10. 11. 2026 00:45: P4 STOP (`42c24f7`): S1 bez nalaza (I 11 → 13,7 min, najveći RP 2,5 → 3,2 km, profil (b) I 14 min); S2 (VDOT 70) daje degenerisanu nedelju samo za 3 d / 12 km / VDOT ≥ 67 i oštrenje 300 m ispod 60 s. Odluka: VDOT do 70 uz odbijanje te klase ulaza sa preporukom; oštrenje ispod 60 s prihvaćeno; maxReps na 5 dana se ne dira.
+- 10. 11. 2026 00:50: P4 primljen. I rad 11 → 13,7 min, najveći RP 2,5 → 3,2 km, odbijanja VDOT 65 27 → 0; B2 (3 d, < 12,1 km, VDOT ≥ 66 → odbijanje sa preporukom); F1 (dopuna pouke 23: trajanje deonice I/RP na tekućem tempu; 10 odbijanja rane mreže → 0); pun nivo 787/787, sabotaže 8/8. Za P7: vrh 6 × 1000 m RP (120 % trke) kod velikog obima; maxReps drži vrh na 5 dana. Za P5: posle sporijeg rezultata u vrhuncu doza pada na jedan kvalitet.
+- 10. 11. 2026 00:55: P5 i P6 spojeni u jedan zadatak po distanci (jedan pun nivo po distanci). Odluke: F1 test u planu sa rezultatom ≥ 12 ned (5K ≥ 10) u poslednjoj ne-rasteretnoj nedelji razvoja; F2 dva uzastopna kvaliteta preskočena ili RPE ≥ 9 → sledeća nedelja bez rasta doze; F3 jedan lagan dan nedeljno sa ubrzanjima 4/6 × 20 s (10K, HM, MAR); F4 početni nivo T i I ≤ 80 % plafona (10K, HM, MAR). WU/CD se NE skraćuje (uslov 3): mali udeo rada se rešava većom početnom dozom.
+- 10. 11. 2026 00:58: P3 primljen. Najveći RP 4 → 5 km (≥ 6 km u planovima ≥ 40 km: 22/84 → 62/84), ukupno RP 15,4 → 18,4 km, I u specifičnoj fazi 0 → 10,4 min, 0 novih odbijanja; pun nivo 736/736, sabotaže 8/8. Prihvaćeno: vrh plana niži u 6 % planova (do 2,1 km), F 5/6 d po 1 plan bez nedelje B, tri fajla van foldera (oznake verzije, 13 heševa byteSame). Izdati P5-10K i V1b (uporedo sa P5 tabovima).
+- 10. 11. 2026 01:07: P5-10K STOP (`df3bdc4`): F1 + F4 zajedno → MAIN_DOSE_DECREASE (126/18 864; svaki sam 0) jer provera glavne doze preskače nedelju testa sa spuštenim slotom. Odluka (važi za sve distance, javljeno i P5-HM i P5-MAR): nedelja kontrolnog testa sa spuštenim slotom je referenca glavne doze (samo validator); test se broji u % brzih km; kontrolni test u nedelji sa ograničenjem otpada uz napomenu.
+- 10. 11. 2026 01:28: P5-10K dopuna STOP (`01623a1`): F4 udvostručuje nedelje u kojima drugi dan kvaliteta postaje lagan (342 → 660 nedelja, 5–6 dana, 35–45 km, VDOT 60–70). Odluka (sve distance, javljeno P5-HM i P5-MAR): početni nivo T/I = najviši ≤ 80 % plafona koji ne izaziva pouku 35 / spuštanje po pouci 32; inače ostaje nivo po 60 %. Veća početna doza ne sme da košta drugi dan kvaliteta. Ako to traži novo mesto odluke — ostaje P-a (prihvatiti).
+- 10. 11. 2026 01:43: P5-5K stigao (`df96d0e`, 5k-v2.14.0): F1 jedan test u planu ≥ 10 ned (menja se samo nedelja testa), F2 radi (0 odbijanja na 104 800 tokova), pun nivo 796/796, sabotaže 11/11. Vraćeno na doradu jednom tačkom (važi za sve distance, javljeno ostalim P5 tabovima): F2 „neodrađen" samo ako tog datuma nema NIJEDNOG trčanja (ni van plana) — uvoz/Strava sa nevezanim trčanjima ne sme da okine F2. Prihvaćeno: manjak km u nedelji testa kao prijava, 16 nedelja > 25 % (nedelje testa, mali obim). B1/B2 (blaža grana posle sporijeg rezultata, 10/4 192 tokova) odloženo.
+- 10. 11. 2026 01:52: P5-5K primljen (`3f96c04`): F2 po datumu ugrađen (trčanje van plana tog datuma = odrađen), pun nivo 797/797, sabotaže 13/13, otisci mreža isti. Prihvaćeno: trkač koji trči drugim danima od plana (nijedno trčanje na datume kvaliteta) i dalje okida F2 — efekat je blag (doza jedne nedelje ne raste), pravilo po nedelji se ne uvodi.
+- 10. 11. 2026 02:18: P5-MAR primljen. Test 1 po planu (8–9 ned do trke); prvi T 11,8 → 17,9 min, prvi I 12,7 → 18,6 min; ubrzanja 0 → 17 dana po planu; ukupno MP i vrh obima isti; 0 novih odbijanja na 31 920 planova; pun nivo 546 testova, sabotaže 9/9. Odluke: (1) plan od 12 nedelja u kome test zamenjuje jedini I trening — prihvaćeno (test 5 km je sam VO2 stimulus); (2) F2 niži izvodljiv cilj u 9 % tokova — prihvaćeno; (3) ubrzanja se NE broje u % brzih km (bez njih 87 → 77 nedelja > 25 %); (4) tumačenja T3–T5 potvrđena.
+- 10. 11. 2026 04:12: V1b, P5-10K i P5-HM stali u 02:36–03:00 na granici korišćenja naloga (429; reset 03:40). Posle resetovanja svima poslata poruka „nastavi". Zastoj ≈ 1 h 30 min (satna provera u 03:09 je i sama čekala granicu). Od sada najviše 3 Opus taba uporedo.
+- 10. 11. 2026 04:42: P5-HM primljen. Test 1 po planu ≥ 12 ned (6–8 ned pre trke); prvi T 11,3 → 13,7 min, prvi I 10,9 → 15,7 min; ubrzanja 0 → 14 dana; vrh obima i ukupno RP isti; 0 novih odbijanja na 27 930 planova; pun nivo 450/450, sabotaže 7/7. F4 na HM smanjuje nedelje pouke 35 (25 494 → 22 641), deo „× pouka 35" nije ugrađen (P-a) — prihvaćeno. Nalaz: `KNOWN_VERSIONS` nije imao hm-v2.8.0 (verzija u produkciji) od P1 — ispravljeno u P5-HM; organizator proverio sve 4 distance: produkcione verzije 5k-v2.12.0, 10k-v2.10.0, hm-v2.8.0, marathon-v2.8.0 su u spiskovima (P5-10K upozoren da zadrži 10k-v2.11.0). Nalaz: harness adaptacije HM držao ceo JSON tokova (OOM 3,3 GB) → heš; isti obrazac proveriti u ostalim distancama (P8).
+- 10. 11. 2026 04:47: P7a primljen (Sonnet 5.5, ≈ 5 min): 48 anonimnih ispisa, ključ i seme kod organizatora van repoa (objavljuju se posle ocena). Izdati P7b za 5K, HM i MAR (Opus 5.5; laki tabovi — samo čitanje, bez testova; svesno iznad granice od 3 Opus taba). 10K čeka P5-10K.
+- 10. 11. 2026 05:02: P5-10K primljen: test 1 po planu ≥ 12 ned; T ned 1 10,3 → 13,7 min; ubrzanja 0 → 12 dana; 0 odbijanja na 34 146 planova; pouka 35 ista (P-b); sabotaže 14/14; pun nivo jednom (24 min) + ponovljeni samo popravljeni fajlovi. Prihvaćeno: DOSE_DROPPED raste (veća početna doza pa spuštanje kapacitetom), ponavljanja slota po osećaju 5–6 d, lagan dan sa ubrzanjima po osećaju ne ide na sat. Sve četiri distance imaju P5.
+- 10. 11. 2026 05:02: P7b stigao za 5K, HM, MAR (ocene u `P7/reviews/`; ključ A/B ostaje van repoa do ocene 10K). Otključano kod organizatora — prosek star → nov: 5K 60,7 → 58,9 (nov slabiji: 3 profila većeg obima, −8,5 do −13; zamerke: rasterećenje i taper ne smanjuju kvalitet, skok doze R 8 min → I 26 min, dan kvaliteta dug kao dugi); HM 55,4 → 58,0 (nov bolji u 11/12); MAR 53,3 → 59,7 (nov bolji u 10/12, 2 isto). Nijedan plan > 72. Zajedničke zamerke obe verzije: plato dugog i obima, napomene protivreče brojevima, tekst sa „nije izvodljiv"/„odstupanje", trkački dan 5K 8,5 km za sve nivoe, početnik sa većim obimom spušten, spori 3 d bez trkačkog tempa u taperu. → sadržaj P8.
+- 10. 11. 2026 05:15: P7b 10K stigao; ključ i rezultati objavljeni (`P7/KEY-AND-RESULTS.md`). Ukupno 48 parova: 54,5 → 58,2; 5K 60,7 → 58,9 (pogoršanje kod većeg obima), 10K 52,0 → 56,0, HM 55,4 → 58,0, MAR 53,3 → 59,7. Odluka: P8 po distanci — G1 obim raste do kraja razvoja, G2 najniži nivo lestvice uvek staje u plafon, G3 tekst za trkača; 5K budžet ≥ 40 km nazad na 10 %, rasterećenje ≤ 60 % i taper ≤ 70 % doze, trkački dan po nivou; HM nedelja sa blokom ≤ 25 % RP; MAR početnik MP ≤ 60 min. Merilo P8 je ponovljena slepa ocena (P9), ne orijentiri organizatora.
+- 10. 11. 2026 05:33: otvoren stalni tab „glavni trener" (Fable 5.2), krug 1 izdat. Njegov sud o P8 stiže dok P8-5K i P8-10K rade: ako ospori neko pravilo P8, organizator šalje dopunu tim tabovima pre njihovog push-a, a P8-HM i P8-MAR se izdaju sa već usklađenim zadatkom.
+- 10. 11. 2026 05:45: glavni trener, krug 1 (`f7e08d2`, `coach/ROUND-01.md`): prosek 48 planova 54,6 (slepa 58,2). Glavni nalaz: opterećenje se meri u km i udelima, a plaća u minutima (HM RP 3 × 5000 m = 88 min kod sporog; MAR 95 km ≈ 11 h/ned; oštrenje 27–28 min MP tri dana pred maraton). Sud o P8: G1 bez plafona vrha zadržava prevelike planove; G2 u trkačkoj nedelji šteti sporima. Odluka: `briefs/P8-dopuna-po-glavnom-treneru.md` — plafon vrha (faktor po dužini pripreme + satni plafon po VDOT-u), korak < 3 % se ne primenjuje, G4 plafon treninga u minutima, G5 taper/oštrenje/rasterećenje u minutima, G6 lagan ≤ 0,70 × dugi (4+ dana), G7 test jedini kvalitet nedelje i ne pre nedelje 4, G8 dugi početnika do distance. Nije usvojeno sada (krug 2): talas dugog, blok za 3 dana/početnika, donji prag doze, automatsko smanjenje dana. Satni plafoni za VDOT ≥ 40 su dopuna organizatora (trener dao samo VDOT < 40) — tražiti njegov sud u krugu 2.
+- 10. 11. 2026 05:56: V1b primljen i proveren (organizator: folderi `fiveK`, `tenK`, `marathon` sadrže samo `v2/`; HM v1 prisutan; `personalPlan.node.test.ts` nezavisno pokrenut — 3/3). Obrisano 270 fajlova / 33,7 hilj. redova + `docs/qa` + prekidači + E2E v1 tokova; pun nivo 431/431 (49 min 53 s), E2E 82/82. Stari plan u bazi: prikaz i unos rade, poruka + „Generiši nov plan". Prihvaćeno: stari plan ne klasifikuje merenja tempa i nema predlog bola; maraton → 10K predaja nedostupna preko 18 nedelja (sa razlogom); `vercel.json` promenljiva ostaje bez efekta. Za V1c (posle 13. 12.): testovi koji porede sa HM v1 prelaze na fiksture. CI posle push-a još nije potvrđen — proveriti pre P9. Izdat P8-HM.
+- 10. 11. 2026 06:00: korisnik — nove tabove otvarati na Fable-u odmah. P8-HM na Opusu prekinut posle 3 min (bez izmena u repou) i ponovo izdat na Fable 5.2; izdat i P8-MAR na Fable 5.2.
+- 10. 11. 2026 06:05: korisnik — kad završe tabovi koji sada rade (P8 × 4), STATI; bez novih tabova i novog posla do resetovanja petočasovnog limita (09:00). Posle resetovanja: svi tabovi na Fable 5.2 do nedeljnog ili Fable limita; tada stati i javiti korisniku da uradi Fable reset. Organizator u pauzi samo prima i proverava izveštaje P8.
+- 10. 11. 2026 09:15: sva četiri P8 taba stala u 06:05 na petočasovnom limitu (dva Fable taba pokrenuta u 05:58 potrošila su ostatak za ≈ 7 min), nijedan nije završio. Limit resetovan u 09:00; korisnik: „nastavi". P8-HM i P8-MAR (Fable): poslato „nastavi". P8-5K i P8-10K (Opus): po nalogu „posle resetovanja svi na Fable" traženo samo da predaju lokalni rad (`P8-<D>/wip.patch` + `WIP.md`); segment zatim preuzimaju novi Fable tabovi. Pouka: Fable tab troši petočasovni limit mnogo brže od Opus taba — najviše 2–3 Fable taba uporedo dok se ne izmeri potrošnja.
+- 10. 11. 2026 09:42: P8-10K (Opus) nije uradio predaju nego je gurnuo kod 10k-v2.13.0 (`1cdbb18`) sa G1–G8 ugrađenim, ali brzi nivo `tenK/v2` NIJE zelen (23 fajla / 63 testa) — CI na vrhu grane pada. Merenja: planova sa ≥ 5 nedelja na vrhu obima 55 → 8; početnik bez RP 918 → 0; taper bez kvaliteta 378 → 0; T/I/RP preko minuta → 0; tehničkih napomena trkaču 129 → 0; 0 odbijanja generatora na 34 350 planova. Odluke S1–S8 i završetak: `briefs/P8-10K-zavrsetak.md` (nov Fable tab). Grana je crvena dok on ne završi — ništa ne ide dalje (ni krug 2) pre zelenog CI.
+- 10. 11. 2026 09:46: P8-5K (Opus) takođe gurnuo kod (`d62ae99`, 5k-v2.15.0) umesto predaje: 5K (a)–(e) i G1–G7 ugrađeni, 0 odbijanja na 3964 plana i mrežama adaptacije, ali 42 testa u 17 fajlova crveno. Merenja pre dopune: rasterećenje p04 100 → 60 % doze; taper RP > 70 % 3536 → 0; prvi I p07 26 → 13 min; trka ≥ najduži dan 1105 → 233; početnik p12 29,9 → 37,3 km. Odluke i završetak: `briefs/P8-5K-zavrsetak.md` (nov Fable tab): G6 varijanta 0,75 ako vrh pada ≤ 10 %, inače ostaje ugrađeno; I raste najviše jedan korak nedeljno i posle smanjenog prvog.
+- 10. 11. 2026 14:20: četiri Fable taba (P8-HM, P8-MAR, završeci 5K i 10K) pokrenuta oko 09:15–09:45 potrošila su petočasovni limit do 10:07 (≈ 1 h); od 10:07 do 14:10 bez rada, ništa nije gurnuto, grana i dalje crvena na 5K i 10K. Reset 14:10. Odluka: najviše 2 Fable taba uporedo, po prioritetu — prvo završeci 5K i 10K (poslato „nastavi"), P8-HM i P8-MAR tek kad oni završe. Limit koji je do sada zaustavljao rad je petočasovni, ne nedeljni (nedeljni je na upozorenju).
+- 10. 11. 2026 14:35: P8-10K završetak, međujavljanje: S1–S8 ugrađeni, 3/2040 odbijanja adaptacije → 0, 9/23 test fajla usklađeno. Novi nalaz S9: G6 0,70 kod početnika sa 4 dana obara obim (pad ≥ 10 % u 918/1890 planova; sa 0,80 54). Odluka (sve distance, upisano u dopunu P8): početnik ostaje na 0,80; 0,70 samo redovan plan 4+ dana. Prihvaćena rešenja taba: viši nivo T početnika samo kad ga nedelja nosi; rasterećenje bez kvaliteta samo kad najniža T ne staje.
+
+
+### 10. 11. 2026, 15:00 — P8-5K završetak primljen; dopuna 5k-v2.15.2
+
+- Izveštaj: `reports/P8-5K-REPORT.md` § Završetak; kod `65f9799`, verzija 5k-v2.15.1. Nezavisna provera organizatora:
+  brzi nivo `fiveK/v2` 800/800. Pun nivo po tabu 810/810, sabotaže 17/17, E2E 3/3.
+- G6 varijanta B (0,75 + spuštanje cilja) izmerena i odbačena (vrh cilja pada > 10 % u 36–79 % planova sa 4+ dana).
+- Nađeno proverom: izuzetak početnika (0,80) nije u kodu 5K. Poslata dopuna istom tabu:
+  1. početnik: lagan ≤ 0,80 × dugi bez obzira na broj dana;
+  2. korak I = najveći nivo lestvice sa radom ≤ 1,25 × prethodni (najmanje sledeći veći); razlog: medijana vrha I pala
+     13,1 → 9,4 min, premalo za 5K;
+  3. napomena nedelje G6 samo u prvoj takvoj nedelji.
+- `npm run check`/build i CI ostaju crveni samo zbog `tenK/v2` (P8-10K završetak u toku).
+
+### 10. 11. 2026, 15:10 — nalog vlasnika: nedeljni limit, samo završiti započeto
+
+- Vlasnik radi reset nedeljnog limita. Do nove odluke vlasnika: NE pokreću se novi tabovi i NE nastavljaju se
+  P8-HM i P8-MAR. Završavaju samo dva taba koja rade: P8-5K dopuna (5k-v2.15.2) i P8-10K završetak.
+- Ako neki od ta dva stane na limitu, posle reseta dobija „nastavi"; ništa drugo.
+- Posle njihovih izveštaja: provera, upis, arhiviranje, pa čekanje dogovora o daljoj organizaciji.
+
+### 10. 11. 2026, 15:30 — P8-5K završen (5k-v2.15.3), tab arhiviran
+
+- Kod `4fc4084`, izveštaj `121a02b` (`reports/P8-5K-REPORT.md` § Završetak). Nezavisna provera organizatora: brzi nivo
+  `fiveK/v2` 801/801. Po tabu: pun nivo 811/811, sabotaže 20/20, mreža P8 3964/3964 bez odbijanja. E2E 5K nije
+  ponavljan posle 2.15.1 (tada 3/3) — ponoviti pre mergea.
+- 2.15.2: početnik lagan ≤ 0,80 × dugi (B 4 d sa planiranim vrhom < 0,9 × cilj: 30 → 0).
+- 2.15.3: korak I ≤ 1,25 × prethodni rad; napomena laganog samo u prvoj takvoj nedelji.
+- OTVORENO za krug 3 (odluka po sudu glavnog trenera): medijana vrha I doze 13,1 (pre P8) → 10,1 min; cilj ≥ 11 nije
+  dostignut. Uzrok po tabu (tumačenje): vrhunac ima 2–3 I nedelje, prvi I ≤ 70 % budžeta. Kandidati: prvi I 80 % ili
+  veći faktor koraka. Nazivi faza na srpskom nisu dirani.
+- Po nalogu vlasnika (15:10) ništa novo se ne pokreće; čeka se P8-10K završetak.
+
+### 10. 11. 2026, 15:35 — P8-MAR predao (marathon-v2.11.0); ispravka stanja tabova
+
+- ISPRAVKA: P8-MAR i P8-HM nisu bili pauzirani kako je organizator vodio — sami su nastavili posle reseta
+  petočasovnog limita. P8-MAR je predao; P8-HM je pri kraju (čeka pun nivo i E2E, pa push). Oba spadaju u „sesije
+  koje završavaju svoje" po nalogu vlasnika od 15:10; ništa im se ne dodaje.
+- P8-MAR: kod `377c8dc`, izveštaj `reports/P8-MAR-REPORT.md`, sudari `reports/P8-MAR-STOP.md` (S1–S6). Nezavisna
+  provera organizatora: brzi nivo `marathon/v2` 447/447. Po tabu: pun nivo 549/549, `npm run check` 3318 zeleno,
+  E2E 3/3, sabotaže 15/15, mreže 31 920 planova bez odbijanja.
+- NIJE UGRAĐENO u maraton: izuzetak početnika za G6 (0,80) — izveštaj pokazuje početnika 4+ dana na 0,70. Dug za
+  sledeći krug.
+- ČEKA ODLUKU ORGANIZATORA (ne odlučuje se dok vlasnik ne kaže kako dalje): S1 početnik zadržava faktor vrha 1,5;
+  S2 MP trening posle bloka pada (DOSE_DROPPED R 570 → 1548, F 168 → 1632); S3 ukupno MP po planu R 54 → 44 km,
+  F 54 → 42, B 42 → 27,5; S4 plan po osećaju 12–13 nedelja bez testa (1260/8190); S5 tumačenja T1–T6; vrh obima niži
+  > 10 % u 31 % R i 44 % F planova. Ostatak G3 (interne oznake u napomenama nedelje) nije urađen.
+- Tab P8-MAR se ne arhivira dok se S1–S6 ne odluče.
+
+### 10. 11. 2026, 16:20 — P8-HM predao (hm-v2.11.0)
+
+- Kod `3ebb088`, izveštaj `reports/P8-HM-REPORT.md`, otvorene odluke `reports/P8-HM-STOP.md` (S1–S6). Nezavisna
+  provera organizatora: brzi nivo `halfMarathon/v2` 360/360. Po tabu: pun nivo 452/452, `--changed` 1011/1011,
+  E2E 5/5, sabotaže 14/14. Ceo `npm run check` posle ispravke 2 UI testa nije ponavljan — organizator ga pokreće kad
+  10K preda.
+- Ugrađeno: G1, G2, G4, G5, G6, G7, HM (b), G3 (tekst). Nije: G8 (S2), HM (c) (S4).
+- Cena: ukupno RP medijana 42 → 34,8 km; 27 novih odbijanja u mreži skorašnjeg dugog (S3).
+- ČEKA ODLUKU (ne odlučuje se dok vlasnik ne kaže kako dalje): S1 taper ≤ 60 % × najmanja doza; S2 G8; S3 nova
+  odbijanja; S4 test u nedelji vrha 84/112; S5 plan po osećaju 10–12 nedelja bez testa (1728/6336); S6 tumačenja.
+  Izuzetak početnika za G6 (0,80) proveriti u kodu HM pri odlukama.
+- Za krug 2: ispis planova kroz `userWeekNotes`/`userText`, ne sirove napomene.
+- Tab P8-HM se ne arhivira dok se S1–S6 ne odluče. Radi još samo P8-10K završetak.
+
+### 10. 11. 2026, 16:35 — P8-10K završen; sva četiri P8 predata; grana lokalno zelena
+
+- P8-10K završetak: kod `2163e61`, vrh `d3c9530`, verzija 10k-v2.13.0 (D49–D51), izveštaj `reports/P8-10K-REPORT.md`
+  § Završetak, S9 u `reports/P8-10K-STOP.md`. Po tabu: pun nivo `tenK/v2` 765/765, E2E 3/3, sabotaže 14/14, build
+  prolazi. Sudari 3 (prelaz T → RP kod početnika bez upozorenja) i 4 (G8 × period bola) prihvaćeni kako su rešeni.
+- Nezavisna provera organizatora na `d3c9530`: `npm run check` ceo web — typecheck, lint, format prolaze,
+  299 fajlova / 3372 testa, 0 padova.
+- CI: run 791 na `d3c9530` u toku (pokrenut 16:22); run 790 (`3ebb088`) pao — pre ispravke tipova 10K.
+- Verzije: 5k-v2.15.3, 10k-v2.13.0, hm-v2.11.0, marathon-v2.11.0.
+- Otvoreno 10K: G6 0,70 kod redovnog plana 4 dana (ned 1 ispod trenutnog obima 1254 → 1782 planova; opcija 0,75);
+  G8 u nedelji smanjenog obima istiskuje lagane; dugi rasterećenja < 4 km kod početnika 18/42.
+- Tab P8-10K arhiviran. P8-HM i P8-MAR ostaju (odluke S1–S6). Po nalogu vlasnika ništa novo se ne pokreće; čeka se
+  dogovor o daljoj organizaciji (odluke po STOP-ovima, izuzetak početnika u MAR/HM, krug 2 kod trenera, `check:full`
+  pre mergea).
+
+### 10. 11. 2026, 16:50 — nalog vlasnika: pustiti HM i MAR tabove da završe; odluke po STOP-ovima
+
+Oba taba su čekala odluke organizatora; poslate su, tabovi ih ugrađuju i završavaju (hm-v2.12.0, marathon-v2.12.0).
+
+- HM: S1 O1 (najmanja doza tapera ostaje); S2 O2 (G8: udeo dugog početnika max(udeo reda; min(50 %, 16 km)), jedno
+  mesto); S3 prihvaćeno; S4 O2 (test u pretposlednjoj ne-rasteretnoj nedelji razvoja, ne pre nedelje 4); S5 O2 (plan po
+  osećaju 10–12 ned: test u prvoj ne-rasteretnoj nedelji razvoja umesto I); S6 potvrđeno; izuzetak početnika G6 0,80
+  (potvrditi ili ugraditi).
+- MAR: S1 O1 ostaje; S2 privremeno rešenje ostaje; S3 prihvaćeno (sud glavnog trenera u krugu 2); S4 O2 (plan po
+  osećaju 12–13 ned: test u prvoj ne-rasteretnoj nedelji ≥ 4 razvoja); S5, S6 potvrđeno; izuzetak početnika G6 0,80.
+- Razlog za S5/S4 O2: plan po osećaju bez ijednog testa nikad ne kalibriše tempo — test je vredniji od jednog I.
+- Pravilo za tabove: ako odluka daje nova odbijanja ili sudar → ostaje prethodno ponašanje, samo brojevi.
+- Dug: isto pravilo testa za plan po osećaju 8–11 nedelja na 10K (tab arhiviran) — za sledeći krug.
+
+### 10. 11. 2026, 17:10 — P8-MAR završen (marathon-v2.12.0), tab arhiviran
+
+- Kod `146563f`, izveštaj `reports/P8-MAR-REPORT.md` § Završetak. Nezavisna provera organizatora: brzi nivo
+  `marathon/v2` 447/447. Po tabu: pun nivo 549/549, `npm run check` 3372 zeleno, E2E 3/3, sabotaže 17/17.
+- S4 O2: planova po osećaju bez testa 1260 → 0 (test u nedelji 4, razvoj), 0 odbijanja.
+- G6 početnik 0,80: početnik 4+ dana sa planiranim vrhom < 0,9 × granica 63 → 18; planova sa „planirano < cilj"
+  462 → 225.
+- Za krug 2 (sud glavnog trenera): pad ukupnog MP rada (S3), početnik 50 → 75 km (S1), DOSE_DROPPED posle bloka (S2).
+- Radi još samo P8-HM (hm-v2.12.0).
+
+### 10. 11. 2026, 17:25 — P8-HM završen (hm-v2.12.0); P8 zatvoren, grana i CI zeleni
+
+- Kod `7fdab81`, izveštaj `reports/P8-HM-REPORT.md` § Završetak. Po tabu: pun nivo 455/455, `--changed` 2500/2500,
+  E2E 5/5, sabotaže 18/18, 0 novih odbijanja.
+- Nezavisna provera organizatora na `7fdab81`: `npm run check` ceo web — typecheck, lint, format prolaze,
+  299 fajlova / 3375 testova, 0 padova. CI: run 793 (`7fdab81`), 792 (`146563f`), 791 (`d3c9530`) — sva tri uspešna
+  (CI bira testove po dometu izmene; `check:full` nije pokretan — ide jednom pre mergea).
+- HM merenja: dugi početnika ≥ 16 km 792 → 1326 od 1890 (cena: 666 planova gubi > 10 % km laganih dana, najviše
+  23 %); početnik sa planiranim vrhom < 0,9 × granica 51 → 0; test u nedelji najvećeg cilja 84/112 → 17/128; planovi
+  po osećaju bez testa 1728 → 0.
+- Verzije na grani: 5k-v2.15.3, 10k-v2.13.0, hm-v2.12.0, marathon-v2.12.0. Svi P8 tabovi arhivirani; ostaje samo
+  glavni trener. Satni zadatak isključen.
+- ZA SLEDEĆI KRUG (čeka dogovor sa vlasnikom): krug 2 kod glavnog trenera (ispis kroz `userWeekNotes`/`userText`);
+  pad ukupnog RP/MP rada (HM 42 → 34,8 km; MAR 54 → 44); vrh I na 5K 10,1 min; G6 0,70 kod redovnog plana 4 dana na
+  10K; test za plan po osećaju 8–11 ned na 10K; talas dugog; cena G8; `check:full` + E2E 5K pre mergea.
+
+### 10. 11. 2026, 17:45 — nalog vlasnika: završiti sve, štedljivo; raspodela modela (P9)
+
+Pravilo modela (zamenjuje „svi tabovi Fable"):
+- Haiku: čisto pokretanje gotovih komandi i prepis ishoda (nema ga u ovom krugu — to radi organizator sam).
+- Sonnet: mehanički posao bez trenerske odluke i bez izmene generatora (skripte ispisa, merenja, dokumentacija).
+- Opus: mala, tačno određena izmena generatora sa presedanom na drugoj distanci + testovi.
+- Fable: samo trenerski sud (glavni trener, postojeći tab) i organizator. Najviše 2 taba uporedo.
+
+Plan P9 (do kraja):
+1. P9a (Sonnet, `session_01GnHHiZuxm6DwxtJVR28DwY`): `P9/render.ts` — ispis 12 profila × 4 distance kroz korisnički
+   tekst → `P9/plans/<D>/pNN.txt`.
+2. P9b (Opus, `session_01GnHHiZeniA1j1SeZ2XQfif`): 10K — plan po osećaju 8–11 ned dobija test u prvoj ne-rasteretnoj
+   nedelji ≥ 4 razvoja (10k-v2.14.0), kao HM/MAR.
+3. Organizator ponovo pokreće `P9/render.ts` za 10K posle P9b, pa poruka glavnom treneru → `coach/ROUND-02.md`.
+4. Po sudu trenera: krug 3 samo za nalaze koji to traže (kandidati: vrh I na 5K, pad RP/MP rada, G6 0,70 na 10K,
+   talas dugog, cena G8) — Opus po distanci, jedan po jedan nalaz.
+5. `check:full` jednom + E2E sve 4 distance (organizator sam). Spajanje u main tek na izričitu potvrdu vlasnika.
+
+### 10. 11. 2026, 18:15 — P9a završen (Sonnet), tab arhiviran
+
+- `49674d5`: `P9/render.ts`, `P9/inputs.json`, `P9/plans/<D>/pNN.txt` (48 fajlova, 0 odbijenih), izveštaj
+  `reports/P9a-REPORT.md`. Interne oznake u ispisu: 0 pogodaka na sve četiri distance. Organizator pregledao uzorak
+  (5K p01). Kod aplikacije nije menjan.
+- Nalaz za kasnije (nije greška ispisa): 5K nema `userWeekNotes` ekvivalent — napomene idu sirove iz generatora.
+- Sledeće: čeka se P9b (10K, Opus, pun nivo u toku) → organizator ponovo ispisuje 10K → poruka glavnom treneru.
+
+### 10. 11. 2026, 18:40 — P9b završen (Opus, 10k-v2.14.0), tab arhiviran; krug 2 poslat glavnom treneru
+
+- P9b `9a3b60e`: `periodize.testWeekOf` — plan po osećaju 9–11 ned dobija test u prvoj ne-rasteretnoj nedelji razvoja
+  ≥ 4. Mreža F 11 880: bez testa 4320 → 1080 (ostaje samo 8 ned — prekratak), 0 novih odbijanja; planovi sa
+  rezultatom i početnici bajt-isti. Po tabu: pun nivo usklađen, `--changed` 1014 ✔, E2E 3/3, `npm run check` 3375 ✔.
+  Nezavisna provera organizatora: brzi nivo `tenK/v2` 437/437.
+- Sitno otvoreno: napomena plana od 8 ned bez testa kaže „posle prilagođavanja" (neprecizno za nov plan).
+- Organizator ponovo ispisao `P9/plans/10K` (10k-v2.14.0).
+- Verzije za krug 2: 5k-v2.15.3, 10k-v2.14.0, hm-v2.12.0, marathon-v2.12.0.
+- Poruka glavnom treneru (`session_01GnHHiWk1PhzvzdGjhxZ5ob`): oceniti `P9/plans` → `coach/ROUND-02.md` + `.json`.
+
+### 10. 11. 2026, 19:00 — krug 2 glavnog trenera; krug 3 (K3) pokrenut
+
+- `coach/ROUND-02.md` (`9f8615b`): prosek 54,6 → 59,0 (5K 54,7 → 58,0; 10K 55,0 → 59,2; HM 55,3 → 60,9; MAR 53,6 →
+  57,7). Bolji 37, isti 2, slabiji 9. Prvi planovi > 70 (HM p01 72, p02 71). Ispod 50: 5K p08, 10K p06, HM p11,
+  MAR p08, MAR p11.
+- Sud o ceni P8: satni plafoni dobri (ne dirati); trkački tempo nije premali u celini (jeste za VDOT ≥ 50 pri ≥ 80
+  km); 5K I 10,1 min premalo; maraton početnik 50 → 75 km ne (≤ 1,30 × i ≤ 7,5 h); 10K 4 dana 0,75; talas dugog da za
+  HM/MAR.
+- Odluka organizatora: ugrađuje se svih 6 stavki trenera, po distanci i po prioritetu, svako pravilo zaseban commit;
+  sudar → prethodno ponašanje + brojevi. Zadatak: `briefs/K3-krug-3.md`.
+- Tabovi (Opus, 2 uporedo): prvo MAR i 5K, zatim HM i 10K. Posle: ispis P9/plans, krug 3 kod trenera (provera),
+  `check:full`, pitanje vlasniku za spajanje u main.
+
+### 10. 11. 2026, 20:00 — K3-5K završen (5k-v2.16.0), tab arhiviran; K3-10K pokrenut
+
+- `036495a`, izveštaj `reports/K3-5K-REPORT.md`. Nezavisna provera organizatora: brzi nivo `fiveK/v2` 807/807. Po
+  tabu: pun nivo 817/817, `--changed` 1771 ✔, E2E 3/3, `npm run check` 3386 ✔, sabotaže 6/6; mreža 3964, 0 odbijanja.
+- Ugrađeno: K3-A doza I po obimu (medijana vrha I: 30–45 km 8,7 → 14,6 min; 45–65 km 13,3 → 17,9; ≥ 65 km 14,6 →
+  19,0; p01 15,2, p02 14,4, p05 20,3, p07 17,9); K3-B 4 dana 0,75 i nedelja 1 0,80; K3-C 3 dana 0,70 + ubrzanja u
+  dugom + ista doza najviše 2 puta.
+- Nije ugrađeno (sudari, brojevi u izveštaju): I blok ≥ 3 nedelje (vrhunac ≤ 4 nedelje); K3-D vrh pre tapera (strogi
+  rast RP, plafon minuta „ne dirati"); K3-E test ≤ 2 × doza (test 3 km ugrađen u app i ekrane van foldera); K3-F dan
+  manje (983 plana, menja broj dana — tražilo bi poseban segment).
+- Odluka: na 10K se K3-D/E/F samo mere, ugrađuju se A, B, C. K3-10K (Opus) pokrenut; K3-MAR u toku; K3-HM sledi.
+
+### 10. 11. 2026, 20:10 — K3-MAR završen (marathon-v2.13.0), tab arhiviran; K3-HM pokrenut
+
+- `85b8049`, izveštaj `reports/K3-MAR-REPORT.md`. Nezavisna provera organizatora: brzi nivo `marathon/v2` 453/453. Po
+  tabu: pun nivo 555/555, `--changed` 1772 ✔, E2E 3/3, `npm run check` 3387 ✔, sabotaže 4/4; 31 920 planova, 0 novih
+  odbijanja.
+- Ugrađeno: K3-A najduži dugi (p01/p02 22,4 → 25,2; p06 17,6 → 20,3; ostali uz rečenicu preporuke;
+  MARATHON_LONG_SHORT R 6126 → 3648, F 2562 → 1170); K3-B usko (početnik ≤ 1,30 × i ≤ 7,5 h, p12 75 → 64,2 km; dno
+  tabele zadržava 1,5 × jer bi bilo 159 odbijanja); K3-C deo (3 dana lagan 0,70); K3-E (a) brzi: blok do 18 km.
+- Nije ugrađeno: K3-D vrh pre tapera (sudar sa strogim rastom doze, M12/M19); K3-E (b) dan pred dugi ≤ 50 % (67
+  odbijanja, vrh −10 % u 600–700 planova); MP početnika u dugi; K3-F talas (pogađa 14 772/21 840 — traži odluku);
+  blok u dugom za 3 dana (nov tip slota); dan manje.
+- Posledica K3-B: početnik ređe dostiže dugi 24 km (upozorenje 669 → 1020) — za sud trenera u krugu 3.
+- K3-HM (Opus) pokrenut sa suženim obimom: ugrađuje A, B, deo C, E; D, F, G samo meri. K3-10K u toku.
+
+### 10. 11. 2026, 21:15 — K3-HM završen (hm-v2.13.0), tab arhiviran
+
+- `362569a`, izveštaj `reports/K3-HM-REPORT.md`. Nezavisna provera organizatora: brzi nivo `halfMarathon/v2` 368/368.
+  Po tabu: pun nivo 460/460, `--changed` 1019 ✔, E2E 5/5, `npm run check` 3392 ✔, sabotaže 3/3; 25 122 plana, 0
+  odbijanja, vrh nigde ne pada > 10 %.
+- Ugrađeno: K3-A dugi početnika (pad dugog u specifičnoj 312 → 0; najduži van poslednje 3 nedelje 258 → 0; p11
+  specifična ≥ 13,2, najduži 13,6); K3-B taper RP ≤ 60 % (taper > 60 %: 10 617 → 0; p03 24,7 → 18,6 min, p10 26,2 →
+  19,7); K3-E brzi (blok medijana 6 → 8 km, 2943 plana).
+- Vraćeno: K3-C 3 dana lagan 0,70 (vrh −10 % u R-d3 774/2640, F-d3 429/990). Napomena: na 5K i MAR je isto pravilo
+  prošlo bez pada — razlika među distancama ostaje, sud trenera.
+- Samo izmereno: K3-D (isti sudar kao MAR), K3-F talas (dugi na plafonu > 3 ned zaredom 20 184/25 122), dan manje
+  (4297), test > 2 × doza (762/20 160), blok u dugom za 3 dana.
+- Ostaje K3-10K (u toku, K3-B gotov).
+
+### 10. 11. 2026, 23:00 — K3-10K završen (10k-v2.15.0); K3 zatvoren; krug 3 trenera i check:full pokrenuti
+
+- K3-10K `3399773`, izveštaj `reports/K3-10K-REPORT.md`. Po tabu: pun nivo usklađen (adapt mreža), E2E 3/3,
+  `npm run check` 3396 ✔, sabotaže 4/4; 31 314 planova, 0 odbijanja, vrh nigde ne pada > 10 %.
+  Ugrađeno: K3-A doza (I medijana 30–45 km 9,4 → 12,8; 45–65 km 14,1 → 17,2; ≥ 65 km 18,4 → 20,3; RP pri ≥ 50 km
+  22,6 → 27,2 min) uz tri uska vraćanja; K3-B 4 dana 0,75 (izuzetak nedelje 1 vraćen); K3-C dugi sa završnih 10/15
+  min T (3 dana). Vraćeno: 3 dana lagan 0,70 (vrh −10 % u 474/2676 R, 534/1988 F); I blok ≥ 3 nedelje.
+  Samo izmereno: K3-D 12 849 planova, K3-E 494, K3-F 7078.
+- Nezavisna provera organizatora na `3399773`: `npm run check` — typecheck, lint, format ✔, 303 fajla / 3396 testova.
+- Verzije: 5k-v2.16.0, 10k-v2.15.0, hm-v2.13.0, marathon-v2.13.0. Svi K3 tabovi arhivirani.
+- Pokrenuto: glavni trener → `coach/ROUND-03.md` (provera + sud „ide li korisnicima"); `npm run check:full` jednom
+  (organizator, u pozadini).
+- Neugrađeno iz liste trenera (za eventualni sledeći segment, traži veći zahvat): najteža nedelja pre tapera, talas
+  dugog, dan manje kod malog obima, test ≤ 2 × doza (ekrani), I blok ≥ 3 nedelje, blok u dugom za 3 dana, dan pred
+  dugi ≤ 50 %, 3 dana 0,70 na HM/10K.
+
+### 10. 11. 2026, 23:10 — krug 3 glavnog trenera; krug 4 (K4) pokrenut
+
+- `coach/ROUND-03.md` (`03edad1`): prosek 54,6 → 59,0 → 59,9 (5K 59,0; 10K 60,8; HM 61,4; MAR 58,5). Bolji 20, isti
+  28, slabiji 0. Iznad 70: HM p01 72, HM p02 71, 5K p01 71, 10K p01 70,5. Ispod 50: MAR p08 47, 10K p06 48,5,
+  5K p08 49,5.
+- Sud „ide li korisnicima": 10K da; 5K i HM da uz napomenu (3 dana / mali obim); maraton da uz napomenu za ≥ 4 dana
+  i ≥ 40 km, NE za početnika ispod ~35 km/ned (preporuka HM pre generisanja) i ne bez upozorenja za 3 dana.
+- Neugrađeno što vredi (trener): A) 3 dana — blok u dugom + talas + 0,70 (≈ +0,8); B) mali obim — kratak lagan dan
+  kao „odmor ili 20 min po želji" (≈ +0,7). Ostalo ne vredi poseban krug.
+- Odluka organizatora: K4 sa te dve stavke (`briefs/K4-krug-4.md`), Opus, 2 uporedo: prvo HM i MAR (A + B), zatim
+  5K i 10K (samo B). Posle K4: kratka provera trenera, `check:full` ponovo (jednom na završnom vrhu), pitanje vlasniku.
+- ZA VLASNIKA (proizvodna odluka, ne ugrađuje se bez njega): maraton za početnika ispod ~35 km/ned — odbiti
+  generisanje sa preporukom HM/duže pripreme, ili ostaviti plan sa rečenicom preporuke (sadašnje stanje).
+- `check:full` na `3399773` je u toku kao međuprovera; pre mergea se ponavlja na završnom vrhu.
+
+### 11. 11. 2026, 00:00 — check:full na stanju posle K3: zeleno
+
+- `npm run check:full` (organizator, na `3399773` + samo docs): typecheck, lint, format ✔; pun nivo 441 fajl / 3928
+  testova, 0 padova, 63 min. Ovo je međuprovera — ponavlja se na završnom vrhu posle K4.
+- Upozorenje nedeljnog limita (seven_day allowed_warning) vidljivo na oba K4 taba od 23:15.
+
+### 11. 11. 2026, 00:50 — K4-MAR završen (marathon-v2.14.0), tab arhiviran; K4-5K pokrenut
+
+- `747650b`, izveštaj `reports/K4-MAR-REPORT.md`. Nezavisna provera organizatora: brzi nivo `marathon/v2` 468/468. Po
+  tabu: pun nivo jednom — 20 fajlova crveno, ispravljeno (`09b50c7`), tih 20 ponovljeno zeleno (ceo pun nivo NIJE
+  ponovljen — pokriva ga završni `check:full`); `--changed` 1049 ✔, E2E 3/3, `npm run check` 3411 ✔, sabotaže 3/3.
+- K4-A (3 dana) ugrađeno celo: blok MP u dugom nedelje B (R-d3 0 → 3072/3120, F-d3 0 → 1152/1170, medijana 18 km),
+  MP dan te nedelje lagan; talas dugog (niz > 3 nedelje na najdužem R 2796 → 0, F 1026 → 9; p08 29,3 × 5 →
+  29,3 / 24,9 / 28,9+8 / 24,9 / 29,3+10); lagan 0,70 ostaje. 0 novih odbijanja.
+- K4-B ugrađeno postojećim oblikom (dan odmora + „odmor ili 20 min lagano po želji"): planova sa laganim < 30 min u
+  > 2 nedelje R 1840 → 402, F 362 → 39, B 77 → 0; ne pokriva 4 dana redovno (jedan lagan dan) ni 3 dana.
+- Otvoreno (izveštaj): 9 F planova sa nizom > 3; spori na plafonu trajanja −16 % obima u nedeljama 0,85.
+- K4-5K (Opus, samo K4-B) pokrenut; K4-HM u toku; K4-10K sledi.
+
+### 11. 11. 2026, 00:55 — K4-HM završen (hm-v2.14.0), tab arhiviran; K4-10K pokrenut
+
+- `86897c4`, izveštaj `reports/K4-HM-REPORT.md`. Nezavisna provera organizatora: brzi nivo `halfMarathon/v2` 374/374.
+  Po tabu: pun nivo 466/466, `--changed` 1025 ✔, E2E 5/5, `npm run check` 3402 ✔, sabotaže 3/3; 25 122 plana, 0
+  novih odbijanja, vrh nigde −10 %.
+- K4-A1 blok RP u dugom za 3 dana: svi R-d3 (2640) i F-d3 (990), 1–2 nedelje sa blokom, zbir medijana 10 km.
+- K4-A2 talas dugog: dugi na plafonu > 3 nedelje zaredom 2535 → 273 (ostatak: sudar sa dozom kvaliteta); na plafonu
+  5 → 3 puta; planirano u izgradnji medijana −1,7 %.
+- K4-A3 lagan 0,70 (3 dana) VRAĆENO i uz blok/talas (vrh −10 % u R-d3 870/2640) — ostaje 0,80.
+- K4-B kratak lagan dan → „odmor ili 20 min lagano po želji": planova sa laganim < 30 min u > 2 nedelje 4297 → 389;
+  cena R-d4 medijana −30,9 km po planu (≈ −8 %).
+- Usput ispravljena adaptacija za 3 dana (tip nedelje koja je prošla čita se iz upisanog plana).
+- K4-10K (Opus, samo K4-B) pokrenut; K4-5K u toku.
+
+### 11. 11. 2026, 01:55 — K4-5K završen (5k-v2.17.0), tab arhiviran
+
+- `7eb040e`, izveštaj `reports/K4-5K-REPORT.md`. Nezavisna provera organizatora: brzi nivo `fiveK/v2` 809/809. Po
+  tabu: pun nivo 819/819, `--changed` 1384 ✔, E2E 3/3, `npm run check` 3413 ✔, sabotaže 3/3; 3964 plana, 0 novih
+  odbijanja, vrh −10 %: 0.
+- K4-B ugrađeno postojećim oblikom („lagan dan manje", ekrani nedirani): planova sa laganim < 30 min u > 2 nedelje
+  983 → 767; pravilo u 278 planova (5 dana). Vraćeno za početnika (vrh −10 % u 38/296). Nepokriveno: 3 i 4 dana
+  (jedan lagan dan). Od 12 profila menja se samo p06.
+- Ostaje K4-10K (u toku).
+
+### 11. 11. 2026, 02:35 — K4-10K završen (10k-v2.16.0); K4 zatvoren; krug 4 trenera i završni check:full pokrenuti
+
+- K4-10K `ad67fda`, izveštaj `reports/K4-10K-REPORT.md`. Po tabu: pun nivo 771/771, `--changed` 1020 ✔, E2E 5/5,
+  `npm run check` 3419 ✔, sabotaže 2/2; 31 314 planova, 0 novih odbijanja, vrh −10 %: 0. K4-B: lagan < 30 min u
+  > 2 nedelje 7078 → 2607 (ostatak: 3 i 4 dana, jedini lagan dan).
+- Verzije na završnom vrhu: 5k-v2.17.0, 10k-v2.16.0, hm-v2.14.0, marathon-v2.14.0. Svi K4 tabovi arhivirani.
+- Pokrenuto: glavni trener → `coach/ROUND-04.md`; `npm run check:full` na `ad67fda` (organizator, pozadina).
+
+### 11. 11. 2026, 02:40 — krug 4 glavnog trenera (završna provera)
+
+- `coach/ROUND-04.md` (`bede7b7`): prosek 54,6 → 59,0 → 59,9 → 60,6 (5K 59,1; 10K 60,9; HM 62,7; MAR 59,8). Bolji 11,
+  isti 37, slabiji 0. Iznad 70: 4 plana. Ispod 50: samo 5K p08 49,5 (krug 1: 14 planova, najniži 31,0).
+- Završni sud: 10K da; HM da; 5K da uz napomenu (3 dana i < 20 km tanak); maraton da uz napomenu, 3 dana sada
+  prihvatljivo; maraton-početnik ispod ~35 km/ned i dalje NE kao priprema — pustiti samo ako ekran pre generisanja
+  preporuči HM/dužu pripremu i korisnik potvrdi (proizvodna odluka vlasnika; traži izmenu ekrana).
+- Sitno: poruka o malom obimu u tri oblika, jedan sa ISO datumom — ujednačiti; pravilo B ne pokriva rasterećenja/taper.
+- Trener: dalja dobit po krugu < 1 poen; sledeći veći pomak je van pravila generatora (gorivo i tempo trke, pripremna
+  trka, hod-trk za spore). Odluka organizatora: krugovi izmena se ovde zaustavljaju. Ostaje završni `check:full`.
+- Za budući krug (trener, ≈ +1,3 ukupno): najteža nedelja pre tapera; monotonija iste doze + talas u razvoju MAR
+  3 dana; pravilo B u rasterećenju/taperu, upozorenje pre generisanja za maraton < 35 km, kraći test za < 20 km.
+
+### 11. 11. 2026, 04:15 — završni check:full zelen; program zaustavljen, čeka se odluka vlasnika o spajanju
+
+- `npm run check:full` (organizator) na završnom vrhu koda (`a57bc42`; kasniji commit-i su samo docs): typecheck,
+  lint, format ✔; pun nivo 445 fajlova / 3953 testa, 0 padova, 53 min. Prvi pokušaj izgubljen zbog restarta
+  kontejnera, ponovljen.
+- CI: run 813 na `a57bc42` uspešan; run 812 (`7eb040e`) pao — između dva push-a (10K K4 pravilo već na grani, E2E
+  verzija i lint usklađeni tek u `a57bc42`).
+- Stanje: 5k-v2.17.0, 10k-v2.16.0, hm-v2.14.0, marathon-v2.14.0; ocena trenera 54,6 → 60,6; svi tabovi arhivirani
+  osim glavnog trenera; satni zadatak isključen.
+- Nije urađeno: spajanje u main, deploy, izmene baze (čeka izričitu potvrdu vlasnika). V1c (brisanje HM v1) posle
+  13. 12. 2026.
+
+### 11. 11. 2026, 04:40 — nalog vlasnika: plan za bilo koji broj nedelja uz upozorenje (W1)
+
+- Danas se odbija van opsega: 5K 6–16; 10K 8–18 (početnik ≥ 10); HM 10–20 (≥ 12); maraton 12–24 (≥ 16). Zajednički
+  ekrani nemaju svoju granicu (odbijanje dolazi iz generatora).
+- Odluke organizatora (`briefs/W1-bilo-koja-duzina-plana.md`): kratak plan = poslednjih N nedelja rasporeda
+  najkraćeg dozvoljenog plana, doze i obim se grade unapred od trenutnog stanja (bez skoka); dug plan = osnovna
+  priprema na sadašnjem obimu + standardni plan najveće dužine; tehnička granica 52 nedelje; jedno upozorenje plana.
+- Tabovi Opus, 2 uporedo: HM i MAR, zatim 5K i 10K. Posle: `check:full` ponovo, pa pitanje o spajanju.
+
+### 11. 11. 2026 — nalog vlasnika: „Cilj 80", raditi redom
+
+Predlog organizatora (prihvaćen): pravilima je ostalo ≈ +1–2 poena; do 80 vode (1) ciljni planovi kao merilo,
+(2) usmeravanje unosa pre generisanja (ekran), (3) periodizacija sa vrhom pre tapera (doza sme da pada posle vrha),
+(4) nov sadržaj (pripremna trka, strategija tempa, ishrana u dugom, hod-trk, brda, progresivni dugi), (5)
+prilagođavanje po odrađenim treninzima + rubrika koja to meri.
+- Korak 1 pokrenut: glavni trener piše 16 ciljnih planova (4 po distanci) u `target/<D>/pNN-target.md` i
+  `target/GAP.md` (razlike sa poenima i vrstom zahvata, redosled rada, profili koji ne mogu do 80).
+- Uporedo teče W1 (HM, MAR; zatim 5K, 10K). Koraci 2–5 se pokreću po nalazu GAP-a.
+
+### 11. 11. 2026, 07:30 — „Cilj 80" korak 1 gotov: ciljni planovi i GAP; redosled rada
+
+- `target/<D>/pNN-target.md` (16 planova) i `target/GAP.md` (`5d0292b`). Prosek 16 profila: sada 59,8 → cilj 79,3;
+  11 može na ≥ 80 sa istim ulazima, 5 ne može. Poeni su procene trenera (AI ocenjivač), delimično se preklapaju.
+- Stavke (na prosek 48, sada 60,6): 1 dugi kao lestvica sa sadržajem +3,0 [S]; 2 vrh pa spuštanje +2,0 [S];
+  3 početnik lestvica obima i dugi po vremenu +2,0 [S]; 4 provera forme kao događaj +2,0 [N+S]; 5 bez iste nedelje
+  dvaput +1,5 [S]; 6 tri dana +1,2 [P]; 7 trka i ishrana +1,0 [N]; 8 brda i progresivni dugi +0,8 [N]; 9 hod-trk
+  +0,6 [N]; 10 sitnice +0,5 [P]; 11 usmeravanje unosa [E] uslovno +1,5–2,5; 12 adaptacija [A] van proseka.
+  Zbir 1–10 ≈ +14,6 → ≈ 75 za iste ulaze (74–77).
+- Ne mogu do 80 sa istim ulazima: 17 od 48 (p06 × 4, p08 × 4, p03/p10 na sve četiri, MAR p11). Dva broja za
+  praćenje: prosek za iste ulaze (cilj ≈ 75) i udeo planova ≥ 80 posle prihvaćenog predloga unosa (cilj ≥ 90 %).
+- REDOSLED (svi Opus, najviše 2 uporedo, po distanci jedan tab u jednom trenutku):
+  W1 (u toku: HM, MAR; zatim 5K, 10K) → C1 = stavke 1+2 (`briefs/C1-cilj80-dugi-i-vrh.md`; odobrena promena
+  invarijante „doza ne opada" → važi do nedelje vrha) → provera trenera (ROUND-05) → C2 = stavke 3+6 → C3 = 4+5 →
+  C4 = 7+8+9 → C5 = 10 → C6 = 11 [E] (ekrani; uz saglasnost vlasnika) → [A] rubrika adaptacije.
+  Briefovi C2–C6 se pišu po nalazu prethodnog koraka.
+
+### 11. 11. 2026, 07:30 — nalog vlasnika: pilot nove arhitekture na drugoj grani, poređenje, ekonomično
+
+- Odluka vlasnika: „radi na drugoj grani pa ćemo upoređivati; ekonomično". Pravilo „ne pravi novu granu" ne važi za
+  pilot (izričita dozvola); radna grana ostaje `claude/generator-isolation-5k-10k-hm-marathon`.
+- V3-HM pilot (Opus, `session_01GnHHiWpkeqyGbLYXnGYHgC`, grana `claude/v3-pilot-hm`): generator polumaratona na
+  trenerskim šablonima — šabloni kao podaci, opterećenje u minutima rada, mali čuvar bezbednosti; sav kod u
+  `halfMarathon/v3/` (bez zajedničkog motora van foldera — pravilo izolacije ostaje netaknuto u pilotu); bez
+  adaptacije, bez povezivanja u aplikaciju; izlaz `P9v3/plans/HM/`, izveštaj `reports/V3-HM-PILOT-REPORT.md`.
+- SCORE (Sonnet, `session_01GnHHiWEpiNLoJ8hfGB3AAC`, radna grana): `score/score.ts` — pokazatelji plana + providna
+  ocena 0–100, provera prema ocenama trenera (Spearman na 48 planova).
+- EKONOMIČNO — izmena redosleda: W1 se završava na sve četiri distance (nalog vlasnika). C1 se radi SAMO na HM (v2),
+  da se uporedi HM v2 + C1 naspram HM v3; C1 za 5K/10K/MAR i koraci C2–C6 ČEKAJU ishod poređenja.
+- Poređenje: SCORE nad oba + jedan krug glavnog trenera nad 12 HM profila (v2 + C1 i v3, slepo A/B).
+
+### 11. 11. 2026, 07:35 — nalog vlasnika: ugasiti izmene v2 (štednja tokena)
+
+- Zaustavljeno: W1-MAR (prekinut u W1-D; traženo da gurne samo zelene commit-e A–C i stane), W1-HM (W1 već gurnut,
+  `2c121ac`; pun nivo nije potvrđen), W1-5K i W1-10K se ne pokreću, C1 se ne pokreće ni na jednoj distanci.
+- Rade samo: V3-HM pilot (grana `claude/v3-pilot-hm`) i SCORE (jedan dodatni prolaz, Sonnet).
+- STANJE RADNE GRANE koje treba znati pre spajanja: HM ima W1 (hm-v2.15.0, bilo koja dužina plana), MAR delimično
+  ili nikako, 5K i 10K nemaju — nalog „bilo koja dužina uz upozorenje" NIJE završen na sve četiri distance.
+  Poslednji `check:full` je na stanju pre W1; pre spajanja ga ponoviti.
+- SCORE prvi prolaz: Spearman prema treneru 0,24 (slabo) — skripta je detektor regresija, ne zamena za trenera.
+
+### 11. 11. 2026, 07:45 — nalog vlasnika: v3 mora da primi sopstveni plan (preko Claude-a) sa svim adaptacijama
+
+- Dopuna poslata V3-HM pilotu: plan je podatak (`PlanDoc`, verzionisan JSON koji LLM može da napiše); namere nedelje
+  se izvode iz treninga (`deriveIntents`), pa generisani i uvezeni plan imaju isti oblik; `importPlan` + čuvar koji
+  uvezeni plan ne odbija zbog oblika, samo prijavljuje bezbednost; adaptacija kao čiste operacije nad PlanDoc-om
+  (preračun tempa, umor, pauza, bol, propušten dugi, snižen obim) — u pilotu implementirane dve (tempo, pauza),
+  ostale potpis + opis; dokaz na ciljnom planu trenera HM p01 unetom ručno kao PlanDoc.
+- Aplikacija, baza i MCP se u pilotu ne diraju; izveštaj opisuje šta treba za uvoz iz aplikacije preko Claude-a.
+
+### 11. 11. 2026, 08:00 — nalog vlasnika: v3 skroz nov, samo generisanje, HM prvi
+
+- „Ne prenosi ništa, nova arhitektura da ide skroz; prvo samo generisanje savršenih planova, adaptacija kasnije; kreni
+  od HM da vidim kako funkcioniše za jednu distancu."
+- Pilot V3-HM preusmeren: bez uvoza iz v2 (samostalan ulaz, tempa, tekst), bez importa i adaptacije; PlanDoc ostaje
+  kao izlaz; cilj je da 12 HM profila liče na ciljne planove trenera; gde ulaz ne dozvoljava dobar plan — najbolji
+  mogući + jasna preporuka u zaglavlju.
+- v2: sve zaustavljeno. Radna grana: HM W1 ceo, MAR W1 A–C (D izgubljen arhiviranjem taba), test prenosa usklađen
+  (`42387c6`); `check:full` na tom stanju u toku (samo radi evidencije; NE spajati u main u ovom stanju).
+- Posle pilota: glavni trener ocenjuje 12 HM planova v3 naspram v2 (slepo); zatim krugovi doterivanja šablona.
+
+### 11. 11. 2026, 08:00 — stari pilot arhiviran, nov tab V3-HM od nule
+
+- Stari pilot (`session_01GnHHiWpkeqyGbLYXnGYHgC`, grana `claude/v3-pilot-hm`) radio je po prvobitnom zadatku koji je
+  dozvoljavao uvoz iz v2 i pravio kopiju v2 fajlova u `v3/fromV2/` — suprotno nalogu vlasnika. Arhiviran po nalogu
+  vlasnika; grana `claude/v3-pilot-hm` je napuštena (ne koristiti).
+- Nov tab V3-HM (`session_01GnHHiX326TNuhWuwrC3rm8`, Opus, grana `claude/v3-hm`): potpuno nov generator polumaratona,
+  nula uvoza i kopija iz v2, samo generisanje; šabloni kao podaci, minuti rada, mali čuvar, izlaz PlanDoc + ispis u
+  `P9v3/plans/HM/`, izveštaj `reports/V3-HM-REPORT.md`.
+- Pouka za organizatora: promena smera → odmah prekid taba i nova poruka (poruka u redu čeka kraj tekućeg koraka).
+
+### 11. 11. 2026, 08:50 — V3-HM krug 1: 62,7 → 74,4
+
+- V3-HM predao: grana `claude/v3-hm`, `e955a9f`; `halfMarathon/v3/` 8 fajlova, 1851 red bez testa, nula uvoza van
+  foldera; `npm run check` 3448 ✔ (po tabu); ispis `P9v3/plans/HM/`, izveštaj `reports/V3-HM-REPORT.md` (na toj grani).
+- Glavni trener `coach/ROUND-V3-HM-01.md` (`4d0b085`, radna grana): stari 62,7 → v3 74,4 (+11,7), bolji na svih 12;
+  na 4 profila sa ciljnim planom 78,4 (ciljni 81,5). Nijedan na 80; šest na 78–79,5. Trener proverio zbir km po
+  danima i minute rada.
+- v3 LOŠIJI od starog u bezbednosti: 26–33 % vremena u trkačkom tempu u najtežoj nedelji (standard ≤ 22 %); 3 dana
+  sa tri teška treninga u nedelji bloka; kvalitet 2–3 dana posle pripremne trke; p06 previše brzog.
+- Sud trenera: šabloni su bolji put (jedan krug +11,7 naspram +7,4 za tri kruga dorade starog). Procena posle
+  ispravki 1–6: ≈ 77–78, sedam profila na ≥ 80.
+- Krug 2 poslat istom tabu (10 ispravki, prvo bezbednost). Zatim ponovna ocena trenera.
+
+### 11. 11. 2026, 09:00 — check:full na zaustavljenom stanju radne grane: zeleno
+
+- `npm run check:full` (organizator) na `42387c6` (kod; kasnije samo docs): typecheck, lint, format ✔; pun nivo
+  447 fajlova / 3967 testova, 0 padova. Uključuje HM W1 ceo i MAR W1 A–C.
+- Ostaje nepokriveno testovima: adaptacija KRATKIH/DUGIH maratonskih planova (W1-D za maraton nije urađen) i W1 na
+  5K/10K (nije ugrađen). Preporuka: radnu granu ne spajati u main dok se W1 ne dovrši ili MAR W1 ne povuče.
+
+### 11. 11. 2026, 09:30 — odluke vlasnika za dalje
+
+- Danas: završiti HM v3 (krugovi ispravki + ocena trenera dok ocena ne prestane da raste).
+- Od sutra (posle reseta limita): organizator vodi, sve ostalo radi Opus 5.5, bez štednje tokena. Diže se V4 generator
+  po principu organizatora: (1) planiranje iz stanja — generator je funkcija (stanje danas, datum trke, šablon) →
+  ostatak plana, adaptacija = ponovno planiranje od stvarnog stanja; (2) biblioteka treninga sa oznakama umesto
+  treninga upisanih u šablon; (3) jedna mera opterećenja sa modelom forme i umora. Uz to: drugi nezavisan sudija
+  (isti AI trener je pisao ciljne planove i ocenjuje — rizik naduvane ocene) i pregled vlasnika.
+- Otvoreno za vlasnika: pravilo izolacije (AGENTS.md uslov 7) naspram zajedničkog motora za sve distance.
+- v2 ostaje zaustavljen.
+
+### 11. 11. 2026 — odluka vlasnika: zajednički motor za V4 je dozvoljen
+
+- „Ako sve može da radi bez ukrštanja samih generatora i da se ne sukobe jedni sa drugim — onda motor sme da postoji
+  van foldera distance." Upisano u `AGENTS.md` (odeljak „V4 generator — zajednički motor"): motor ne zna za distance,
+  distanca je podatak, distance se međusobno ne uvoze, izmena motora ne sme da promeni planove drugih distanci osim
+  namerno — sve proverava test.
+
+### 11. 11. 2026 — odluka vlasnika: ukinuti sva pravila za novi generator, organizator određuje
+
+- „Ukini sva pravila i odredi onako kako ti misliš da će generator najbolje i najoptimizovanije raditi."
+- `AGENTS.md`: odeljak V4 prepisan u 11 pravila organizatora (plan kao podatak, planiranje iz stanja, zajednički
+  motor + distanca kao podatak, biblioteka treninga, jedna mera opterećenja, mali čuvar, ništa iz v2; kvalitet:
+  trener + drugi sudija + vlasnik, brzi testovi; rad: grana `claude/v4`, Opus). Stara pravila važe samo za zamrznut v2.
+- Zadržano bez izuzetka: main/deploy/baza/PR samo uz izričitu potvrdu vlasnika; beogradsko vreme; lični plan i v2
+  rade dok ih V4 ne zameni.
+
+### 11. 11. 2026 — zahtev vlasnika: V4 radi i nad postojećim planovima i nad ličnim planom
+
+- `AGENTS.md` V4, novo pravilo 8: adapter za svaki stari format → PlanDoc (samo čita); preuzimanje samo po sebi ne
+  menja plan (otisak pre = posle); preostale nedelje starog plana postaju šablon, V4 ih menja tek na događaj ili na
+  zahtev; lični plan vlasnika ima prednost — čuvar samo upozorava.
+
+### 11. 11. 2026, 09:30 — V3-HM krug 2: 76,8; krug 3 pokrenut
+
+- V3-HM krug 2 (`d358ec3` na `claude/v3-hm`): svih 10 tačaka, `npm run check` 3451 ✔ (po tabu). Test v3 premešten u
+  `web/src/domain/generators/halfMarathonV3.node.test.ts` (postojeći `ciScope` test traži da svi testovi foldera
+  `halfMarathon/` budu vezani za v2; stari test nije menjan).
+- Trener `coach/ROUND-V3-HM-02.md` (`d6f10ee`): 62,7 → 74,4 → 76,8; bolji 11, slabiji 1 (p12 −2,5). Na ≥ 80: p01 81,
+  p02 81, p05 80, p09 80. Bezbednost rešena (udeo brzog 13–23 %).
+- Ne mogu do 80 ni uz savršen generator: p06 (≈ 72), p08 (≈ 77), p03/p10 (≈ 76–77), p07 (≈ 78) — ulazi; rečenice
+  za zaglavlje u § e.
+- Sud trenera: skoro gotov; vredi još JEDAN mali krug (≈ +1, 6–7 profila na 80), posle toga < 0,5 po krugu.
+- Krug 3 poslat istom tabu (8 tačaka). Posle njega: završna ocena trenera i zatvaranje HM v3.
+
+### 11. 11. 2026 — odluka vlasnika: Fable 5.2 za baš složene stvari, po proceni organizatora
+
+- Od sutra: podrazumevano Opus 5.5; Fable 5.2 po proceni organizatora za najsloženije delove (jezgro motora V4, model
+  stanja i opterećenja, trenerski sud). Upisano u `AGENTS.md` V4 pravilo 11.
+
+### 11. 11. 2026, 09:45 — HM v3 ZAVRŠEN: 62,7 → 77,6; odgovor trenera na „90+"
+
+- V3-HM krug 3 (`82941da` na `claude/v3-hm`); trener `coach/ROUND-V3-HM-03.md` (`8a35b63`): stari 62,7 → k1 74,4 →
+  k2 76,8 → k3 77,6. Na ≥ 80: 7 od 12 (p01 81, p02 81, p04 80, p05 81, p09 80, p11 80, p12 80). Ostalih 5 (p03,
+  p06, p07, p08, p10) 71–75 — na plafonu koji im daju ulazi. Pogoršanja nema. „HM generisanje završeno: DA."
+- Tab V3-HM arhiviran; kod ostaje na grani `claude/v3-hm` (`halfMarathon/v3/`, ≈ 1,9 hiljada redova) kao polazna
+  referenca za V4. Satni zadatak isključen.
+- „90+" (trener): NE kao plan napravljen jednom iz šest podataka (plafon ocene „Plan" 80–84); DA kao plan koji zna
+  trkača i menja se sa njim. Od ~80 do ~92: generator +2–3; podaci o trkaču +4–5; adaptacija +4–5; sadržaj oko
+  trčanja +1–2; usmeravanje unosa +5–10 za profile koji sada ne mogu do 80.
+  Podaci po vrednosti: 8–12 nedelja stvarnog treninga (Strava); stvarni tempo/puls i trke u 6 meseci; povrede;
+  vreme po danu i godine; odgovor tokom plana (napor, propušteno, san/puls/HRV); staza i teren.
+  Nova rubrika: Plan 50 % (sadašnja) + Prilagođavanje 30 % (plan posle 6 događaja) + Personalizacija 20 % (isti
+  ulazi, različita istorija → različiti planovi). 90+ ima smisla samo na zbirnoj oceni.
+- ZA SUTRA (V4, grana `claude/v4`): 0) čitanje baze — koji formati planova postoje (bez izmena); 1) jezgro:
+  PlanDoc + stanje + planiranje iz stanja + stabilnost (Fable); 2) HM šabloni i biblioteka iz v3 kao podaci (Opus);
+  3) adapteri za postojeće planove i lični plan, test „otisak pre = posle" (Opus); 4) ulaz iz Strave kao stanje
+  (Opus); 5) nova rubrika u tri dela + drugi nezavisan sudija (Fable); 6) ostale distance kao podaci.
+
+### 11. 11. 2026 — cilj vlasnika za V4: 80 na svakoj distanci
+
+- Cilj: ocena „Plan" ≥ 80 na 5K, 10K, HM i maratonu (ista rubrika, isti 12 profila po distanci).
+- Mera uspeha (dva broja po distanci): (1) prosek 12 profila za iste ulaze; (2) broj profila na ≥ 80 — svi kojima
+  ulaz to dozvoljava moraju biti na ≥ 80; za ostale se meri plan posle prihvaćenog predloga unosa (4. dan, duža
+  priprema, kraća distanca). HM v3 polazno stanje: prosek 77,6; 7/12 na ≥ 80; 5 na plafonu ulaza (71–75).
+- Redosled distanci u V4 posle jezgra: HM (prenos iz v3), 10K, 5K, maraton; za svaku: ciljni planovi trenera za 4
+  profila → šabloni i biblioteka → krugovi ocene dok dobit ne padne ispod pola poena.
+
+### 11. 11. 2026 — zahtev vlasnika: generator prepoznaje napredak iz samog trčanja
+
+- Povod: HM v3 za 18 nedelja prikazuje prognozu 1:41:00 → 1:41:00 (prognoza = trenutna forma; pravilo napretka
+  0,1 VDOT/ned, najviše 2, koristi se samo za proveru unetog cilja i dalo bi 1:37:37). Vlasnik: napredak treba da se
+  prepozna kroz sinhronizovana trčanja i da se prikaže.
+- `AGENTS.md` V4, pravilo 9a: forma je procena koja se obnavlja iz Strava treninga (tempo/puls laganih, odrađeni
+  kvalitet, testovi, trke); plan prikazuje polaznu formu, trenutnu procenu i očekivani raspon na dan trke; tempa prate
+  procenu; oprezno, objašnjivo, ne dira urađeno.
+- Za V4 i: plafon napretka zavisi od trkača (obim, staž, raniji napredak), ne jedno pravilo za sve; prva nedelja
+  posle trke je oporavak (stanje zna šta je bilo juče).
+
+### 11. 11. 2026 — podatak vlasnika: puls samo sa zglobnog sata
+
+- Svi korisnici (i vlasnik) mere puls optički na zglobu, bez grudne trake. `AGENTS.md` 9a dopunjen: puls samo kao
+  višenedeljni trend na ravnomernim laganim trčanjima; glavni signali tempo, odrađeni kvalitet, trke; procena forme
+  mora da radi i bez pulsa.
+
+### 11. 11. 2026 — plan rada za V4 napisan
+
+- `docs/generators-v4/PLAN.md`: cilj i mere, raspored foldera, faze F0–F9 sa kapijama i modelima, raspored prvog
+  dana, pravila za tabove, rizici, odluke koje čekaju vlasnika. Dnevnik V4 od 12. 11.: `docs/generators-v4/LOG.md`.
+
+### 11. 11. 2026 — odluka vlasnika: sve se pravi uz upozorenje
+
+- „Sve se pravi uz upozorenje; ako neko hoće da sprema maraton 8 nedelja, pustiti ga, ali uz upozorenje i predlog
+  koliko je potrebno za adekvatno spremanje." `AGENTS.md` V4 pravilo 6 dopunjeno; PLAN.md § 8 tačka 1 zatvorena.
+  Zamenjuje i tehničku granicu od 52 nedelje iz W1 (v2) — u V4 se odbija samo neispravan unos.
+
+### 11. 11. 2026, uveče — odluke vlasnika pred V4
+
+- Čitanje tuđih planova i Strava aktivnosti iz baze: dozvoljeno (samo SELECT). Strava istorija vlasnika: dozvoljena
+  za razvoj i proveru forme. v2 se bataljuje — ništa u main, odmah V4. Predlog upozorenja/ekrana: dozvoljeno pisati.
+  Pregled vlasnika: 2–3 plana po distanci, kratko. Upisano u `docs/generators-v4/PLAN.md` § 8.
+- Ovaj dnevnik (v2) se ovde zatvara; od 12. 11. vodi se `docs/generators-v4/LOG.md`.
+
+### 12. 11. 2026, 09:40 — primopredaja uloge organizatora
+
+- Nalog vlasnika: cela uloga organizatora prelazi na nov Fable 5.2 tab sa punim ovlašćenjima da otvara tabove i
+  završi V4. Dokument: `docs/generators-v4/HANDOFF.md`. Novi organizator: `session_01GnHHiaZ5S4B3XFjScT1iPv`
+  („ORGANIZATOR V4", grana `claude/v4`). Glavni trener obavešten da odgovara novom organizatoru.
+- Stara sesija organizatora (`session_01GnHHiXE3NeQzLDcD3vaM5E`) više ne vodi posao.

@@ -35,7 +35,7 @@ function handedOff(): GenPlanState {
   ]);
   if (!a.ok) throw new Error('adaptacija');
   const src = select.stampForStorage(a.result);
-  const prep = select.preparationForPlan(src, { fiveKV2: false, hmV2: true, marathonV2: true })!;
+  const prep = select.preparationForPlan(src)!;
   const basis = prep.basisFromPlan(src, asOf)!;
   const ch = prep.buildPreparationChoice(
     src,

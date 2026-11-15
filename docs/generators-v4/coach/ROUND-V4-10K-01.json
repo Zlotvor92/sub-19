@@ -1,0 +1,63 @@
+{
+  "round": "V4-10K-01",
+  "date": "2026-11-13",
+  "source": "origin/claude/v4 @ 44b5b5d6 (kandidat 2776b5d)",
+  "method": {
+    "plans": "p01–p12 dan po dan",
+    "scenariosReadDayByDay": ["s01", "s05", "s09", "s13", "s17", "s24", "s26"],
+    "scenariosChangeListOnly": ["s03"],
+    "scenariosFromOverview": ["s02", "s04", "s06", "s07", "s08", "s10", "s11", "s12", "s14", "s15", "s16", "s18", "s19", "s20", "s21", "s22", "s23", "s25", "s27"],
+    "pairs": "P1 B, P2 B, P3 A dan po dan; ostalo iz pregleda"
+  },
+  "weights": { "plan": 0.5, "adaptation": 0.3, "personalization": 0.2 },
+  "summary": { "plan": 74.8, "adaptation": 80.7, "personalization": 82.0, "combined": 78.0, "profilesAtOrAbove80": ["p05", "p07"] },
+  "criteriaOrder": ["fit", "quality", "progression", "recovery", "specificity", "taper", "clarity"],
+  "plans": {
+    "p01": { "scores": [8, 7, 7, 8.5, 6.5, 8, 8], "total": 76.0 },
+    "p02": { "scores": [7, 6.5, 6.5, 8, 6.5, 6.5, 8], "total": 70.0 },
+    "p03": { "scores": [8, 7, 7.5, 8.5, 7.5, 8, 8], "total": 77.5 },
+    "p04": { "scores": [8, 7, 6.5, 8.5, 6.5, 8, 8], "total": 75.0 },
+    "p05": { "scores": [8.5, 8, 8, 8.5, 8, 8, 8], "total": 81.5 },
+    "p06": { "scores": [5.5, 4.5, 5, 8, 5, 5, 7.5], "total": 57.0, "findings": ["K8"] },
+    "p07": { "scores": [8.5, 8, 7.5, 8, 8, 8, 8], "total": 80.0 },
+    "p08": { "scores": [7.5, 7, 6.5, 8.5, 7, 8, 8], "total": 74.5 },
+    "p09": { "scores": [8, 8, 8, 8, 8, 8, 7.5], "total": 79.5 },
+    "p10": { "scores": [7.5, 7, 7, 8.5, 7, 8, 7.5], "total": 75.0 },
+    "p11": { "scores": [8.5, 7.5, 8, 8.5, 7.5, 8, 7.5], "total": 79.5 },
+    "p12": { "scores": [7.5, 6.5, 5.5, 8.5, 7, 8, 7.5], "total": 71.5 }
+  },
+  "scenarios": {
+    "s01": 80, "s02": 85, "s03": 78, "s04": 82,
+    "s05": 83, "s06": 80, "s07": 70, "s08": 82,
+    "s09": 80, "s10": 84, "s11": 74, "s12": 80,
+    "s13": 83, "s14": 80, "s15": 75, "s16": 76,
+    "s17": 85, "s18": 84, "s19": 84, "s20": 84,
+    "s21": 90, "s22": 90, "s23": 90, "s24": 88,
+    "s25": 78, "s26": 62, "s27": 80
+  },
+  "eventAverages": { "E1": 81.0, "E2": 79.0, "E3": 79.5, "E4": 78.5, "E5": 84.3, "E6": 89.5, "E7": 73.0 },
+  "pairs": { "P1": 84, "P2": 80, "P3": 82 },
+  "fixes": {
+    "engine": [
+      "mali obim uz visok nivo: kvalitet se skraćuje ili se izostavlja lagan dan, ne briše se kvalitet (p06, p02)",
+      "više događaja zaredom: trka u prozoru povratka, dugi posle trke, test posle trke (s26)",
+      "tekst izmene: pravi rezultat (s01), zone u suprotnim smerovima, imenovan propušten glavni trening",
+      "bolji rezultat ne usporava očekivano vreme trke (s03)",
+      "deriveEvents: dva propuštena treninga kod 3 dana nisu pauza (s11)",
+      "bez nalaza čuvara u planu posle događaja (s07, s15)"
+    ],
+    "data10k": [
+      "specifična faza: najviše jedno rasterećenje između provere i najteže nedelje; tempo trke ranije i veće prve doze",
+      "rast obima do × 1,25–1,30 od 35 km i 12 nedelja; 3 dana nedelja 1 = sadašnji obim; bez identičnih nedelja",
+      "plan od 8 nedelja: sužavanje jedna nedelja + nedelja trke; nedelja −2 ima tempo trke",
+      "prognoza početnika ≤ 3 % napretka; pocetnik-nov bez napretka od obima u tački"
+    ]
+  },
+  "beforeOtherDistances": {
+    "before5K": ["motor 1", "motor 3", "motor 4", "obrazac iz podatka 7"],
+    "beforeMarathon": ["motor 2", "motor 5", "podatak 8", "množilac opterećenja za dugi > 2 h 30"],
+    "canWait": ["motor 6", "podatak 9", "podatak 10"]
+  },
+  "closed": false,
+  "ownerReview": ["p01", "p06", "p05"]
+}

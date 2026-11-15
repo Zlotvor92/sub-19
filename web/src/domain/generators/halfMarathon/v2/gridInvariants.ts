@@ -23,6 +23,12 @@ const band = (km: number): [number, number] =>
   km < 40 ? [900, 600] : km < 60 ? [1200, 900] : [1500, 900];
 /** H11: plafon po treningu. */
 const CAPS = { R: 0.05, I: 0.08, T: 0.1, RP: 0.15 } as const;
+/** H11 (P1-S2): RP 15 % pri cilju < 40 km, 20 % pri cilju ≥ 40 km (nezavisno od policy.ts). */
+const capOf = (z: keyof typeof CAPS, targetKm: number): number =>
+  z === 'RP' && Math.round(targetKm * 10) >= 400 ? 0.2 : CAPS[z];
+/** P1-S1: dugi sa blokom RP (nedelja tipa B). */
+const blockOf = (w: PlanWeek): number =>
+  w.days.find((d) => d.role === 'long' && d.workout.kind === 'long')?.workout.workKm.RP ?? 0;
 /** H10: doze lestvica [m]. */
 const T_C = [2000, 2500, 3000, 4000, 5000, 6000, 7000];
 /** H17: T kontinuirano početnika [1,5; 2,0; …]. */
@@ -70,6 +76,10 @@ export interface GridStats {
   rollingCappedWeeks: number;
   /** K3: ne-rasteretne nedelje izgradnje sa manje kvaliteta od reda H15 (3 dana 1, inače 2). */
   buildNoQuality: number;
+  /** K4-A2: nedelje talasa dugog. */
+  waveWeeks: number;
+  /** K4-B: nedelje sa danom „po želji". */
+  optWeeks: number;
   /** K5. */
   raceOverTaper: number;
   dropOutsideCapacity: number;
@@ -119,6 +129,8 @@ export const emptyStats = (): GridStats => ({
   longJump12MaxL: 0,
   rollingCappedWeeks: 0,
   buildNoQuality: 0,
+  waveWeeks: 0,
+  optWeeks: 0,
   raceOverTaper: 0,
   dropOutsideCapacity: 0,
   hardAdjacent: 0,
@@ -174,6 +186,16 @@ export function checkPlan(
   // H17: početnik — 1 kvalitet + (dani − 2) lagana; udeo i minimum iz reda H15.
   const row = beg ? { ...row0, q: 1, easy: nDays - 2 } : row0;
   const SHARE = row.share;
+  /** P8 G8 (nezavisno): početnik — dugi do max(udeo reda; min(50 % cilja, 16 km)). */
+  const shareCap10 = (t10: number): number => {
+    const base = Math.floor(SHARE * t10 + EPS);
+    return p.input.experience === 'beginner'
+      ? Math.max(base, Math.min(Math.floor(0.5 * t10 + EPS), 160))
+      : base;
+  };
+  /** P8 G6 (nezavisno): lagan ≤ 0,7 × dugi samo redovan plan 4+ dana; 3 dana i početnik 0,8. */
+  const easyTenths = (): number =>
+    p.input.runDays.length >= 4 && p.input.experience !== 'beginner' ? 7 : 8;
   const WEEK_MIN = row.weekMin;
   const one = row.q === 1;
   const LONG_SEC = beg ? 8100 : LONG_MAX_SEC;
@@ -196,10 +218,13 @@ export function checkPlan(
     for (const d of w.days) {
       const z = d.workout.dose?.zone;
       const r = d.workout.rpe;
-      if (d.workout.kind === 'quality' && feel) {
-        if (!z || !r || r.min !== RPE[z]![0] || r.max !== RPE[z]![1])
+      // P1-S1: dugi sa blokom RP po osećaju nosi RPE zone RP.
+      const zz = d.workout.kind === 'long' && d.workout.workKm.RP > 0 ? 'RP' : z;
+      if ((d.workout.kind === 'quality' || zz === 'RP') && feel && zz) {
+        if (!r || r.min !== RPE[zz]![0] || r.max !== RPE[zz]![1])
           no('RPE', `ned ${w.index} ${d.date}`);
-      } else if (r !== undefined) no('RPE', `ned ${w.index} ${d.date} bez kvaliteta/rezultat`);
+      } else if (d.workout.kind === 'quality' && feel) no('RPE', `ned ${w.index} ${d.date}`);
+      else if (r !== undefined) no('RPE', `ned ${w.index} ${d.date} bez kvaliteta/rezultat`);
     }
 
   // H16: test 5 km — plan po osećaju koji nije početnik: tačno jedan, u poslednjoj nedelji baze, na danu Q1
@@ -208,9 +233,34 @@ export function checkPlan(
     w.days.filter((d) => d.workout.kind === 'test').map((d) => ({ w, d }))
   );
   const lastBase = p.weeks.map((w) => w.phase).lastIndexOf('base') + 1;
-  if (feel && !beg) {
+  // P5-F1 (nezavisno): plan sa rezultatom koji nije početnik, ≥ 12 nedelja — jedan test u poslednjoj nedelji razvoja
+  // koja nije rasterećenje (isti test kao po osećaju).
+  let lastDev = 0;
+  for (const w of p.weeks) if (w.phase === 'development' && !w.deload) lastDev = w.index;
+  // P8 G7 (nezavisno): test ne pre nedelje 4 (inače plan bez testa); u nedelji testa nema drugog kvaliteta.
+  // STOP S4/S5 (nezavisno): plan sa rezultatom — pretposlednja ne-rasteretna nedelja razvoja ≥ 4 (inače poslednja);
+  // po osećaju — poslednja nedelja baze, a kad je pre nedelje 4, prva ne-rasteretna nedelja razvoja ≥ 4.
+  const devW = p.weeks
+    .filter((w) => w.phase === 'development' && !w.deload && w.index >= 4)
+    .map((w) => w.index);
+  void lastDev;
+  const wantTest = beg
+    ? 0
+    : feel
+      ? lastBase >= 4
+        ? lastBase
+        : (devW[0] ?? 0)
+      : p.weeks.length >= 12
+        ? devW.length >= 2
+          ? devW[devW.length - 2]!
+          : (devW[0] ?? 0)
+        : 0;
+  for (const t of tests)
+    if (t.w.days.some((d) => d.workout.kind === 'quality'))
+      no('TEST_ONLY_QUALITY', `ned ${t.w.index}`);
+  if (wantTest > 0) {
     const t = tests[0];
-    if (tests.length !== 1 || !t || t.w.index !== lastBase)
+    if (tests.length !== 1 || !t || t.w.index !== wantTest)
       no('TEST_ONCE', `${tests.length} testova`);
     else {
       const wantDay = t.w.deload && !one ? p.pattern.q2 : p.pattern.q1;
@@ -233,6 +283,39 @@ export function checkPlan(
       if (t.d.workout.km > lt) st.testLongerThanLong++;
     }
   } else if (tests.length > 0 || p.weeks.some((w) => w.test)) no('TEST_NONE', `${tests.length}`);
+  // P5-F3 (nezavisno): svaka nedelja osim trkačke i uvoda početnika ima tačno jedan lagan dan sa ubrzanjima (kad ima
+  // lagan dan) — baza i početnik 4 × 20 s, od razvoja 6 × 20 s — na laganom danu najudaljenijem od prethodnog zahtevnog
+  // dana (kvalitet, dugi, test; pri jednakom razmaku raniji); ubrzanja ne menjaju km dana (lagan ≥ 4 km ostaje).
+  {
+    let prevHard: string | null = null;
+    for (const w of p.weeks) {
+      const sd = w.days.filter((d) => d.workout.segments.some((x) => x.kind === 'stride'));
+      if (w.phase !== 'race') {
+        const want = intro(w) ? 0 : beg || w.phase === 'base' ? 4 : 6;
+        const hardD = w.days
+          .filter((d) => ['q1', 'q2', 'long', 'test'].includes(d.role))
+          .map((d) => d.date);
+        let best: { date: string; gap: number } | null = null;
+        for (const d of w.days) {
+          if (d.role !== 'easy') continue;
+          const before = [...(prevHard ? [prevHard] : []), ...hardD]
+            .filter((x) => x < d.date)
+            .sort()
+            .pop();
+          const gap = before ? daysBetween(before, d.date) : Infinity;
+          if (!best || gap > best.gap) best = { date: d.date, gap };
+        }
+        const expect = want > 0 && best ? best.date : null;
+        if (sd.map((d) => d.date).join() !== (expect ?? '')) no('STRIDES_DAY', `ned ${w.index}`);
+        for (const d of sd) {
+          const n = d.workout.segments.filter((x) => x.kind === 'stride');
+          if (d.role !== 'easy' || n.length !== want || n.some((x) => x.sec !== 20))
+            no('STRIDES_DOSE', `ned ${w.index} ${d.date}`);
+        }
+      }
+      prevHard = w.days.filter((d) => d.hard).pop()?.date ?? prevHard;
+    }
+  }
   // Pouka 28: dugi nedelje k ≤ max(1,1 × L, L + 1,0) (0,1 km naniže), L = najduži dugi nedelja k − 4 … k − 1,
   // u nedeljama 1–4 i skorašnji najduži r.
   const r = p.input.recentLongRunKm;
@@ -284,6 +367,7 @@ export function checkPlan(
   let lastQ2 = 0;
   let lastT = 0;
   let prevSteady: PlanWeek | null = null;
+  let prevB: PlanWeek | null = null;
   let dropped = false;
   let longer = false;
   let lowestOver = false;
@@ -293,7 +377,12 @@ export function checkPlan(
     if (got > rule || got < min) return false;
     if (got < rule) {
       st.reducedDeloadTaper++;
-      if (!w.notes.some((n) => n.includes('pouka 32')))
+      // P1 (posle STOP 2): RP tapera spušten na plafon RP cilja tapera (najviši nivo u plafonu) — uz napomenu.
+      const capped =
+        what === 'RP tapera' &&
+        rule > Math.floor(capOf('RP', w.targetKm) * w.targetKm * 1000 + 1e-6) &&
+        w.notes.some((n) => n.includes('nedeljnog obima tapera'));
+      if (!capped && !w.notes.some((n) => n.includes('pouka 32')))
         no('POUKA32_NOTE', `ned ${w.index} ${what}`);
     }
     return true;
@@ -301,7 +390,21 @@ export function checkPlan(
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // Pouka 1 / Uslov 8: planirano = cilj (0,1 km); nedelja ≥ minimum (trkačka + 21,1 km).
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS) no('PLANNED_EQ_TARGET', tag);
+    // K4-B (nezavisno): nedelja sa danom „po želji" — planirano ≤ cilj, manjak ≤ 30 min laganog (bržim krajem E).
+    const optW = w.notes.some((n) => n.startsWith('Kratak lagan dan'));
+    if (optW) {
+      st.optWeeks++;
+      if (
+        w.plannedKm > w.targetKm + 0.1 + EPS ||
+        w.targetKm - w.plannedKm > 1800 / p.paces.E.fast + EPS ||
+        w.deload ||
+        !isBuild(w.phase)
+      )
+        no('OPT_EASY', `${tag} ${w.plannedKm} / ${w.targetKm}`);
+    } else if (w.notes.some((n) => n.startsWith('Talas dugog'))) {
+      // K4-A2 (nezavisno): nedelja talasa — planirano ≤ cilj (kraći dugi, lagani ≤ 0,8 × dugi).
+      if (w.plannedKm > w.targetKm + 0.1 + EPS) no('WAVE', `${tag} planirano > cilj`);
+    } else if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS) no('PLANNED_EQ_TARGET', tag);
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN) no('WEEK_MIN', tag);
     if (w.phase === 'race' && w.plannedKm + RACE_KM + EPS < WEEK_MIN) no('WEEK_MIN', `${tag} trka`);
     if (w.fitted) {
@@ -320,7 +423,7 @@ export function checkPlan(
           no('LONG_GE_EASY', tag);
           st.longBelowEasy++;
         }
-        if (long > Math.floor(SHARE * to10(w.targetKm) + EPS) || long > time10)
+        if (long > shareCap10(to10(w.targetKm)) || long > time10)
           no('LONG_CAP', `${tag} ${long / 10}`);
         if (long > LONG_MAX10) no('LONG_24', `${tag} ${long / 10}`);
         if (long > roll10(w.index))
@@ -330,7 +433,13 @@ export function checkPlan(
       // T1 (krug T, nezavisno): nedelja izgradnje — lagan ≤ 0,8 × dugi (km) i ≥ 20 min.
       if (steady(w) && long !== null) {
         const ed = w.days.filter((d) => d.role === 'easy');
-        if (ed.some((d) => to10(d.workout.km) * 10 > 8 * long + EPS || d.workout.sec < 1200))
+        // P5-F3: dan sa ubrzanjima — trajanje dužine dana srednjim E (ubrzanja su deo laganog trčanja).
+        const midE = (p.paces.E.fast + p.paces.E.slow) / 2;
+        const sec = (d: (typeof ed)[number]): number =>
+          d.workout.segments.some((x) => x.kind === 'stride')
+            ? Math.round(d.workout.km * midE)
+            : d.workout.sec;
+        if (ed.some((d) => to10(d.workout.km) * 10 > easyTenths() * long + EPS || sec(d) < 1200))
           no('EASY_BUILD', tag);
       }
       // H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km); broj dana nedelje = broj dana trčanja.
@@ -340,15 +449,55 @@ export function checkPlan(
         steady(w) &&
         w.days.length < nDays &&
         w.notes.some((n) => n.startsWith('Manje laganih dana'));
-      if (w.days.length !== nDays && !t1Rest) no('DAYS_COUNT', `${tag} ${w.days.length}`);
+      // K4-B: dan „po želji" je dan šablona bez treninga (jedan po nedelji).
+      const want = nDays - (optW ? 1 : 0);
+      if (w.days.length !== want && !(t1Rest && w.days.length < want))
+        no('DAYS_COUNT', `${tag} ${w.days.length}`);
       // H15 / H10: 3 dana bez I i R (ni jedan metar rada u tim zonama).
       if (one && w.days.some((d) => d.workout.workKm.I > 0 || d.workout.workKm.R > 0))
         no('THREE_DAYS_NO_IR', tag);
       // H11: plafon po treningu.
+      // P8 (nezavisno): G4 — rad treninga usred nedelje u minutima (T 30, ≥ 80 km 40; I 20 za VDOT < 40, inače 24;
+      // RP 45; blok u dugom bez minuta); G2 — prvi nivo lestvice uvek sme (ne u rasterećenju, ne blok u dugom).
       for (const d of w.days)
-        for (const z of ['R', 'I', 'T', 'RP'] as const)
-          if (d.workout.workKm[z] * 1000 > Math.floor(CAPS[z] * w.targetKm * 1000 + 1e-6) + 1e-6)
+        for (const z of ['R', 'I', 'T', 'RP'] as const) {
+          const m = d.workout.workKm[z] * 1000;
+          if (m <= 0) continue;
+          const isLong = d.role === 'long';
+          const sec = d.workout.segments
+            .filter((x) => x.zone === z && (x.kind === 'rep' || x.kind === 'continuous'))
+            .reduce((a, x) => a + x.sec, 0);
+          const maxSec = isLong
+            ? Infinity
+            : z === 'T'
+              ? w.targetKm >= 80
+                ? 2400
+                : 1800
+              : z === 'I'
+                ? p.paces.vdot < 40
+                  ? 1200
+                  : 1440
+                : z === 'RP'
+                  ? 2700
+                  : Infinity;
+          const floorM =
+            w.deload || isLong
+              ? 0
+              : z === 'R'
+                ? 1200
+                : z === 'I'
+                  ? 2000
+                  : z === 'RP'
+                    ? 4000
+                    : w.phase !== 'base'
+                      ? 2400
+                      : beg
+                        ? 1500
+                        : 2000;
+          const share = Math.floor(capOf(z, w.targetKm) * w.targetKm * 1000 + 1e-6);
+          if (m > floorM + 1e-6 && (m > share + 1e-6 || sec > maxSec + 3))
             no('ZONE_CAP', `${tag} ${z}`);
+        }
     }
     // Pouka 32: dan kvaliteta iznad najnižeg nivoa zone ≤ dugi po trajanju (WU + rad + oporavci + CD; džog
     // zadat metrima sporim E); najniži nivo i test se samo broje.
@@ -425,7 +574,7 @@ export function checkPlan(
       const tSlot = one ? 'q1' : 'q2';
       const tWant = beg
         ? reduced(ladder, lastT, 1500)
-        : reduced(ladder, one ? lastQ1 : lastQ2, 2000);
+        : reduced(ladder, one ? lastT : lastQ2, 2000);
       if (
         qs.length > 1 ||
         (qs.length === 1 &&
@@ -442,25 +591,39 @@ export function checkPlan(
       // +5 % (1,0–2,0 km), ≤ granica; nedelja 1 = trenutni (pouka 9).
       const nq = w.days.filter((d) => d.workout.kind === 'quality').length;
       // Pouka 35 (Faza 4a N5): drugi dan kvaliteta lagan (napomena) — dan Q2 šablona je lagan.
+      // P1-S1: nedelja B (dugi sa blokom RP) — Q2 lagan kao u pouci 35, samo specifična faza, ne početnik.
+      // K4-A: i 3 dana — tada je jedini dan kvaliteta (Q1 šablona) lagan.
+      const bw = blockOf(w) > 0;
+      if (bw && (beg || w.phase !== 'specific' || w.deload)) no('POUKA35', `${tag} blok`);
+      // K4-B: dan šablona bez treninga (dan „po želji") je lagan dan.
+      const roleAt = (wd: string): string | undefined =>
+        w.days.find((d) => d.weekday === wd)?.role ?? (optW ? 'easy' : undefined);
+      const firstEasy = one && bw ? roleAt(p.pattern.q1) === 'easy' : false;
+      if (one && bw && !firstEasy) no('POUKA35', `${tag} blok 3 dana uz kvalitet`);
       const second =
-        row.q === 2 && w.notes.some((n) => n.includes('(pouka 35)')) && p.pattern.q2 !== null
-          ? w.days.find((d) => d.weekday === p.pattern.q2)?.role === 'easy'
+        row.q === 2 &&
+        (bw || w.notes.some((n) => n.includes('(pouka 35)'))) &&
+        p.pattern.q2 !== null
+          ? roleAt(p.pattern.q2) === 'easy'
           : false;
       if (second) st.secondEasyWeeks++;
-      if (!intro(w) && nq !== row.q - (w.test ? 1 : 0) - (second ? 1 : 0)) st.buildNoQuality++;
+      // P8 G7: u nedelji testa test je jedini kvalitet (drugi dan kvaliteta lagan).
+      if (!intro(w) && nq !== (w.test ? 0 : row.q - (second ? 1 : 0) - (firstEasy ? 1 : 0)))
+        st.buildNoQuality++;
       // Pouka 35: u nedelji sa dva dana kvaliteta (ili testa) nijedan nije duži od dugog.
       const lw2 = w.days.find((d) => d.role === 'long');
       const hard2 = w.days.filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test');
       // Izuzetak: dugi na svom plafonu (udeo, 150 min, 24 km, pouka 28) — nedelja sa jednim kvalitetom bi imala
       // lagane duže od dugog (pouka 2), pa ostaju dva kvaliteta (upozorenje pouke 14).
-      const cap2 = Math.min(
-        Math.floor(SHARE * to10(w.targetKm) + EPS),
-        time10,
-        LONG_MAX10,
-        roll10(w.index)
-      );
+      const cap2 = Math.min(shareCap10(to10(w.targetKm)), time10, LONG_MAX10, roll10(w.index));
       if (lw2 && hard2.length === 2 && hard2.some((d) => d.workout.sec > lw2.workout.sec)) {
-        if (to10(lw2.workout.km) < cap2) no('POUKA35', tag);
+        // P8 G6: dugi ispod plafona jer su lagani na najmanjoj dužini (20 min) — nedelja sa jednim kvalitetom bi
+        // imala lagane duže od 0,7 × dugi, pa ostaju dva kvaliteta.
+        const easyAtMin = w.days
+          .filter((d) => d.role === 'easy')
+          .every((d) => d.workout.sec < 1260);
+        // K4-B: dan „po želji" je posle odluke pouke 35 preneo km u ostale lagane (nisu više na najmanjoj dužini).
+        if (to10(lw2.workout.km) < cap2 && !easyAtMin && !optW) no('POUKA35', tag);
         else st.secondKeptAtCapWeeks++;
       }
       const t10 = to10(w.targetKm);
@@ -472,7 +635,17 @@ export function checkPlan(
         if (t10 > lastBuild + g && w.fitted !== 'up')
           no('GROWTH', `${tag} ${lastBuild / 10} → ${w.targetKm}`);
       }
-      if (t10 > to10(p.peakCapKm)) no('PEAK_CAP', tag);
+      // K3-A (nezavisno): početnik, ne-rasteretna specifična nedelja — cilj sme do ⌊1,1 × granica⌋, dugi ne pada ispod
+      // najdužeg dugog izgradnje do tada.
+      const holdW = beg && w.phase === 'specific';
+      if (t10 > (holdW ? Math.floor(1.1 * to10(p.peakCapKm) + EPS) : to10(p.peakCapKm)))
+        no('PEAK_CAP', tag);
+      if (holdW && !p.adaptation && long !== null) {
+        const before = p.weeks
+          .filter((x) => x.index < w.index && !x.deload && isBuild(x.phase))
+          .map((x) => to10(x.days.find((d) => d.role === 'long')?.workout.km ?? 0));
+        if (before.length > 0 && long < Math.max(...before)) no('K3A_SPEC_DROP', tag);
+      }
       // H12 (pouke 3, 12): doza slota ne pada, glavna doza ne pada; pad samo uz spuštanje doze (napomena) u
       // nedelji ograničenoj kapacitetom (fitted down) — inače prekršaj.
       const q1 = doseOf(w, 'q1');
@@ -492,7 +665,10 @@ export function checkPlan(
         // kroz sve faze T kont. → T cruise → RP, HI6).
         const q1Carries = one || w.phase === prevSteady.phase || w.phase === 'specific';
         // Pouka 35: nedelja bez drugog dana kvaliteta ne poredi Q2 ni glavnu dozu (stanje Q2 ostaje).
-        if ((!second && q2 < lastQ2) || (q1Carries && q1 < lastQ1)) no('DOSE_DECREASE', tag);
+        // K4-A: 3 dana, nedelja B — dan Q1 lagan, stanje Q1 ostaje (kao Q2 u pouci 35).
+        if ((!second && q2 < lastQ2) || (q1Carries && !firstEasy && q1 < lastQ1))
+          no('DOSE_DECREASE', tag);
+        // H12 (O1, P1): glavna doza sa blokom; nedelja B sa poslednjom B, ostale sa poslednjom ne-B.
         const main = (x: PlanWeek): number =>
           x.days.reduce(
             (a, d) =>
@@ -501,8 +677,11 @@ export function checkPlan(
                 ? d.workout.workKm.T + d.workout.workKm.I + d.workout.workKm.RP
                 : 0),
             0
-          );
-        if (!second && main(w) + 1e-6 < main(prevSteady)) no('MAIN_DOSE_DECREASE', tag);
+          ) + blockOf(x);
+        if (
+          bw ? prevB && main(w) + 1e-6 < main(prevB) : !second && main(w) + 1e-6 < main(prevSteady)
+        )
+          no('MAIN_DOSE_DECREASE', tag);
         const key = (x: PlanWeek): string =>
           JSON.stringify(
             x.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.blocks)
@@ -529,7 +708,8 @@ export function checkPlan(
       if (q2 > 0) lastQ2 = q2;
       const tz = w.days.filter((d) => d.workout.dose?.zone === 'T').pop();
       if (tz) lastT = tz.workout.dose!.doseM;
-      if (counted && !second) prevSteady = w;
+      if (counted && !second && !firstEasy) prevSteady = w;
+      if (counted && bw) prevB = w;
     }
     if (w.phase === 'taper') {
       // H7: cilj ≤ 0,7 × vrh; RP i T ≈ 60 % (min 2 × 2000 m, 2,0 km); dugi ≤ 0,6 × najduži.
@@ -544,9 +724,16 @@ export function checkPlan(
         st.beginnerTaperT++;
         if (!beg || !lowered(w, q1d.doseM, reduced(T_C_BEG, lastT, 1500), 1500, 'T tapera'))
           no('TAPER_T', `${tag} početnik`);
-        if (4000 <= Math.floor(0.15 * w.targetKm * 1000 + 1e-6)) no('TAPER_T', `${tag} RP staje`);
+        if (4000 <= Math.floor(capOf('RP', w.targetKm) * w.targetKm * 1000 + 1e-6))
+          no('TAPER_T', `${tag} RP staje`);
       } else if (rp === 0 || (!one && t === 0)) st.taperRelaxed++;
-      if (rp !== 0 && !lowered(w, rp, reduced(RP, lastQ1, 4000), 4000, 'RP tapera'))
+      // K3-B (nezavisno): ≈ 60 % poslednje RP doze ispod 2 × 2000 m → 2 deonice ⌊60 % / 2⌋ (korak 100 m, ≥ 1000 m).
+      const rpShort =
+        lastQ1 > 0 && 0.6 * lastQ1 < 4000 - 1e-6
+          ? 2 * Math.max(1000, Math.floor((0.6 * lastQ1) / 2 / 100 + 1e-9) * 100)
+          : null;
+      const rpRule = rpShort ?? reduced(RP, lastQ1, 4000);
+      if (rp !== 0 && !lowered(w, rp, rpRule, rpShort ?? 4000, 'RP tapera'))
         no('TAPER_RP', `${tag} ${rp}`);
       // 3 dana: taper samo RP (HI6).
       if (one && t !== 0) no('TAPER_T', `${tag} 3 dana T ${t}`);
@@ -556,6 +743,27 @@ export function checkPlan(
     if (long !== null) longest = Math.max(longest, long);
   }
   if (p.peakKm !== peak / 10) no('PEAK', `${p.peakKm} ≠ ${peak / 10}`);
+
+  // K4-A2 (nezavisno): talas dugog — samo redovan plan 3 dana; nedelja talasa ima dugi ≤ ⌊0,85 × najduži⌋ i nema
+  // blok; u planu sa talasom najduži dugi najviše 3 puta (osim nedelja sa blokom) i nikad > 3 ne-rasteretne zaredom.
+  const waveW = p.weeks.filter((w) => w.notes.some((n) => n.startsWith('Talas dugog')));
+  if (waveW.length > 0) {
+    if (!one || beg) no('WAVE', 'talas van plana 3 dana');
+    const l10 = (w: PlanWeek): number =>
+      Math.round((w.days.find((d) => d.role === 'long')?.workout.km ?? 0) * 10);
+    for (const w of waveW)
+      if (l10(w) > Math.floor(0.85 * longest + EPS) || blockOf(w) > 0 || w.deload)
+        no('WAVE', `ned ${w.index} dugi ${l10(w) / 10}`);
+    const nd = p.weeks.filter((w) => !w.deload && isBuild(w.phase));
+    const atTop = nd.filter((w) => l10(w) === longest);
+    if (atTop.filter((w) => blockOf(w) === 0).length > 3) no('WAVE', `plafon ${atTop.length} puta`);
+    let r = 0;
+    for (const w of nd) {
+      r = l10(w) === longest ? r + 1 : 0;
+      if (r > 3) no('WAVE', `plafon > 3 zaredom`);
+    }
+    st.waveWeeks += waveW.length;
+  }
 
   // H9: zahtevni dani nikad uzastopni (i preko nedelja).
   const hard = p.weeks.flatMap((w) => w.days.filter((d) => d.hard).map((d) => d.date));
@@ -592,7 +800,20 @@ export function checkPlan(
     const gap = daysBetween(d.date, p.input.raceDate);
     if (d.role === 'sharpener') {
       const dose = d.workout.dose!;
-      if (gap < 3 || dose.doseM !== 4000 || dose.doseM > taperRp) no('SHARPENER', d.date);
+      // G5 (P8, nezavisno): dve jednake deonice ≤ 2000 m, deljive sa 100 m, najduže za koje je rad ≤ 12 min.
+      const repM = Math.min(2000, Math.floor((360 / p.paces.RP) * 10 + 1e-9) * 100);
+      const workSec = d.workout.segments
+        .filter((x) => x.kind === 'rep')
+        .reduce((a, x) => a + x.sec, 0);
+      // K3-B: taper sa kraćom RP strukturom (< 4000 m) — oštrenje kao uz najniži nivo (≤ 4000 m).
+      if (
+        gap < 3 ||
+        dose.doseM !== 2 * repM ||
+        workSec > 722 ||
+        taperRp === 0 ||
+        dose.doseM > Math.max(taperRp, 4000)
+      )
+        no('SHARPENER', d.date);
     } else if (d.role === 'eve') {
       if (gap !== 1 || d.workout.sec > 1800) no('EVE', d.date);
     } else if (d.role === 'easy') {
@@ -610,7 +831,9 @@ export function checkPlan(
     // Krug T (T1): ili je lagan nedelje 1 na 0,8 × dugi (nezavisno: 8 × dugi / 10, naniže).
     const t1 =
       l1 !== null &&
-      w1.days.some((d) => d.role === 'easy' && to10(d.workout.km) === Math.floor((8 * l1) / 10));
+      w1.days.some(
+        (d) => d.role === 'easy' && to10(d.workout.km) === Math.floor((easyTenths() * l1) / 10)
+      );
     if (l1 !== abs && !t1) {
       st.week1BelowNotTime++;
       no('WEEK1_BELOW', `${w1.targetKm} < ${p.startKm}`);
@@ -618,11 +841,27 @@ export function checkPlan(
     else if (abs === LONG_MAX10) st.week1BelowAt.km++;
     else st.week1BelowAt.time++;
   }
+  const g1Peak10 = (base10: number): number => {
+    const s10 = to10(p.startKm);
+    const f = N <= 12 ? 1.3 : N <= 15 ? 1.35 : 1.4;
+    const hours = p.paces.vdot < 40 ? 7.5 : p.paces.vdot < 50 ? 8.5 : 9.5;
+    const h10 = Math.floor(((hours * 3600) / ((p.paces.E.fast + p.paces.E.slow) / 2)) * 10 + EPS);
+    return Math.max(s10, Math.min(base10, Math.floor(f * s10 + EPS), h10));
+  };
+  // P8 G1 (nezavisno): granica vrha redovnog plana min(1,4×, +20, max reda; faktor po dužini; satni plafon).
+  if (!beg) {
+    const s10 = to10(p.startKm);
+    const max10 = { 3: 550, 4: 700, 5: 850, 6: 1000 }[nDays as 3 | 4 | 5 | 6];
+    if (to10(p.peakCapKm) !== g1Peak10(Math.min(Math.floor(1.4 * s10 + EPS), s10 + 200, max10)))
+      no('PEAK_CAP_RULE', `${p.peakCapKm}`);
+  }
   // H17: granica vrha min(1,4×, +15, max); upozorenje kad je najduži dugi < 14 km.
   if (beg) {
     const s10 = to10(p.startKm);
     const peakMax10 = nDays === 4 ? 700 : 850;
-    if (to10(p.peakCapKm) !== Math.min(Math.floor(1.4 * s10 + EPS), s10 + 150, peakMax10))
+    // P8 G1 (nezavisno): i ≤ start × faktor po dužini pripreme (≤ 12 ned 1,30; 13–15 1,35; ≥ 16 1,40) i ≤ satni
+    // plafon (VDOT < 40 7,5 h; 40–49,9 8,5 h; ≥ 50 9,5 h, srednjim laganim tempom); nikad ispod starta.
+    if (to10(p.peakCapKm) !== g1Peak10(Math.min(Math.floor(1.4 * s10 + EPS), s10 + 150, peakMax10)))
       no('BEGINNER_PEAK', `${p.peakCapKm}`);
     const warned = p.warnings.some((v) => v.rule === 'LONG_RUN_SHORT');
     if (warned !== longest < 140) no('BEGINNER_LONG_WARN', `${longest / 10}`);

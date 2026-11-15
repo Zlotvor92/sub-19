@@ -1,0 +1,60 @@
+ulaza 192; odbijeno pre 0, posle 0; nova odbijanja 0
+promenjenih planova 147/192: B 3 d 0/8, B 4 d 1/8, F 3 d 2/8, F 4 d 8/8, F 5 d 8/8, F 6 d 8/8, R 3 d 12/36, R 4 d 36/36, R 5 d 36/36, R 6 d 36/36
+
+## R (n 144 / 144) | pre | posle |
+| najveći RP trening [km] | 4 [2.4–6] | 5 [2.4–8] |
+| najveći RP trening, % trke | 40 [24–60] | 50 [24–80] |
+| ukupno RP u planu [km] (M3) | 15.4 [4.4–24] | 18.4 [4.4–31.5] |
+| I minuti u specifičnoj fazi | 0 [0–0] | 10.4 [0–25] |
+| I rad najveći [min] (M1) | 10.9 [0–25.1] | 10.9 [0–25.1] |
+| T rad najveći [min] (M1) | 18.5 [6.9–37.1] | 17.9 [6.9–37.1] |
+| M7 baza % km bržih od E | 8.7 [3.9–15.1] | 8.7 [3.9–15.1] |
+| M7 razvoj | 10.4 [4.9–15.6] | 10.4 [4.9–15.6] |
+| M7 specifična | 14.7 [7.8–19.7] | 15.4 [8.2–18.4] |
+| M7 taper | 11.6 [0–16.9] | 13.8 [0–16.9] |
+| vrh cilja [km] | 49 [25.3–90] | 49 [25.3–90] |
+| nedelja pouke 35 (drugi kvalitet lagan) | 0 [0–4] | 0 [0–4] |
+
+## F (n 32 / 32) | pre | posle |
+| najveći RP trening [km] | 3.5 [2.4–6] | 4.3 [2.4–8] |
+| najveći RP trening, % trke | 35 [24–60] | 42.5 [24–80] |
+| ukupno RP u planu [km] (M3) | 11.9 [4.4–24] | 14.5 [4.4–31.5] |
+| I minuti u specifičnoj fazi | 0 [0–0] | 11.6 [0–27.8] |
+| I rad najveći [min] (M1) | 11.6 [0–27.7] | 11.6 [0–27.8] |
+| T rad najveći [min] (M1) | 20.4 [9.1–40.1] | 18.8 [9.1–40.1] |
+| M7 baza % km bržih od E | 12.1 [7.4–22.9] | 12.1 [7.4–22.9] |
+| M7 razvoj | 10.3 [4.9–14.3] | 10.3 [4.9–14.3] |
+| M7 specifična | 14.6 [6.4–18.4] | 15 [8.1–17.5] |
+| M7 taper | 12.2 [0–16.9] | 13.5 [0–17.5] |
+| vrh cilja [km] | 43.3 [25.3–90] | 43.8 [25.3–90] |
+| nedelja pouke 35 (drugi kvalitet lagan) | 0 [0–0] | 0 [0–0] |
+
+## B (n 16 / 16) | pre | posle |
+| najveći RP trening [km] | 1.2 [0–4] | 1.2 [0–5] |
+| najveći RP trening, % trke | 12 [0–40] | 12 [0–50] |
+| ukupno RP u planu [km] (M3) | 5.6 [0–16.4] | 5.6 [0–19.5] |
+| I minuti u specifičnoj fazi | 0 [0–0] | 0 [0–0] |
+| I rad najveći [min] (M1) | 0 [0–0] | 0 [0–0] |
+| T rad najveći [min] (M1) | 11.5 [8.5–23.3] | 11.5 [8.5–23.3] |
+| M7 baza % km bržih od E | 3.4 [1.4–4.8] | 3.4 [1.4–4.8] |
+| M7 razvoj | 8.1 [4.6–9.3] | 8.1 [4.6–9.3] |
+| M7 specifična | 8.4 [7.4–9.2] | 8.4 [7.4–10] |
+| M7 taper | 8.2 [0–8.5] | 8.5 [0–9.7] |
+| vrh cilja [km] | 27.3 [19.5–40.3] | 27.3 [19.5–41.3] |
+| nedelja pouke 35 (drugi kvalitet lagan) | 0 [0–0] | 0 [0–0] |
+
+## nedelja B koja ne staje (redovan plan 4–6 d): planova sa takvom nedeljom / planova; nedelja
+  R 4 d: 2/36 (6 %), nedelja 2
+  R 5 d: 2/36 (6 %), nedelja 2
+  R 6 d: 1/36 (3 %), nedelja 1
+  F 4 d: 0/8 (0 %), nedelja 0
+  F 5 d: 1/8 (13 %), nedelja 1
+  F 6 d: 1/8 (13 %), nedelja 1
+niz tipova (R+F 4–6 d; a = bez Q2): {"AB":41,"ABA":84,"AA":7}
+uzrok vrha RP (R): pre {"plafon udela zone":79,"≤ 1 nivo nedeljno (faza se završila)":43,"kraj lestvice":22}
+uzrok vrha RP (R): posle {"plafon udela zone":39,"≤ 1 nivo nedeljno (faza se završila)":78,"kraj lestvice":27}
+nedelja > 25 % km bržih od E (pre): 5 — F-d3-20km-8w-e330#2 base 26.2%, F-d4-25km-8w-e330#2 base 29.6%, F-d4-25km-8w-e450#2 base 28.3%, F-d4-25km-18w-e330#6 base 25.3%, F-d4-25km-18w-e450#6 base 25.6%
+nedelja > 25 % km bržih od E (posle): 5 — F-d3-20km-8w-e330#2 base 26.2%, F-d4-25km-8w-e330#2 base 29.6%, F-d4-25km-8w-e450#2 base 28.3%, F-d4-25km-18w-e330#6 base 25.3%, F-d4-25km-18w-e450#6 base 25.6%
+orijentir R ≥ 40 km/ned, najveći RP trening ≥ 6 km: pre 22/84, posle 62/84
+orijentir R ukupno RP medijana ≥ 22 km: pre 15.4, posle 18.4
+nova upozorenja (pravila): B_WEEK_NOT_FIT

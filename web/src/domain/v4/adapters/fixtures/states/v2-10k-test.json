@@ -1,0 +1,1414 @@
+{
+  "plan": "v2-10k-b",
+  "today": "2027-01-14",
+  "state": {
+    "log": {
+      "g1d1": {
+        "status": "done",
+        "ts": "2026-11-16T18:30:00.000Z",
+        "km": 6.2,
+        "sec": 2046,
+        "hr": 140
+      },
+      "g1d2": {
+        "status": "done",
+        "ts": "2026-11-17T18:30:00.000Z",
+        "km": 8.7,
+        "sec": 2932,
+        "hr": 142,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          }
+        ]
+      },
+      "g1d4": {
+        "status": "done",
+        "ts": "2026-11-19T18:30:00.000Z",
+        "km": 10.2,
+        "sec": 3509,
+        "hr": 144
+      },
+      "g1d6": {
+        "status": "done",
+        "ts": "2026-11-21T18:30:00.000Z",
+        "km": 6.2,
+        "sec": 2176,
+        "hr": 146,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          }
+        ],
+        "lock": true
+      },
+      "g1d7": {
+        "status": "skip"
+      },
+      "g2d1": {
+        "status": "done",
+        "ts": "2026-11-23T18:30:00.000Z",
+        "km": 6.7,
+        "sec": 2211,
+        "hr": 150,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          }
+        ]
+      },
+      "g2d2": {
+        "status": "done",
+        "ts": "2026-11-24T18:30:00.000Z",
+        "km": 9.3,
+        "sec": 3134,
+        "hr": 152
+      },
+      "g2d4": {
+        "status": "done",
+        "ts": "2026-11-26T18:30:00.000Z",
+        "km": 10.5,
+        "sec": 3612,
+        "hr": 140,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 147,
+            "cadence": 170
+          }
+        ]
+      },
+      "g2d6": {
+        "status": "done",
+        "ts": "2026-11-28T18:30:00.000Z",
+        "km": 6.7,
+        "sec": 2352,
+        "hr": 142
+      },
+      "g2d7": {
+        "status": "done",
+        "ts": "2026-11-29T18:30:00.000Z",
+        "km": 13.9,
+        "sec": 4976,
+        "hr": 144,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 148,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 149,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 150,
+            "cadence": 170
+          }
+        ]
+      },
+      "g3d1": {
+        "status": "done",
+        "ts": "2026-11-30T18:30:00.000Z",
+        "km": 6.9,
+        "sec": 2277,
+        "hr": 146
+      },
+      "g3d2": {
+        "status": "done",
+        "ts": "2026-12-01T18:30:00.000Z",
+        "km": 10,
+        "sec": 3370,
+        "hr": 148,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 147,
+            "cadence": 170
+          }
+        ]
+      },
+      "g3d4": {
+        "status": "done",
+        "ts": "2026-12-03T18:30:00.000Z",
+        "km": 10.8,
+        "sec": 3715,
+        "hr": 150
+      },
+      "g3d6": {
+        "status": "skip"
+      },
+      "g3d7": {
+        "status": "done",
+        "ts": "2026-12-06T18:30:00.000Z",
+        "km": 14.9,
+        "sec": 5334,
+        "hr": 140
+      },
+      "g4d1": {
+        "status": "done",
+        "ts": "2026-12-07T18:30:00.000Z",
+        "km": 6.1,
+        "sec": 2013,
+        "hr": 142,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          }
+        ]
+      },
+      "g4d2": {
+        "status": "done",
+        "ts": "2026-12-08T18:30:00.000Z",
+        "km": 6.2,
+        "sec": 2089,
+        "hr": 144
+      },
+      "g4d4": {
+        "status": "done",
+        "ts": "2026-12-10T18:30:00.000Z",
+        "km": 9.2,
+        "sec": 3165,
+        "hr": 146,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          }
+        ]
+      },
+      "g4d6": {
+        "status": "done",
+        "ts": "2026-12-12T18:30:00.000Z",
+        "km": 6,
+        "sec": 2106,
+        "hr": 148
+      },
+      "g4d7": {
+        "status": "done",
+        "ts": "2026-12-13T18:30:00.000Z",
+        "km": 11.7,
+        "sec": 4189,
+        "hr": 150,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 148,
+            "cadence": 170
+          }
+        ]
+      },
+      "g5d1": {
+        "status": "done",
+        "ts": "2026-12-14T18:30:00.000Z",
+        "km": 7.3,
+        "sec": 2409,
+        "hr": 152
+      },
+      "g5d2": {
+        "status": "done",
+        "ts": "2026-12-15T18:30:00.000Z",
+        "km": 10.1,
+        "sec": 3404,
+        "hr": 140,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 147,
+            "cadence": 170
+          }
+        ]
+      },
+      "g5d4": {
+        "status": "skip"
+      },
+      "g5d6": {
+        "status": "done",
+        "ts": "2026-12-19T18:30:00.000Z",
+        "km": 7.3,
+        "sec": 2562,
+        "hr": 144,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g5d7": {
+        "status": "done",
+        "ts": "2026-12-20T18:30:00.000Z",
+        "km": 15.2,
+        "sec": 5442,
+        "hr": 146
+      },
+      "g6d1": {
+        "status": "done",
+        "ts": "2026-12-21T18:30:00.000Z",
+        "km": 7,
+        "sec": 2310,
+        "hr": 148,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g6d2": {
+        "status": "done",
+        "ts": "2026-12-22T18:30:00.000Z",
+        "km": 11.6,
+        "sec": 3909,
+        "hr": 150
+      },
+      "g6d4": {
+        "status": "done",
+        "ts": "2026-12-24T18:30:00.000Z",
+        "km": 12,
+        "sec": 4128,
+        "hr": 152,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 148,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 149,
+            "cadence": 170
+          }
+        ]
+      },
+      "g6d6": {
+        "status": "done",
+        "ts": "2026-12-26T18:30:00.000Z",
+        "km": 7,
+        "sec": 2457,
+        "hr": 140
+      },
+      "g6d7": {
+        "status": "done",
+        "ts": "2026-12-27T18:30:00.000Z",
+        "km": 16.2,
+        "sec": 5800,
+        "hr": 142,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 148,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 149,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 150,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 151,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 152,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 153,
+            "cadence": 170
+          }
+        ]
+      },
+      "g7d1": {
+        "status": "done",
+        "ts": "2026-12-28T18:30:00.000Z",
+        "km": 7.5,
+        "sec": 2475,
+        "hr": 144
+      },
+      "g7d2": {
+        "status": "skip"
+      },
+      "g7d4": {
+        "status": "done",
+        "ts": "2026-12-31T18:30:00.000Z",
+        "km": 11.9,
+        "sec": 4094,
+        "hr": 148
+      },
+      "g7d6": {
+        "status": "done",
+        "ts": "2027-01-02T18:30:00.000Z",
+        "km": 7.4,
+        "sec": 2597,
+        "hr": 150,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g7d7": {
+        "status": "done",
+        "ts": "2027-01-03T18:30:00.000Z",
+        "km": 16.3,
+        "sec": 5835,
+        "hr": 152
+      },
+      "g8d1": {
+        "status": "done",
+        "ts": "2027-01-04T18:30:00.000Z",
+        "km": 7.5,
+        "sec": 2475,
+        "hr": 140,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g8d2": {
+        "status": "done",
+        "ts": "2027-01-05T18:30:00.000Z",
+        "km": 7.1,
+        "sec": 2393,
+        "hr": 142
+      },
+      "g8d4": {
+        "status": "done",
+        "ts": "2027-01-07T18:30:00.000Z",
+        "km": 9.8,
+        "sec": 3371,
+        "hr": 144,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          }
+        ]
+      },
+      "g8d6": {
+        "status": "done",
+        "ts": "2027-01-09T18:30:00.000Z",
+        "km": 7.4,
+        "sec": 2597,
+        "hr": 146
+      },
+      "g8d7": {
+        "status": "done",
+        "ts": "2027-01-10T18:30:00.000Z",
+        "km": 12.8,
+        "sec": 4582,
+        "hr": 148,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 148,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 149,
+            "cadence": 170
+          }
+        ]
+      },
+      "g9d1": {
+        "status": "skip"
+      },
+      "g9d2": {
+        "status": "done",
+        "ts": "2027-01-12T18:30:00.000Z",
+        "km": 13,
+        "sec": 4381,
+        "hr": 152,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 148,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 149,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 150,
+            "cadence": 170
+          }
+        ]
+      }
+    },
+    "alts": {},
+    "moves": {},
+    "vanPlana": {},
+    "vanPlanaV2": {
+      "strava:111": {
+        "date": "2027-01-03",
+        "km": 6.2,
+        "sec": 2100,
+        "src": "strava",
+        "id": "111"
+      },
+      "strava:112": {
+        "date": "2027-01-10",
+        "km": 0,
+        "sec": null,
+        "src": "strava",
+        "id": "112"
+      }
+    }
+  }
+}

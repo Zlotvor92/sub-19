@@ -5,10 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
 import { feelPaces, vdotFromEasyPace } from './paces.ts';
 import { periodize, phasesOf, testWeekOf } from './periodize.ts';
+import { TEST_NOTE } from './week.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { feelInputs, gridInputs, inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { rpeOf } from './workouts.ts';
 
 const FEEL = feelInputs();
 const plan = (id: string, o: Record<string, unknown> = {}): HmV2Plan => {
@@ -45,22 +47,32 @@ describe('H16 tempo po osećaju', () => {
   });
 
   it('plan: paceBasis feel, bez prognoze i ocene cilja (i uz ciljno vreme), napomene sa nedeljom testa', () => {
-    const p = plan('f-d4-12w-40km-e360-A', { goalTimeSec: 6000 });
+    const p = plan('f-d4-15w-40km-e360-A', { goalTimeSec: 6000 });
     expect([p.paceBasis, p.predictedHmSec, p.goal, p.vdot]).toEqual(['feel', null, null, 41]);
     expect(p.notes[0]).toContain('Plan po osećaju (H16): bez rezultata trke');
-    expect(p.notes[1]).toContain('Test 5 km: nedelja 3, 2026-11-17 (H16)');
+    expect(p.notes[1]).toContain('Test 5 km: nedelja 5, 2026-12-01 (H16)');
+    // P8 G7: plan od 10–12 nedelja nema test (pao bi pre nedelje 4) — napomena plana to kaže.
+    // STOP S5: plan od 10–12 nedelja (baza 3 nedelje) — test u prvoj ne-rasteretnoj nedelji razvoja (nedelja 4).
+    const short = plan('f-d4-12w-40km-e360-A');
+    const st = short.weeks.filter((w) => w.test);
+    expect(st.map((w) => [w.index, w.phase, w.deload])).toEqual([[4, 'development', false]]);
+    expect(st[0]!.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
+    expect(short.notes[1]).toContain('Test 5 km: nedelja 4');
     expect(p.notes[1]).toContain('Ciljno vreme se ocenjuje posle rezultata');
     expect(p.warnings.filter((w) => w.severity === 'error')).toEqual([]);
   });
 
   it('RPE po zoni na svakom kvalitetu i oštrenju: T 6–7, RP 6–7, I 8, R 8; ne na laganom, dugom i testu', () => {
-    const p = plan('f-d4-12w-40km-e360-A');
+    const p = plan('f-d4-15w-40km-e360-A');
     const seen = new Map<string, string>();
     for (const w of p.weeks)
       for (const d of w.days) {
         const z = d.workout.dose?.zone;
         if (d.workout.kind === 'quality')
           seen.set(z!, `${d.workout.rpe!.min}–${d.workout.rpe!.max}`);
+        // P1-S1: dugi sa blokom u trkačkom tempu nosi RPE zone RP.
+        else if (d.workout.kind === 'long' && d.workout.workKm.RP > 0)
+          expect(d.workout.rpe).toEqual(rpeOf('RP'));
         else expect(d.workout.rpe).toBeUndefined();
       }
     expect(Object.fromEntries(seen)).toEqual({ R: '8–8', T: '6–7', I: '8–8', RP: '6–7' });
@@ -69,13 +81,22 @@ describe('H16 tempo po osećaju', () => {
     );
   });
 
-  it('plan sa rezultatom: bez paceBasis, RPE i testa (oblik bajt-isti kao hm-v2.1.0)', () => {
-    const p = plan('12w-40km-v45-A-sun');
+  it('plan sa rezultatom: bez paceBasis i RPE; test samo od 12 nedelja (P5-F1, oblik ulaza kao hm-v2.1.0)', () => {
+    const p = plan('11w-40km-v45-A-sun');
     expect(p.paceBasis).toBeUndefined();
     expect(p.predictedHmSec).toBeGreaterThan(0);
     expect(
       p.weeks.some((w) => w.test || w.days.some((d) => d.workout.rpe || d.role === 'test'))
     ).toBe(false);
+    // P5-F1: 12 nedelja — jedan test (bez RPE) u poslednjoj ne-rasteretnoj nedelji razvoja.
+    const p12 = plan('12w-40km-v45-A-sun');
+    const tw = p12.weeks.filter((w) => w.days.some((d) => d.role === 'test'));
+    expect(tw.map((w) => [w.phase, w.deload, w.test])).toEqual([['development', false, true]]);
+    expect(p12.weeks.some((w) => w.days.some((d) => d.workout.rpe))).toBe(false);
+    // STOP S4: pretposlednja ne-rasteretna nedelja razvoja (posle testa ostaje tačno jedna).
+    expect(
+      p12.weeks.filter((w) => w.phase === 'development' && !w.deload && w.index > tw[0]!.index)
+    ).toHaveLength(1);
     expect(Object.keys(p.input)).toEqual([
       'startDate',
       'raceDate',
@@ -92,21 +113,26 @@ describe('H16 test 5 km', () => {
   it('nedelja testa = poslednja nedelja baze (periodize samo uz test)', () => {
     for (let n = 10; n <= 20; n++) {
       const ph = phasesOf(n);
-      expect(ph[testWeekOf(ph) - 1]).toBe('base');
-      expect(ph[testWeekOf(ph)]).toBe('development');
+      const fr = ph.map((phase) => ({ phase, deload: false }));
+      // P8 G7 + STOP S5: test ne ide pre nedelje 4 — plan od 10–12 nedelja (baza 3 nedelje): prva nedelja razvoja (4).
+      const lastBase = ph.lastIndexOf('base') + 1;
+      const want = lastBase >= 4 ? lastBase : 4;
+      expect(testWeekOf(fr, 'feel')).toBe(want);
+      expect(lastBase >= 4).toBe(n >= 13);
+      expect(ph[want - 1]).toBe(lastBase >= 4 ? 'base' : 'development');
       expect(
-        periodize('2026-11-02', n, true)!
+        periodize('2026-11-02', n, 'feel')!
           .filter((f) => f.test)
           .map((f) => f.index)
-      ).toEqual([testWeekOf(ph)]);
+      ).toEqual([want]);
       expect(periodize('2026-11-02', n)!.some((f) => f.test)).toBe(false);
     }
   });
 
   it('izgradnja: test na danu Q1 (umesto R), Q2 ostaje; WU/CD po pojasu + 5 km; u obimu, nije doza', () => {
-    const p = plan('f-d4-12w-40km-e360-A');
+    const p = plan('f-d4-15w-40km-e360-A');
     const w = testWeek(p);
-    expect(w.index).toBe(3);
+    expect(w.index).toBe(5);
     const t = w.days.find((d) => d.role === 'test')!;
     expect([t.weekday, t.hard, t.countsToWeek, t.workout.kind, t.workout.dose]).toEqual([
       p.pattern.q1,
@@ -120,10 +146,12 @@ describe('H16 test 5 km', () => {
     expect([seg[0]!.sec, seg[2]!.sec]).toEqual([1200, 900]); // 40 km: pojas 20/15 min (H14)
     expect(seg[1]!.km).toBe(5);
     expect(t.workout.workKm).toEqual({ T: 0, I: 0, R: 0, RP: 0 });
-    expect(w.days.find((d) => d.role === 'q2')!.workout.dose!.ladder).toBe('T_continuous');
-    expect(w.notes).toContain(
-      'Test 5 km (H16): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.'
-    );
+    // P8 G7: test je jedini kvalitet nedelje — drugi dan kvaliteta je lagan; napomena kaže šta trkač radi sa rezultatom.
+    expect(w.days.some((d) => d.role === 'q2' || d.workout.kind === 'quality')).toBe(false);
+    expect(w.days.find((d) => d.weekday === p.pattern.q2)!.role).toBe('easy');
+    expect(w.notes).toContain(TEST_NOTE);
+    expect(TEST_NOTE).toContain('Unesi rezultat');
+    expect(TEST_NOTE).not.toContain('adaptacija');
   });
 
   it('progresija posle testa od stanja pre testa: 3 dana T kont. 2,5 → test → T cruise ≥ 2,5 km', () => {
@@ -159,6 +187,11 @@ describe('H16 test 5 km', () => {
     for (const g of FEEL.filter((_, i) => i % 7 === 0)) {
       const r = generateHmV2(g.input);
       if (!r.ok) throw new Error(g.id);
+      // P8 G7: plan od 10–12 nedelja nema test.
+      if (!r.plan.weeks.some((x) => x.test)) {
+        expect(r.plan.weeks.length).toBeLessThanOrEqual(12);
+        continue;
+      }
       const w = testWeek(r.plan);
       if (w.deload) deload++;
       expect(w.fitted === 'up' && w.deload).toBe(false);
@@ -174,12 +207,12 @@ describe('H16 test 5 km', () => {
 
 describe('H16 validator hvata', () => {
   it('test uklonjen, premešten ili u planu sa rezultatom; RPE i oznaka osnove; prognoza', () => {
-    const p = plan('f-d4-12w-40km-e360-A');
+    const p = plan('f-d4-15w-40km-e360-A');
     const a = structuredClone(p);
-    delete a.weeks[2]!.test;
+    delete a.weeks[4]!.test;
     expect(errors(a)).toContain('TEST');
     const b = structuredClone(p);
-    b.weeks[3]!.test = true;
+    b.weeks[5]!.test = true;
     expect(errors(b)).toContain('TEST');
     const c = structuredClone(p);
     delete c.weeks[0]!.days[0]!.workout.rpe;
@@ -200,8 +233,8 @@ describe('H16 validator hvata', () => {
   });
 
   it('odluka HM-03: dan testa je kvalitetni dan za upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14, HI3)', () => {
-    const p = structuredClone(plan('f-d4-12w-40km-e360-A'));
-    const w = p.weeks[2]!;
+    const p = structuredClone(plan('f-d4-15w-40km-e360-A'));
+    const w = p.weeks[4]!;
     const long = w.days.find((d) => d.role === 'long')!;
     // Dugi kraći (po trajanju) od dana testa; Q2 ostaje kraći od dugog.
     long.workout = {
@@ -209,7 +242,7 @@ describe('H16 validator hvata', () => {
       sec: w.days.find((d) => d.role === 'test')!.workout.sec - 60
     };
     const v = validatePlan(p).filter((x) => x.rule === 'LONG_SHORTER_THAN_QUALITY');
-    expect(v.map((x) => [x.severity, x.week])).toEqual([['warning', 3]]);
+    expect(v.map((x) => [x.severity, x.week])).toEqual([['warning', 5]]);
   });
 
   it('isti tempo za sve rasporede i broj dana (tempo zavisi samo od laganog tempa)', () => {

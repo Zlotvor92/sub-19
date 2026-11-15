@@ -1,0 +1,58 @@
+profil (b) 10K
+ulaz: {"startDate":"2026-10-19","raceDate":"2026-12-13","runDays":["tue","thu","sat","sun"],"currentWeeklyKm":30,"recentResult":{"distanceM":5000,"timeSec":1225,"date":"2026-10-12"},"goalTimeSec":null,"longRunDay":"sun"}
+cilj: null
+policy 10k-v2 10k-v2.10.0; vdot 48.6; nedelja 8
+
+ned 1 2026-10-19…2026-10-25 faza base — cilj 30 / plan 30 km
+  2026-10-20 q1        6.75 km 35 min, rad 4.5 min — WU 15 min + R 6 × 200 m (oporavak 200 m džog) + CD 10 min [doza R 1200 m, korak start]
+  2026-10-22 q2        6.55 km 34 min, rad 8.7 min — WU 15 min + T 2,0 km kontinuirano + CD 10 min [doza T_continuous 2000 m, korak start]
+  2026-10-24 easy      6.80 km 37 min — Lagano 6,8 km
+  2026-10-25 long      9.90 km 54 min — Dugi 9,9 km lagano
+
+ned 2 2026-10-26…2026-11-01 faza base — cilj 31.8 / plan 31.8 km
+  2026-10-27 q1        6.65 km 34 min, rad 4.5 min — WU 15 min + R 4 × 300 m (oporavak 300 m džog) + CD 10 min [doza R 1200 m, korak alt]
+  2026-10-29 q2        7.05 km 36 min, rad 10.9 min — WU 15 min + T 2,5 km kontinuirano + CD 10 min [doza T_continuous 2500 m, korak next]
+  2026-10-31 easy      7.70 km 42 min — Lagano 7,7 km
+  2026-11-01 long      10.40 km 57 min — Dugi 10,4 km lagano
+
+ned 3 2026-11-02…2026-11-08 faza development — cilj 33.7 / plan 33.69 km
+  2026-11-03 q1        7.28 km 37 min, rad 8.0 min — WU 15 min + I 2 × 1000 m (oporavak 4:00 džog) + CD 10 min [doza I 2000 m, korak transition]
+  2026-11-05 q2        7.91 km 40 min, rad 13.1 min — WU 15 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 3000 m, korak transition]
+  2026-11-07 easy      7.40 km 41 min — Lagano 7,4 km
+  2026-11-08 long      11.10 km 61 min — Dugi 11,1 km lagano
+
+ned 4 2026-11-09…2026-11-15 faza development RASTEREĆENJE — cilj 27 / plan 27.03 km
+  2026-11-10 easy      5.80 km 32 min — Lagano 5,8 km
+  2026-11-12 q2        6.73 km 35 min, rad 8.7 min — WU 15 min + T 2 × 1000 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 2000 m, korak deload]
+  2026-11-14 easy      5.70 km 31 min — Lagano 5,7 km
+  2026-11-15 long      8.80 km 48 min — Dugi 8,8 km lagano
+  napomena: Rasterećenje: cilj 27,0 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+
+ned 5 2026-11-16…2026-11-22 faza specific — cilj 35.7 / plan 35.66 km
+  2026-11-17 q1        7.13 km 36 min, rad 10.2 min — WU 15 min + RP 2 × 1200 m (oporavak 1:00 džog) + CD 10 min [doza RP 2400 m, korak transition]
+  2026-11-19 q2        7.73 km 39 min, rad 13.1 min — WU 15 min + T 2 × 1500 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 3000 m, korak alt]
+  2026-11-21 easy      9.10 km 50 min — Lagano 9,1 km
+  2026-11-22 long      11.70 km 64 min — Dugi 11,7 km lagano
+
+ned 6 2026-11-23…2026-11-29 faza specific — cilj 37.8 / plan 37.82 km
+  2026-11-24 q1        7.91 km 40 min, rad 12.7 min — WU 15 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 10 min [doza RP 3000 m, korak next]
+  2026-11-26 q2        8.51 km 43 min, rad 15.7 min — WU 15 min + T 3 × 1200 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 3600 m, korak next]
+  2026-11-28 easy      9.00 km 50 min — Lagano 9,0 km
+  2026-11-29 long      12.40 km 68 min — Dugi 12,4 km lagano
+
+ned 7 2026-11-30…2026-12-06 faza taper — cilj 28.4 / plan 28.36 km
+  2026-12-01 q1        6.73 km 34 min, rad 8.5 min — WU 15 min + RP 2 × 1000 m (oporavak 1:00 džog) + CD 10 min [doza RP 2000 m, korak taper]
+  2026-12-03 q2        6.73 km 35 min, rad 8.7 min — WU 15 min + T 2 × 1000 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 2000 m, korak taper]
+  2026-12-05 easy      5.60 km 31 min — Lagano 5,6 km
+  2026-12-06 long      9.30 km 51 min — Dugi 9,3 km lagano
+  napomena: Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži.
+
+ned 8 2026-12-07…2026-12-13 faza race — cilj 16.7 / plan 16.69 km
+  2026-12-08 easy      5.60 km 31 min — Lagano 5,6 km
+  2026-12-10 sharpener 6.82 km 35 min, rad 8.5 min — WU 15 min + RP 2 × 1000 m (oporavak 1:30 džog) + CD 10 min [doza RP_sharpener 2000 m, korak sharpener]
+  2026-12-12 eve       4.27 km 23 min, ubrzanja — Lagano 20 min + 4 × 20 s ubrzanja
+  2026-12-13 race      14.55 km 67 min, rad 42.4 min — Trka 10 km (WU 15 min + CD 10 min)
+  napomena: Trkačka nedelja: oštrenje 2 × 1000 m RP (≤ RP doza tapera 2,0 km), trka 10 km se ne računa u obim.
+  napomena: Trkačka nedelja: lagan 5,6 km = najkraći lagan tapera (kraći od 35 min laganog; trkačka nedelja ne sme biti veća od tapera).
+
+metrike: {"weeks":8,"m1":{"T":{"firstWeek":1,"firstMin":8.7,"maxMin":15.7,"maxWeek":6},"I":{"firstWeek":3,"firstMin":8,"maxMin":8,"maxWeek":3},"R":{"firstWeek":1,"firstMin":4.5,"maxMin":4.5,"maxWeek":2},"RP":{"firstWeek":5,"firstMin":10.2,"maxMin":12.7,"maxWeek":6}},"m2":{"first":0.13,"atMax":0.37},"m3":{"maxKm":3,"maxPct":30,"totalKm":9.4,"weeksWith":4},"m4":{"maxKm":12.4,"maxMin":68,"pct":124,"withFast":0,"plateau":1},"m5":0,"m6":{"tests":0,"weeksToRace":8,"paceVariants":{"R":1,"T":1,"I":1,"RP":1}},"m7":{"base":11.2,"development":11.5,"specific":16.3,"taper":14.1,"race":14.1},"m8":{"peakOverStart":1.26,"peakOverCurrent":1.26,"longShareAtPeak":0.33},"hold":{"R":"plafon udela zone","T":"plafon udela zone","I":"prelaz faze (faza se završila)","RP":"plafon udela zone"},"repro":{"checked":10,"same":10,"diff":[]}}

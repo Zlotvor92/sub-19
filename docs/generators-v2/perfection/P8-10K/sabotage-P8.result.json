@@ -1,0 +1,239 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P8-10K/sabotage-P8.json",
+ "head": "66f181a4",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 72.3,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P8-G1a bez G1 (korak D6)",
+   "files": [
+    "src/domain/generators/tenK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G1 (D39): obim raste do kraja razvoja > p11 (početnik 15 km, 3 dana, 18 ned): vrh 19,5 km tek u poslednjoj ne-rasteretnoj nedelji razvoja (ranije ned 7)",
+    "message": "AssertionError: expected 7 to be 11 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "18e712438131fc92992f983306f762c4f53d8c5e0e6539bc2122b0f0649eb4e1",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.4
+  },
+  {
+   "index": 2,
+   "name": "P8-G1b preostale nedelje broje i rasterećenja",
+   "files": [
+    "src/domain/generators/tenK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G1 (D39): obim raste do kraja razvoja > p11 (početnik 15 km, 3 dana, 18 ned): vrh 19,5 km tek u poslednjoj ne-rasteretnoj nedelji razvoja (ranije ned 7)",
+    "message": "AssertionError: expected 13 to be 11 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "3d4f198c6fedeed637eae092e23519d87065538e53e97157138acaec32514348",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.9
+  },
+  {
+   "index": 3,
+   "name": "P8-G1c validator bez G1 (stari rekurent)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_RULE: Nominalni cilj 37 km ≠ 37.1 km po pravilu (D6, A8).\",\"week\":2}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "2b7c0122e25ead0ba3f36e99af0fd1532f0ea27a6a4a17de23c42c77c276ec89",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  },
+  {
+   "index": 4,
+   "name": "P8-G2a plafon bez donje granice prvog nivoa",
+   "files": [
+    "src/domain/generators/tenK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G2 (D40): najniži nivo lestvice uvek staje > plafon zone nije ispod prvog nivoa lestvice (RP 2 × 1200 m, T 2,0 km / početnik 1,5 km)",
+    "message": "AssertionError: expected 1500 to be 2400 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "3b37cc30fc5a423909ef57853b5f88ebff2190d1aea24335cbdae68e9f618acd",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.4
+  },
+  {
+   "index": 5,
+   "name": "P8-G2b donja granica bez lestvice početnika",
+   "files": [
+    "src/domain/generators/tenK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 8: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.\",\"week\":8}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "a5f8c5f5e835a6df6bb41af6d8fa9d8f6202a6e235f305dd7c124409c756c8c1",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.7
+  },
+  {
+   "index": 6,
+   "name": "P8-G3a tehnička napomena „ne može da se sastavi” ide trkaču",
+   "files": [
+    "src/domain/generators/tenK/v2/userNotes.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G3 (D41): tekst za trkača > bez internih oznaka i reči sastavljanja; svako upozorenje plana najviše jednom",
+    "message": "AssertionError: Nedelja ne može da se sastavi na 37,1 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 36,3 km.: expected 'Nedelja ne može da se sastavi na 37,1…' not to match /nije izvodljiv|odstupanje|cilj po p…/iu"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "4fc3c4ae9246eda724120e48a253fc379a92291d1a0b0b6f2ca9777e226b6e47",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.8
+  },
+  {
+   "index": 7,
+   "name": "P8-G3b upozorenja bez zbira (svako doslovno)",
+   "files": [
+    "src/domain/generators/tenK/v2/userNotes.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G3 (D41): tekst za trkača > bez internih oznaka i reči sastavljanja; svako upozorenje plana najviše jednom",
+    "message": "AssertionError: 3 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 80 % dugog; preporuka 4–6 dana.: expected '3 dana ne nose ovaj obim uz dugi ≤ 10…' not to match /nije izvodljiv|odstupanje|cilj po p…/iu"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "71afb0f0dc8b4b1b8159e7cc40d6a93c68daa1e3e8de63023a1080ac4fa50a19",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 13.3
+  },
+  {
+   "index": 8,
+   "name": "P8-G3c napomena testa bez uputstva za rezultat",
+   "files": [
+    "src/domain/generators/tenK/v2/userNotes.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 G3 (D41): tekst za trkača > napomena testa završava šta trkač radi sa rezultatom",
+    "message": "AssertionError: expected 'Test 5 km: trči kontrolisano maksimal…' to match /unesi rezultat[^.]*sledeće nedelje\\…/iu"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "a24507622930e8691f0d70e183fbe6a8096294c25448e7012fd023f20226e698",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.6
+  },
+  {
+   "index": 9,
+   "name": "P8-D42 bez upozorenja SHORT_EASY",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p8.node.test.ts",
+    "test": "P8 D42: kratki lagani dani → preporuka manje dana > p06 (VDOT 58, 30 km, 5 dana): upozorenje sa preporukom 3–4 dana; 3 dana bez upozorenja",
+    "message": "AssertionError: expected +0 to be 1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "3c105dbae22a29f57570c612c039c91a3d53736e3d1d0d6ed57369f50a32afc7",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.6
+  }
+ ]
+}

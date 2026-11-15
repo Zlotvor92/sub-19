@@ -1,0 +1,76 @@
+[
+  {
+    "name": "P3-S1a plafon RP bez tabele (10 % i od 40 km)",
+    "file": "src/domain/generators/tenK/v2/policy.ts",
+    "find": "      { fromKm: 40, share: 0.15 }",
+    "replace": "      { fromKm: 40, share: 0.1 }",
+    "tests": [
+      "src/domain/generators/tenK/v2/quality.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S1b lestvica RP bez nivoa 5 × 1600 m",
+    "file": "src/domain/generators/tenK/v2/policy.ts",
+    "find": "      { reps: 4, repM: 1600 },\n      { reps: 5, repM: 1600 }\n    ] as readonly Rep[]\n  },\n\n  /** D10 + D22 + D22b",
+    "replace": "      { reps: 4, repM: 1600 }\n    ] as readonly Rep[]\n  },\n\n  /** D10 + D22 + D22b",
+    "tests": [
+      "src/domain/generators/tenK/v2/quality.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S2a nema nedelje B (uvek A)",
+    "file": "src/domain/generators/tenK/v2/specific.ts",
+    "find": "  return !last || typeOfWeek(last) === 'B' ? 'A' : 'B';",
+    "replace": "  return 'A';",
+    "tests": [
+      "src/domain/generators/tenK/v2/quality.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S2b I održavanja bez naizmenične strukture i bez plafona I",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "  if (m === i.doseM)\n    return pick('I', otherStructure('I', m, i.structure, p) ?? i.structure, 'maintain');",
+    "replace": "  if (m !== null)\n    return pick('I', i.structure, 'maintain');",
+    "tests": [
+      "src/domain/generators/tenK/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S2c nedelja B menja stanje T slota",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "    q2: picks.q2?.ladder === 'I' ? prev.q2 : slot(picks.q2, prev.q2),",
+    "replace": "    q2: slot(picks.q2, prev.q2),",
+    "tests": [
+      "src/domain/generators/tenK/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S2d glavna doza bez poređenja unutar tipa (validator)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      const ref = tb === 'B' ? prevType.B : tb === 'A' ? (prevType.A ?? prevMain) : prevMain;",
+    "replace": "      const ref = prevType.A ?? prevType.B ?? prevMain;",
+    "tests": [
+      "src/domain/generators/tenK/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S2e nedelja B bez granice 3,0 km (cilj naniže bez ograničenja)",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  const b = target10 >= (ctx.specBMin10 ?? -Infinity) ? one(true) : null;",
+    "replace": "  const b = one(true);",
+    "tests": [
+      "src/domain/generators/tenK/v2/volume.node.test.ts",
+      "src/domain/generators/tenK/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "P3-S3 tip nedelje iz sastavljenih umesto upisanih dana",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "        out.map((w, i) => ({ ...w, days: written[i]!.days })),",
+    "replace": "        out,",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+      "src/domain/generators/tenK/v2/adapt.node.test.ts"
+    ]
+  }
+]

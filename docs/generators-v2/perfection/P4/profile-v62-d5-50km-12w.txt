@@ -1,0 +1,96 @@
+ulaz {"startDate":"2026-11-02","raceDate":"2027-01-24","runDays":["mon","tue","thu","sat","sun"],"currentWeeklyKm":50,"goalTimeSec":null,"recentResult":{"distanceM":10000,"timeSec":2064,"date":"2026-10-19"}}
+tempo {"vdot":62,"E":{"fast":258,"slow":285},"T":214,"I":197,"R":185,"RP":199}
+policy 5k-v2 5k-v2.13.0; vdot 62; nedelja 12
+
+ned 1 2026-11-02…2026-11-08 faza base — cilj 50 / plan 50 km
+  2026-11-02 easy      8.90 km 40 min, ubrzanja — Lagano 8,9 km + 4 × 20 s ubrzanja
+  2026-11-03 q1        8.60 km 36 min, rad 6.2 min — R: 5 × 400 m (oporavak 400 m lagano)
+  2026-11-05 q2        8.50 km 35 min, rad 12.5 min — T: 3,5 km kontinuirano
+  2026-11-07 easy      9.00 km 40 min, ubrzanja — Lagano 9 km + 4 × 20 s ubrzanja
+  2026-11-08 long      15.00 km 68 min — Dugi lagano 15 km
+
+ned 2 2026-11-09…2026-11-15 faza base — cilj 54 / plan 54 km
+  2026-11-09 easy      9.70 km 43 min, ubrzanja — Lagano 9,7 km + 4 × 20 s ubrzanja
+  2026-11-10 q1        9.40 km 40 min, rad 7.4 min — R: 6 × 400 m (oporavak 400 m lagano)
+  2026-11-12 q2        9.00 km 37 min, rad 14.3 min — T: 4 km kontinuirano
+  2026-11-14 easy      9.70 km 43 min, ubrzanja — Lagano 9,7 km + 4 × 20 s ubrzanja
+  2026-11-15 long      16.20 km 73 min — Dugi lagano 16,2 km
+
+ned 3 2026-11-16…2026-11-22 faza base — cilj 58.3 / plan 58.3 km
+  2026-11-16 easy      10.20 km 46 min, ubrzanja — Lagano 10,2 km + 4 × 20 s ubrzanja
+  2026-11-17 q1        10.20 km 43 min, rad 8.6 min — R: 7 × 400 m (oporavak 400 m lagano)
+  2026-11-19 q2        10.22 km 42 min, rad 17.1 min — T: 3 × 1600 m (oporavak 1:00)
+  2026-11-21 easy      10.28 km 46 min, ubrzanja — Lagano 10,3 km + 4 × 20 s ubrzanja
+  2026-11-22 long      17.40 km 79 min — Dugi lagano 17,4 km
+
+ned 4 2026-11-23…2026-11-29 faza base RASTEREĆENJE — cilj 46.6 / plan 46.6 km
+  2026-11-23 easy      8.00 km 36 min — Lagano 8 km
+  2026-11-24 q1        8.60 km 36 min, rad 6.2 min — R: 5 × 400 m (oporavak 400 m lagano)
+  2026-11-26 easy      8.10 km 37 min — Lagano 8,1 km
+  2026-11-28 easy      8.00 km 36 min — Lagano 8 km
+  2026-11-29 long      13.90 km 63 min — Dugi lagano 13,9 km
+  napomena: Rasterećenje: jedan kratak kvalitet.
+
+ned 5 2026-11-30…2026-12-06 faza peak — cilj 62.9 / plan 62.9 km
+  2026-11-30 easy      8.20 km 37 min — Lagano 8,2 km
+  2026-12-01 q1        16.40 km 66 min, rad 23.6 min — I: 6 × 1200 m (oporavak 4:00 lagano)
+  2026-12-03 q2        11.42 km 46 min, rad 21.4 min — T: 3 × 2000 m (oporavak 1:00)
+  2026-12-05 easy      8.38 km 38 min — Lagano 8,4 km
+  2026-12-06 long      18.50 km 84 min — Dugi lagano 18,5 km
+
+ned 6 2026-12-07…2026-12-13 faza peak — cilj 65 / plan 65 km
+  2026-12-07 easy      9.80 km 44 min — Lagano 9,8 km
+  2026-12-08 q1        15.35 km 61 min, rad 23.6 min — I: 6 × 1200 m (oporavak 3:00 lagano)
+  2026-12-10 q2        11.42 km 46 min, rad 21.4 min — T: 3 × 2000 m (oporavak 1:00)
+  2026-12-12 easy      9.93 km 45 min — Lagano 9,9 km
+  2026-12-13 long      18.50 km 84 min — Dugi lagano 18,5 km
+  napomena: Vrhunac (I): ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), kraći oporavak.
+
+ned 7 2026-12-14…2026-12-20 faza peak — cilj 65 / plan 65 km
+  2026-12-14 easy      10.30 km 47 min — Lagano 10,3 km
+  2026-12-15 q1        14.30 km 56 min, rad 23.6 min — I: 6 × 1200 m (oporavak 2:00 lagano)
+  2026-12-17 q2        11.42 km 46 min, rad 21.4 min — T: 3 × 2000 m (oporavak 1:00)
+  2026-12-19 easy      10.48 km 48 min — Lagano 10,5 km
+  2026-12-20 long      18.50 km 84 min — Dugi lagano 18,5 km
+  napomena: Vrhunac (I): ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), kraći oporavak.
+
+ned 8 2026-12-21…2026-12-27 faza peak RASTEREĆENJE — cilj 52 / plan 52 km
+  2026-12-21 easy      7.30 km 33 min — Lagano 7,3 km
+  2026-12-22 q1        14.36 km 58 min, rad 19.7 min — I: 5 × 1200 m (oporavak 4:00 lagano)
+  2026-12-24 easy      7.44 km 34 min — Lagano 7,4 km
+  2026-12-26 easy      7.30 km 33 min — Lagano 7,3 km
+  2026-12-27 long      15.60 km 71 min — Dugi lagano 15,6 km
+  napomena: Rasterećenje: jedan kratak kvalitet.
+
+ned 9 2026-12-28…2027-01-03 faza sharpen — cilj 65 / plan 65 km
+  2026-12-28 easy      11.40 km 52 min — Lagano 11,4 km
+  2026-12-29 q1        12.85 km 51 min, rad 19.9 min — RP: 6 × 1000 m (oporavak 1:45 lagano)
+  2026-12-31 q2        10.70 km 45 min, rad 9.3 min — R: 10 × 300 m (oporavak 300 m lagano)
+  2027-01-02 easy      11.55 km 52 min — Lagano 11,6 km
+  2027-01-03 long      18.50 km 84 min — Dugi lagano 18,5 km
+
+ned 10 2027-01-04…2027-01-10 faza sharpen — cilj 65 / plan 65 km
+  2027-01-04 easy      12.00 km 54 min — Lagano 12 km
+  2027-01-05 q1        11.80 km 46 min, rad 19.9 min — RP: 6 × 1000 m (oporavak 0:45 lagano)
+  2027-01-07 q2        10.70 km 45 min, rad 9.3 min — R: 10 × 300 m (oporavak 300 m lagano)
+  2027-01-09 easy      12.00 km 54 min — Lagano 12 km
+  2027-01-10 long      18.50 km 84 min — Dugi lagano 18,5 km
+  napomena: Oštrenje (RP): ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), kraći oporavak.
+
+ned 11 2027-01-11…2027-01-17 faza taper — cilj 55.3 / plan 55.3 km
+  2027-01-11 easy      9.20 km 42 min — Lagano 9,2 km
+  2027-01-12 q1        12.85 km 51 min, rad 19.9 min — RP: 6 × 1000 m (oporavak 1:45 lagano)
+  2027-01-14 q2        7.50 km 32 min, rad 8.9 min — T: 2,5 km kontinuirano
+  2027-01-16 easy      9.25 km 42 min — Lagano 9,3 km
+  2027-01-17 long      16.50 km 75 min — Dugi lagano 16,5 km
+  napomena: Smanjenje obima pred trku.
+
+ned 12 2027-01-18…2027-01-24 faza race — cilj 25.98 / plan 25.98 km
+  2027-01-18 easy      8.20 km 37 min — Lagano 8,2 km
+  2027-01-19 easy      8.20 km 37 min — Lagano 8,2 km
+  2027-01-21 q1        5.58 km 23 min, rad 5.3 min — Oštrenje: 4 × 400 m RP (oporavak 0:45 lagano)
+  2027-01-23 easy      4.00 km 18 min, ubrzanja — Lagano 4 km + 4 × 20 s ubrzanja
+  2027-01-24 race      8.50 km 32 min, rad 16.6 min — Trka 5K
+  napomena: Trkačka nedelja: trka se ne računa u nedeljni obim.
+  napomena: Dan pred trku: lagano 4 km sa ubrzanjima.
+  napomena: Trkačka nedelja: 26 km (najviše 32,5 km, 50 % najvećeg nedeljnog obima; lagan dan najviše 8,2 km).

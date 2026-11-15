@@ -9,6 +9,7 @@
    Po toku: prihvaćen (0 odbijanja, validator bez greške na upisanom planu), adaptInvariants prazno (Uslov 8).
    BRZ nivo: deterministički uzorak (svaki K-ti tok unutar scenarija); PUN: delovi po indeksu baznog plana. */
 
+import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -138,6 +139,7 @@ export function preStartFlows(bases: readonly AdaptBase[] = earlyGridBases()): F
 export interface FlowRun {
   key: string;
   bad: string[];
+  /** SHA-256 JSON-a rezultata toka (P5: ceo JSON za ~7000 tokova dela je držao > 3 GB heap-a). */
   json: string;
 }
 
@@ -146,11 +148,11 @@ export function runFlow(f: Flow): FlowRun {
   const p0 = basePlan(f.base);
   const steps: [HmV2Plan, Record<string, unknown>, string][] = [[p0, f.facts(p0), f.asOf]];
   const bad: string[] = [];
-  let json = '';
+  const json = createHash('sha256');
   for (let i = 0; i < steps.length; i++) {
     const [pl, facts, at] = steps[i]!;
     const r = adaptHmV2(pl, facts, at);
-    json += JSON.stringify(r);
+    json.update(JSON.stringify(r));
     if (!r.ok) {
       bad.push(`${f.key}${i ? '/2' : ''}: ${JSON.stringify(r.reasons).slice(0, 300)}`);
       break;
@@ -161,7 +163,7 @@ export function runFlow(f: Flow): FlowRun {
     if (f.chain && i === 0 && at2 < p0.input.raceDate)
       steps.push([r.plan, chainSecond(p0, at2), at2]);
   }
-  return { key: f.key, bad, json };
+  return { key: f.key, bad, json: json.digest('hex') };
 }
 
 /** Pun nivo: svi delovi `<name>.<k>.full.node.test.ts` (k = 2…parts) postoje. */

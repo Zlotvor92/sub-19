@@ -1001,7 +1001,8 @@ function buildHtml(stats, rows, errors, brisanja, aktivni, dodatno) {
    čuva test „spisak tabela je isti na sva tri mesta". */
 const BRISI_TABELE = [
   'user_state', 'push_pretplata', 'ai_posao', 'api_usage',
-  'bug_report_usage', 'endpoint_usage', 'zajednica_profil', 'user_state_istorija'
+  'bug_report_usage', 'endpoint_usage', 'zajednica_profil', 'user_state_istorija',
+  'aktivnost', 'plan_v4', 'plan_v4_verzija', 'plan_v4_dogadjaj', 'v4_pristup'
 ];
 
 async function izvrsiOdlozenaBrisanja(url, key) {

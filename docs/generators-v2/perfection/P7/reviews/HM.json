@@ -1,0 +1,690 @@
+{
+  "reviews": [
+    {
+      "profile": "p01",
+      "plan": "A",
+      "scores": {
+        "fit": 7,
+        "quality": 7,
+        "progression": 6,
+        "recovery": 6,
+        "specificity": 8,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 67.0,
+      "issues": [
+        "ned 9–14: obim 56 km i dugi 22,4 km zaključani 6 nedelja (osim rasterećenja 12) — plato obima i dugog bez razloga u najvažnijem delu pripreme.",
+        "ned 14: uto RP 2 × 5000 m (16,2 km dan) + ned 6 km RP u dugom = 16 km u RP od 56 km (≈ 29 % brzih km) — previše za 4 dana i trkača sa 40 km na startu.",
+        "ned 9: test 5 km (uto) + T 2 × 2400 m (čet) + najveći obim i dugi 22,4 km u istoj nedelji — test nije u odmornijoj nedelji, rezultat će biti potcenjen.",
+        "dugi 22,4 km = 40 % nedeljnog obima pri 4 dana i 2 h 13 min — dugi duži od trke i neproporcionalno težak za ovaj obim.",
+        "napomene sa „[pravilo]“, „≤ 15,4 ≤ 15,4 — na granici“ i „drugi dan kvaliteta (tempo) je lagan“ su interni žargon, trkaču nejasni."
+      ],
+      "good": [
+        "Smenjivanje: u nedeljama sa RP blokom u dugom (11, 14) četvrtak je lagan — dobar raspored teških dana.",
+        "Ima kontrolni test posle razvoja (ned 9) i progresiju RP u dugom 4 → 6 km.",
+        "Taper 70 % pa trkačka nedelja ~36 % sa kratkim oštrenjem 2 × 2000 m RP — dobro."
+      ]
+    },
+    {
+      "profile": "p01",
+      "plan": "B",
+      "scores": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 6,
+        "recovery": 6,
+        "specificity": 6,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 63.0,
+      "issues": [
+        "nema tačke provere forme: 16 nedelja bez testa ili kontrolne trke, a tempo iz rezultata 10 km ostaje isti do kraja.",
+        "dugi ni jednom nema deo u trkačkom tempu — za polumaraton nedostaje najspecifičniji trening (RP pri zamoru).",
+        "ned 9–14: svake nedelje dva dana kvaliteta + dugi 22,4 km = 3 teška dana od 4; nema lake nedelje u specifičnoj fazi osim 12.",
+        "ned 9–14: obim 56 km i dugi 22,4 km zaključani 6 nedelja — plato bez razloga.",
+        "lagani dani nemaju ni jedno ubrzanje kroz ceo plan (samo subota trkačke nedelje)."
+      ],
+      "good": [
+        "Blaži ulazak u T (2,0 → 2,5 → 3,0 km u ned 1–3) nego u A — smisleniji prvi kvalitet za 40 km.",
+        "RP progresija 5 → 6 → 8 km do kontinuiranih 8 km u ned 14 — čista, merljiva.",
+        "Taper i trkačka nedelja dobro dozirani."
+      ]
+    },
+    {
+      "profile": "p02",
+      "plan": "A",
+      "scores": {
+        "fit": 7,
+        "quality": 7,
+        "progression": 6,
+        "recovery": 6,
+        "specificity": 8,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 67.0,
+      "issues": [
+        "ned 2: T 4,0 km kontinuirano već u drugoj nedelji pri 40 km, a subota lagano svega 5,8 km (31 min) — lagani dan kraći od oba kvalitetna.",
+        "ned 6: I 4 × 1000 m + T 3 × 1600 m + dugi 20,2 km, a jedini lagan dan 6,2 km — lagani obim stisnut da bi stali kvaliteti.",
+        "ned 12: RP 3 × 3000 m (15,9 km dan) + 6 km RP u dugom = 15 km RP od 56 km (27 %) — granično mnogo dve nedelje pre trke.",
+        "ned 9–12: dugi 22,4 km (2 h) u svakoj ne-rasteretnoj nedelji — plato; dugi 40 % nedelje.",
+        "napomena „kraći od 35 min E; trkačka ≤ taper, [pravilo]“ u ned 14 je nerazumljiva trkaču."
+      ],
+      "good": [
+        "Kontrolni test 5 km u ned 7 posle razvoja — smislena tačka provere.",
+        "RP u dugom (4 → 6 km) i lagan četvrtak u tim nedeljama — dobra specifičnost uz oporavak.",
+        "Taper i trkačka nedelja korektni."
+      ]
+    },
+    {
+      "profile": "p02",
+      "plan": "B",
+      "scores": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 7,
+        "recovery": 6,
+        "specificity": 6,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 64.5,
+      "issues": [
+        "nema testa ni kontrolne trke za 14 nedelja — trkač sa rezultatom na 5 km ne dobija proveru na dužoj distanci.",
+        "dugi nikad nema RP deo; RP samo u utorak (najviše 2 × 4000 m) — slaba specifičnost za polumaraton.",
+        "ned 9, 10, 12: RP + T + dugi 22,4 km svake nedelje = tri teška dana od četiri.",
+        "ned 9–12: dugi 22,4 km zaključan — plato.",
+        "nema ubrzanja na laganim danima kroz ceo plan."
+      ],
+      "good": [
+        "Postepen ulazak u kvalitet (T 2,0 → 2,5 → 3,0 km; I 2 × 1000 m u ned 5) — bolji start od A.",
+        "Lagani dani 7–10 km, proporcionalni ostatku nedelje.",
+        "Taper i trkačka nedelja korektni."
+      ]
+    },
+    {
+      "profile": "p03",
+      "plan": "A",
+      "scores": {
+        "fit": 7,
+        "quality": 5,
+        "progression": 5,
+        "recovery": 7,
+        "specificity": 4,
+        "taper": 4,
+        "clarity": 5
+      },
+      "total": 55.0,
+      "issues": [
+        "ned 15–16: taper i trkačka nedelja bez ijednog trkačkog tempa — poslednji RP rad je ned 14, trkač dolazi na start bez oštrenja.",
+        "ned 12: rasterećenje bez kvaliteta jer „T 3,0 km ne staje u plafon 10 %“ (3 km od 28 km) — pravilo poništava razuman trening.",
+        "ned 9–14: dugi 15,7 km zaključan 6 nedelja; najduži 15,7 km (2 h) uz upozorenje < 16 km — dugi nije rastao od ned 9.",
+        "RP najviše 5 km u komadu i nikad u dugom — premalo specifičnog rada za 2:10 polumaraton.",
+        "napomene „[pravilo] ispred [pravilo], odstupanje“ i „cilj nije izvodljiv“ su nerazumljive."
+      ],
+      "good": [
+        "Jedan kvalitet nedeljno i T od 2 km — doza primerena sporom trkaču sa 25 km.",
+        "Ubrzanja na laganom danu i kontrolni test 5 km u ned 9.",
+        "Obim raste blago (25 → 35 km) sa rasterećenjima."
+      ]
+    },
+    {
+      "profile": "p03",
+      "plan": "B",
+      "scores": {
+        "fit": 7,
+        "quality": 4,
+        "progression": 5,
+        "recovery": 7,
+        "specificity": 3,
+        "taper": 4,
+        "clarity": 4
+      },
+      "total": 51.0,
+      "issues": [
+        "ned 15–16: taper i trkačka nedelja bez ijednog trkačkog tempa — start bez oštrenja.",
+        "nema ni jednog ubrzanja kroz 16 nedelja — sporom trkaču fali i najmanji neuromišićni stimulans.",
+        "nema testa ni kontrolne tačke — tempo iz starog rezultata važi do kraja.",
+        "ned 9: napomena „cilj 35,0 km nije izvodljiv … ide na 34,0 km“ — šum koji trkaču ništa ne govori.",
+        "ned 10–14: dugi 15,7 km plato, RP najviše 5 km, nikad u dugom."
+      ],
+      "good": [
+        "Jedan kvalitet nedeljno, blaga doza T.",
+        "Blag rast obima sa rasterećenjima.",
+        "Lagani dani i dugi u razumnom odnosu za 3 dana."
+      ]
+    },
+    {
+      "profile": "p04",
+      "plan": "A",
+      "scores": {
+        "fit": 4,
+        "quality": 5,
+        "progression": 4,
+        "recovery": 5,
+        "specificity": 4,
+        "taper": 7,
+        "clarity": 4
+      },
+      "total": 46.5,
+      "issues": [
+        "ned 5–18: dugi zaključan na 20,0 km 14 nedelja — potpuni plato dugog u dve trećine plana.",
+        "ned 8–18: obim 75 km uz lagane dane od 15–16 km (1 h 50 min) za trkača od 2:04 — lagani dani skoro kao dugi (0,8 ×), ~8,5 h nedeljno je nerealno za ovaj nivo.",
+        "ned 7: T 7,0 km kontinuirano (40 min praga) već u osnovi — prevelika doza za sporog trkača u 7. nedelji.",
+        "ned 8 i 10: samo jedan kvalitet uz napomenu „[pravilo]: drugi dan kvaliteta je lagan ([pravilo]) …“ — nejasno i nedosledno sa ned 11–12 gde su opet dva.",
+        "nema testa ni RP dela u dugom za 20 nedelja — nema tačke provere forme i slaba specifičnost."
+      ],
+      "good": [
+        "Taper (52,5 km) i trkačka nedelja (22 km, oštrenje 2 × 2000 m) dobro dozirani.",
+        "Rasterećenja svake 4. nedelje sa jednim kvalitetom.",
+        "Doza RP u specifičnoj fazi raste umereno (6 → 8 → 9 → 10 km)."
+      ]
+    },
+    {
+      "profile": "p04",
+      "plan": "B",
+      "scores": {
+        "fit": 4,
+        "quality": 4,
+        "progression": 4,
+        "recovery": 4,
+        "specificity": 6,
+        "taper": 6,
+        "clarity": 5
+      },
+      "total": 45.0,
+      "issues": [
+        "ned 18: uto RP 3 × 5000 m = 15 km u RP (20,5 km dan, 2 h 07 min) — dan kvaliteta duži od dugog (20 km), a isti vikend još 6 km RP u dugom: 21 km RP tri nedelje pre trke za trkača od 2:04 — rizik pregorevanja.",
+        "ned 16: RP 3 × 4000 m (17,5 km dan) + T 2 × 3500 m + dugi 20 km = 19 km brzih od 75 km (25 %) uz 5 dana.",
+        "ned 5–18: dugi 20,0 km zaključan 14 nedelja — plato.",
+        "lagani dani 15–16 km (1 h 50 min) pri 75 km — nerealno za ovaj nivo.",
+        "ned 1–3: T 4 → 5 → 6 km kontinuirano od prve nedelje — agresivan prvi kvalitet za sporog trkača."
+      ],
+      "good": [
+        "Kontrolni test 5 km u ned 12.",
+        "RP u dugom (4 → 6 km) u nedeljama sa laganim četvrtkom.",
+        "Ubrzanja na laganim danima."
+      ]
+    },
+    {
+      "profile": "p05",
+      "plan": "A",
+      "scores": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 5,
+        "recovery": 7,
+        "specificity": 5,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 62.0,
+      "issues": [
+        "ned 1–14: dugi 24,0 km od prve do poslednje nedelje izgradnje — nula progresije dugog za 16 nedelja.",
+        "ned 5–14: obim 100 km bez promene (osim rasterećenja) — plato 10 nedelja.",
+        "ubrzanja se ne javljaju ni na jednom laganom danu do trkačke nedelje — elitnom trkaču fali brzina/neuromišićni rad.",
+        "nema testa ni RP u dugom — specifična faza se svodi na RP u utorak i T u četvrtak, bez provere forme.",
+        "ned 13–14: RP 12 km + T 9 km svake nedelje + dugi 24 km — tri teška dana bez smenjivanja."
+      ],
+      "good": [
+        "Raspored kvaliteta (uto/čet) sa laganim danima između i rasterećenjem svake 4. nedelje.",
+        "Taper 70 % i trkačka nedelja 33 km sa kratkim oštrenjem.",
+        "Doze T/I primerene nivou (T 5 → 9 km)."
+      ]
+    },
+    {
+      "profile": "p05",
+      "plan": "B",
+      "scores": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 5,
+        "recovery": 6,
+        "specificity": 8,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 63.5,
+      "issues": [
+        "ned 11 i 14: RP 3 × 5000 m (24,5 km dan, 1 h 40 min) duži od dugog (24 km), pa još 4–6 km RP u dugom — 19–21 km RP u nedelji.",
+        "ned 13: RP 5 × 3000 m (24,9 km dan) + T 2 × 4500 m = 24 km brzih od 100 (24 %), opet dan kvaliteta duži od dugog.",
+        "ned 10–14: tri od pet nedelja sa 15 km RP u jednom treningu — prevelika gustina najtežeg rada pred taper.",
+        "dugi 24,0 km od ned 1 do 14 — bez progresije.",
+        "ned 1: T 7,0 km kontinuirano u prvoj nedelji — agresivan ulaz bez potrebe."
+      ],
+      "good": [
+        "Kontrolni test 5 km u ned 9.",
+        "RP blok u dugom (4 → 6 km) i lagan četvrtak u tim nedeljama.",
+        "Ubrzanja kroz ceo plan."
+      ]
+    },
+    {
+      "profile": "p06",
+      "plan": "A",
+      "scores": {
+        "fit": 5,
+        "quality": 6,
+        "progression": 6,
+        "recovery": 6,
+        "specificity": 7,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 60.0,
+      "issues": [
+        "ned 1–3: lagani dani 4,3–4,9 km (20–23 min) — degenerisani treninzi; pri 35 km bolje je 4 dana nego 5 sa po 20 min.",
+        "najduži dugi 15,6 km (1 h 09 min) uz upozorenje < 16 km — za polumaraton malo, ali prilagođeno obimu.",
+        "ned 8: RP 2 × 4000 m + 6 km RP u dugom = 14 km RP od 49 km (29 % brzih) — previše pri tako malom obimu.",
+        "nema tačke provere forme (10 nedelja, bez testa).",
+        "ned 10: napomena „lagan 4,0 km = najkraći lagan tapera (kraći od 35 min E …)“ — žargon."
+      ],
+      "good": [
+        "RP u dugom (ned 6, 8) sa laganim četvrtkom — dobro smenjivanje.",
+        "Obim raste smisleno 35 → 49 km uz rasterećenje u ned 5.",
+        "Taper i trkačka nedelja dobri."
+      ]
+    },
+    {
+      "profile": "p06",
+      "plan": "B",
+      "scores": {
+        "fit": 5,
+        "quality": 6,
+        "progression": 6,
+        "recovery": 6,
+        "specificity": 5,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 58.0,
+      "issues": [
+        "lagani dani 4,5–6 km (21–29 min) kroz ceo plan — degenerisani treninzi za trkača od 1:20.",
+        "dugi bez ijednog RP dela — specifičnost samo kroz RP u utorak (najviše 6 km).",
+        "ned 6–8: RP + T + dugi svake nedelje = tri teška dana pri 44–49 km.",
+        "nema testa.",
+        "skoro nigde ubrzanja na laganim danima."
+      ],
+      "good": [
+        "Blaži početak T (2,0 → 2,5 → 3,0 km).",
+        "Brzih km nikad preko ~25 %.",
+        "Taper i trkačka nedelja dobri."
+      ]
+    },
+    {
+      "profile": "p07",
+      "plan": "A",
+      "scores": {
+        "fit": 6,
+        "quality": 6,
+        "progression": 5,
+        "recovery": 5,
+        "specificity": 6,
+        "taper": 7,
+        "clarity": 7
+      },
+      "total": 59.0,
+      "issues": [
+        "ned 6–8: tri uzastopne nedelje rasta 69 → 73 → 75 km posle samo jednog rasterećenja, uz RP + T + dugi 22–24 km svake nedelje.",
+        "dugi 17,6 → 24,0 km (+36 %) za 8 nedelja; 24 km = 2 h 20 min za trkača od 1:40 — duže nego što HM traži.",
+        "nijedno ubrzanje na laganim danima kroz ceo plan (samo subota trkačke nedelje).",
+        "dugi nikad nema RP deo.",
+        "nema tačke provere forme."
+      ],
+      "good": [
+        "Jasna progresija RP 6 → 8 → 9 km u specifičnoj fazi.",
+        "Taper i trkačka nedelja dobro dozirani.",
+        "Tekst čist, bez nepotrebnih upozorenja."
+      ]
+    },
+    {
+      "profile": "p07",
+      "plan": "B",
+      "scores": {
+        "fit": 6,
+        "quality": 7,
+        "progression": 5,
+        "recovery": 6,
+        "specificity": 8,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 63.5,
+      "issues": [
+        "ned 1–3: T 4 → 5 → 6 km kontinuirano od prve nedelje — prvi kvalitet prejak za ulaz.",
+        "ned 8: RP 2 × 5000 m + 6 km RP u dugom 24 km = 16 km RP od 75 km — teška nedelja dve nedelje pre trke.",
+        "obim 55 → 75 km za 8 nedelja uz jedno rasterećenje — brz rast.",
+        "dugi 24 km (2 h 14 min) za 1:40 trkača — duži nego potrebno.",
+        "nema testa."
+      ],
+      "good": [
+        "RP u dugom (ned 6, 8) uz lagan četvrtak — dobro smenjivanje teških dana.",
+        "Ubrzanja kroz ceo plan.",
+        "Specifična faza sa jasnom progresijom RP."
+      ]
+    },
+    {
+      "profile": "p08",
+      "plan": "A",
+      "scores": {
+        "fit": 5,
+        "quality": 4,
+        "progression": 3,
+        "recovery": 6,
+        "specificity": 4,
+        "taper": 7,
+        "clarity": 4
+      },
+      "total": 46.5,
+      "issues": [
+        "ned 5–18: obim ~54 km i dugi 24,0 km zaključani 14 nedelja — plato preko dve trećine plana.",
+        "uto lagano 19,2 km (1 h 52 min) + ned dugi 24 km — dva duga trčanja nedeljno pri 3 dana; utorak nije „lagan dan“.",
+        "ned 5–13: razvoj bez ijednog I treninga, samo T 5 km kontinuirano ili 2 × 2500 m naizmenično — doza i vrsta se ne menjaju 9 nedelja.",
+        "ned 6, 7, 8, 10, 11, 12: napomena „cilj 55,0 km nije izvodljiv … 54,2 km“ šest puta — čist šum.",
+        "ned 17: rasterećenje bez kvaliteta, a dugi nikad nema RP deo."
+      ],
+      "good": [
+        "Kontrolni test 5 km u ned 12.",
+        "Ubrzanja na laganom danu.",
+        "Taper i trkačka nedelja (16 km, oštrenje) korektni."
+      ]
+    },
+    {
+      "profile": "p08",
+      "plan": "B",
+      "scores": {
+        "fit": 5,
+        "quality": 4,
+        "progression": 3,
+        "recovery": 6,
+        "specificity": 3,
+        "taper": 7,
+        "clarity": 3
+      },
+      "total": 44.5,
+      "issues": [
+        "ned 5–18: obim ~54 km i dugi ~24 km zaključani 14 nedelja — plato.",
+        "uto lagano 19,2 km + ned 24 km — dva duga trčanja u 3 dana.",
+        "nema testa ni ijednog ubrzanja kroz 20 nedelja.",
+        "napomena „cilj … nije izvodljiv“ u 9 nedelja (1, 2, 6, 7, 8, 10, 11, 12, 14) — šum.",
+        "razvoj bez I, dugi bez RP — slaba raznovrsnost i specifičnost."
+      ],
+      "good": [
+        "Blaži početak T (2,5 → 3,0 → 4,0 km).",
+        "RP 8 km kontinuirano u ned 18 — dobar završni specifični trening.",
+        "Taper i trkačka nedelja korektni."
+      ]
+    },
+    {
+      "profile": "p09",
+      "plan": "A",
+      "scores": {
+        "fit": 6,
+        "quality": 6,
+        "progression": 5,
+        "recovery": 5,
+        "specificity": 6,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 58.0,
+      "issues": [
+        "ned 5: test 5 km (uto) + T 5,0 km (čet) + dugi 21,4 km u nedelji najvećeg obima do tada — test ne može biti reprezentativan.",
+        "ned 7–14: dugi 24,0 km (2 h 24 min) zaključan 6 ne-rasteretnih nedelja; za trkača bez rezultata to je mnogo i bez progresije.",
+        "ned 10–14: RP + T + dugi 24 km svake nedelje — tri teška dana od četiri, ni jedna specifična nedelja sa laganim četvrtkom.",
+        "nema ni jednog ubrzanja kroz ceo plan, a dugi nikad nema RP deo.",
+        "„rezultat koristi adaptacija ([pravilo])“ — trkač ne zna šta da uradi sa rezultatom testa."
+      ],
+      "good": [
+        "Rani test 5 km (ned 5) je pravi izbor za trkača bez rezultata.",
+        "Blag ulaz u T (2,5 → 3,0 → 4,0 km).",
+        "Taper i trkačka nedelja korektni."
+      ]
+    },
+    {
+      "profile": "p09",
+      "plan": "B",
+      "scores": {
+        "fit": 6,
+        "quality": 7,
+        "progression": 5,
+        "recovery": 6,
+        "specificity": 8,
+        "taper": 7,
+        "clarity": 6
+      },
+      "total": 63.5,
+      "issues": [
+        "ned 5: test 5 km + T 2 × 2500 m + dugi 21,4 km u istoj nedelji — preopterećena nedelja testa.",
+        "ned 14: RP 2 × 5000 m + 6 km RP u dugom = 16 km RP od 63 km (25 %) za trkača čiji je RP samo procena.",
+        "ned 1–3: T 3 → 4 → 5 km — brz rast T pre nego što test potvrdi tempo.",
+        "ned 7–14: dugi 24,0 km plato 6 nedelja.",
+        "isti nejasan tekst o adaptaciji posle testa."
+      ],
+      "good": [
+        "Rani test 5 km (ned 5).",
+        "RP u dugom (ned 11, 14) uz lagan četvrtak — dobro smenjivanje.",
+        "Ubrzanja kroz ceo plan."
+      ]
+    },
+    {
+      "profile": "p10",
+      "plan": "A",
+      "scores": {
+        "fit": 6,
+        "quality": 5,
+        "progression": 4,
+        "recovery": 7,
+        "specificity": 4,
+        "taper": 4,
+        "clarity": 4
+      },
+      "total": 50.5,
+      "issues": [
+        "ned 19–20: taper i trkačka nedelja bez ikakvog trkačkog tempa, a ned 17 rasterećenje bez kvaliteta — od ned 18 do starta samo jedan RP trening.",
+        "ned 10–18: dugi 15,7 km i obim 35 km zaključani 9 nedelja — plato pola plana.",
+        "uto lagano 12,5 km (1 h 33 min) a dan kvaliteta 6,6 km — „lagani“ dan teži od kvalitetnog za početnika od 7:30/km.",
+        "RP najviše 5 km, nikad u dugom.",
+        "napomene „[pravilo] ispred [pravilo], odstupanje“ i četiri puta „cilj nije izvodljiv“ — trkaču nerazumljivo."
+      ],
+      "good": [
+        "Test 5 km u ned 7 za trkača bez rezultata.",
+        "Ubrzanja na laganom danu.",
+        "Jedan kvalitet nedeljno, blaga doza T."
+      ]
+    },
+    {
+      "profile": "p10",
+      "plan": "B",
+      "scores": {
+        "fit": 6,
+        "quality": 4,
+        "progression": 4,
+        "recovery": 7,
+        "specificity": 4,
+        "taper": 3,
+        "clarity": 4
+      },
+      "total": 47.5,
+      "issues": [
+        "nijedno ubrzanje u 20 nedelja, a taper i trkačka nedelja bez trkačkog tempa — trkač ne trči ništa brže od laganog poslednje 3 nedelje.",
+        "ned 10–18: dugi 15,7 km i obim 35 km plato 9 nedelja.",
+        "uto lagano 12,5 km teži od dana kvaliteta (6,6 km).",
+        "ned 17: rasterećenje bez kvaliteta zbog plafona 10 %.",
+        "isti nerazumljiv tekst upozorenja."
+      ],
+      "good": [
+        "Test 5 km u ned 7.",
+        "Jedan kvalitet nedeljno.",
+        "Blag rast obima."
+      ]
+    },
+    {
+      "profile": "p11",
+      "plan": "A",
+      "scores": {
+        "fit": 5,
+        "quality": 6,
+        "progression": 3,
+        "recovery": 7,
+        "specificity": 4,
+        "taper": 6,
+        "clarity": 5
+      },
+      "total": 52.0,
+      "issues": [
+        "ned 10–18: dugi 11,2 km (1 h 20 min) zaključan 9 nedelja; najduži 11,2 km za polumaraton od 2:04 — trkač će 10 km trke trčati prvi put.",
+        "obim 20 → 28 km za 20 nedelja, pa plato 28 km od ned 10 — premalo rasta za ovako dugu pripremu.",
+        "ned 4: dugi skraćen na 4,6 km (33 min), kraći od dana kvaliteta (34 min) — degenerisan dugi.",
+        "ned 15, 18: RP 4,0 km kontinuirano za početnika — dobro, ali RP nikad u dugom i nema tačke provere.",
+        "ned 4 napomena „dugi skraćen ([pravilo]) ([pravilo])“ — dvostruka oznaka, nejasno."
+      ],
+      "good": [
+        "Dve uvodne nedelje bez kvaliteta i jedan kvalitet nedeljno — pravilno za početnika.",
+        "Blaga progresija T → T cruise → RP.",
+        "Ubrzanja na laganom danu."
+      ]
+    },
+    {
+      "profile": "p11",
+      "plan": "B",
+      "scores": {
+        "fit": 5,
+        "quality": 5,
+        "progression": 3,
+        "recovery": 7,
+        "specificity": 4,
+        "taper": 6,
+        "clarity": 5
+      },
+      "total": 50.0,
+      "issues": [
+        "ned 10–18: dugi 11,2 km plato 9 nedelja; najduži 11,2 km je premalo za polumaraton.",
+        "obim 20 → 28 km pa plato od ned 10.",
+        "ned 4: dugi 4,6 km kraći od dana kvaliteta.",
+        "nema ubrzanja na laganim danima do trkačke nedelje.",
+        "RP nikad u dugom, nema tačke provere."
+      ],
+      "good": [
+        "Uvodne nedelje bez kvaliteta.",
+        "Jedan kvalitet nedeljno, umeren.",
+        "Taper i trkačka nedelja bez rizika."
+      ]
+    },
+    {
+      "profile": "p12",
+      "plan": "A",
+      "scores": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 6,
+        "recovery": 7,
+        "specificity": 5,
+        "taper": 7,
+        "clarity": 5
+      },
+      "total": 62.5,
+      "issues": [
+        "ned 10–14: dugi 18,6 km zaključan 4 ne-rasteretne nedelje — plato pred taper.",
+        "nema testa ni kontrolne trke, a svi tempi su procena („po osećaju“) — RP 2 × 4000 m u ned 14 se trči bez potvrđenog tempa.",
+        "dan kvaliteta (5,1 km, 34 min) je najkraći dan nedelje dok su lagani 10–11 km — za početnika sa 5 dana bolje je jedan lagan skratiti.",
+        "obim 45 → 60 km (+33 %) za početnika — gornja granica.",
+        "dugi nikad nema RP deo."
+      ],
+      "good": [
+        "Uvodne dve nedelje, zatim jedan kvalitet nedeljno — pravilno za početnika.",
+        "Dugi 14,4 → 18,6 km (do 2 h 10 min) — razumno za ovaj nivo.",
+        "Taper i trkačka nedelja sa kratkim oštrenjem 2 × 2000 m RP."
+      ]
+    },
+    {
+      "profile": "p12",
+      "plan": "B",
+      "scores": {
+        "fit": 7,
+        "quality": 5,
+        "progression": 6,
+        "recovery": 7,
+        "specificity": 5,
+        "taper": 7,
+        "clarity": 5
+      },
+      "total": 60.5,
+      "issues": [
+        "ned 10–14: dugi 18,6 km plato.",
+        "nema testa, a tempo je samo procena.",
+        "nema ubrzanja na laganim danima do trkačke nedelje.",
+        "dan kvaliteta najkraći dan nedelje.",
+        "dugi nikad nema RP deo."
+      ],
+      "good": [
+        "Uvodne nedelje i jedan kvalitet nedeljno.",
+        "Razuman dugi za početnika.",
+        "Taper i trkačka nedelja dobri."
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "profile": "p01",
+      "prefer": "A",
+      "why": "A ima kontrolni test i RP blokove u dugom uz lagan četvrtak u tim nedeljama, dok B tri teška dana nedeljno vrti bez provere forme."
+    },
+    {
+      "profile": "p02",
+      "prefer": "A",
+      "why": "A ima test i RP u dugom, što B potpuno nema; blaži početak B ne nadoknađuje slabiju specifičnost."
+    },
+    {
+      "profile": "p03",
+      "prefer": "A",
+      "why": "Isti kostur, ali A ima ubrzanja i kontrolni test, B nema ni jedno ni drugo."
+    },
+    {
+      "profile": "p04",
+      "prefer": "A",
+      "why": "Oba su preteška za ovaj nivo, ali B u ned 18 traži 15 km RP u jednom treningu duže od dugog, što A ne radi."
+    },
+    {
+      "profile": "p05",
+      "prefer": "B",
+      "why": "Za trkača od 1:18 B je specifičniji (test, RP u dugom, ubrzanja); preterane RP doze u ned 11–14 treba skratiti, ali je kostur bolji od A."
+    },
+    {
+      "profile": "p06",
+      "prefer": "A",
+      "why": "A ima RP u dugom i laganije nedelje oko tih blokova; B je ravnomerno tri teška dana bez specifičnog dugog."
+    },
+    {
+      "profile": "p07",
+      "prefer": "B",
+      "why": "B ima ubrzanja i RP u dugom sa laganim četvrtkom, pa je specifičniji i bolje raspoređen od A."
+    },
+    {
+      "profile": "p08",
+      "prefer": "A",
+      "why": "Isti plato u oba, ali A ima kontrolni test i ubrzanja, B nema ni jedno."
+    },
+    {
+      "profile": "p09",
+      "prefer": "B",
+      "why": "B ima ubrzanja i RP u dugom sa laganim četvrtkom; A drži tri teška dana svake specifične nedelje."
+    },
+    {
+      "profile": "p10",
+      "prefer": "A",
+      "why": "Isti plan, ali A ima ubrzanja, što je jedini brži podražaj u taperu; B ga nema uopšte."
+    },
+    {
+      "profile": "p11",
+      "prefer": "A",
+      "why": "Planovi su isti osim ubrzanja, koja A ima a B ne; oba traže duži dugi."
+    },
+    {
+      "profile": "p12",
+      "prefer": "A",
+      "why": "Isti kostur; A ima ubrzanja jednom nedeljno, B ne."
+    }
+  ]
+}

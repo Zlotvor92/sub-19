@@ -1,0 +1,339 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P5-5K/sabotage.json",
+ "head": "df96d0e",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 21,
+ "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+ "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P5-F1a test od 12 nedelja (bilo 10)",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F1 — kontrolni test u planu sa rezultatom > vrsta testa: početnik nikad, po osećaju uvek (nedelja 3/4), sa rezultatom od 10 nedelja",
+    "message": "AssertionError: expected null to be 'result' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "3f52dc7c9ec643f5d1e6ade60a618e41bdf45b14891aa8e7bf9d17435031ae56",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 2,
+   "name": "P5-F1b test u prvoj (ne poslednjoj) nedelji vrhunca",
+   "files": [
+    "src/domain/generators/fiveK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F1 — kontrolni test u planu sa rezultatom > ≥ 10 nedelja: tačno jedan test, poslednja ne-rasteretna nedelja vrhunca, dan Q1; < 10 i početnik: bez testa",
+    "message": "AssertionError: expected 6 to be 4 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "f510000a0d418b8bbccd76c21a6dcbb15d335851ac234d19d859cfacf0867443",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 3,
+   "name": "P5-F1c početnik dobija test",
+   "files": [
+    "src/domain/generators/fiveK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F1 — kontrolni test u planu sa rezultatom > vrsta testa: početnik nikad, po osećaju uvek (nedelja 3/4), sa rezultatom od 10 nedelja",
+    "message": "AssertionError: expected 'result' to be null"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "ec342d26ff867544d63df47d72369fb7464a90c8b6427f95bb49ace3997d2da9",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 4,
+   "name": "P5-F1d validator ne proverava nedelju testa plana sa rezultatom",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F1 — kontrolni test u planu sa rezultatom > validator: test pomeren (oznaka i dan) ili dodat u kraći plan → TEST_WEEK",
+    "message": "AssertionError: expected [ 'ARITHMETIC', 'ARITHMETIC' ] to include 'TEST_WEEK'"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "dcba49ab587ed87b1cfd6f7f5284662b2cc5afd7d49fc52f1cc1e20b58f77eff",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 5,
+   "name": "P5-F2a prag RPE 10 (bilo 9)",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > RPE ≥ 9 ili neodrađeno na dva uzastopna kvaliteta → nedelja 3 bez rasta doze, isti cilj; kontrola bez efekta",
+    "message": "AssertionError: expected [] to deeply equal [ ObjectContaining {\"applied\": true} ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "e7a5016871b84937e22424f812140edf970b80809706d3b64a5e3d0501048f52",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 6,
+   "name": "P5-F2b neodrađen dan kvaliteta nije težak",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > RPE ≥ 9 ili neodrađeno na dva uzastopna kvaliteta → nedelja 3 bez rasta doze, isti cilj; kontrola bez efekta",
+    "message": "AssertionError: expected [] to deeply equal [ ObjectContaining {\"applied\": true} ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "322de6c0166f0726f2e3ab77f72941b238b67b91ea27ac66ff08f05408040014",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 7,
+   "name": "P5-F2c bol ne nadjačava",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > ispod bola: applied false, bez zadržavanja; isti zapisi ne prave nov korak",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "c076ccd7e59919e6474c7f2d6928d57f095c06e93ec000d5aed5d61e304f3056",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 8,
+   "name": "P5-F2d isti zapisi prave nov korak",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > isti zapisi ne prave nov korak (sledeća adaptacija bez novih zapisa)",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "33ae437cec36c03c5386fa3656c476732d7b881e98f8b60cf31b3fd1804f7d6f",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 9,
+   "name": "P5-F2e konstruktor ne zadržava dozu (baza 4–5 dana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > RPE ≥ 9 ili neodrađeno na dva uzastopna kvaliteta → nedelja 3 bez rasta doze, isti cilj; kontrola bez efekta",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"Adaptiran plan krši 1 pravila; plan se ne vraća.\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "d4ce9777954fc95c66989efe9657984669c7db5297756332ac90a339dfb2b268",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 10,
+   "name": "P5-F2f validator ne proverava DOSE_HOLD",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > validator: veća doza u nedelji zadržavanja ili oznaka bez koraka → DOSE_HOLD",
+    "message": "AssertionError: expected [ 'R_SHARE' ] to include 'DOSE_HOLD'"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "6b5c3a1dd0d8012c8a121b7d3e8786a6c0b837f5c0b1a5f0d72294657d8533a7",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.8
+  },
+  {
+   "index": 11,
+   "name": "P5-F2g nedelja zadržavanja u taperu",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > taper i trkačka nedelja: bez efekta",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "64f80d18724c063acbb583da0a9501930b74bc1f8fc322d065d82eebb2fd408b",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  },
+  {
+   "index": 12,
+   "name": "P5-F2h trčanje van plana na datum kvaliteta se ne računa",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > trčanje van plana na datum kvaliteta = odrađen (preciziranje organizatora); RPE samo iz zapisa tog dana",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to have a length of +0 but got 1"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "5f034f51531b93b60506215f358fe5b0407d27c9a83d1f9a22fedd808fe5ae14",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  },
+  {
+   "index": 13,
+   "name": "P5-F2i RPE sa zapisa van plana",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > trčanje van plana na datum kvaliteta = odrađen (preciziranje organizatora); RPE samo iz zapisa tog dana",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to have a length of +0 but got 1"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "b34eb90405bf44fd8bfd6892fddead9b52493e5cd9d902fc50a6660ebb267c74",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  }
+ ]
+}

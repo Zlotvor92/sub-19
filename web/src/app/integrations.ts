@@ -36,6 +36,26 @@ import type { SessionManager } from '../services/supabase/session';
 import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
+import { useV4Store } from '../stores/v4Store';
+import type { Change, PlanEvent } from '../domain/v4/engine';
+import { liveState, otisakOf, refreshPlan } from '../integrations/v4';
+import { loadRuns } from '../services/v4/activities';
+import { personalProtected } from '../stores/v4Store';
+import { createActivityImport } from '../services/strava/activityImport';
+import { v4ActivityKey, v4PlanKey } from '../services/storage/keys';
+import {
+  commitAction,
+  createSupabaseActivityStore,
+  createEventsApi,
+  createPlanApi,
+  createV4Rest,
+  readAccess,
+  type EventsApi,
+  type LoadResult,
+  type PlanAction,
+  type PlanApi,
+  type PlanRow
+} from '../services/v4';
 
 export type Busy = { ok: false; error: string; busy: true };
 
@@ -61,6 +81,19 @@ export interface IntegrationDeps {
   notify: (message: string) => void;
   /** Lokacija uređaja; bez nje se vreme ne može uključiti. */
   geo?: GeoPort;
+  /** F9 korak 7: Supabase za V4 tabele (`supabase/v4.sql`). Bez njih je V4 isključen. */
+  supabaseUrl?: string;
+  anonKey?: string;
+}
+
+/** Današnji dan po beogradskom vremenu (`YYYY-MM-DD`), nezavisno od vremenske zone uređaja. */
+export function belgradeDate(ms: number): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Belgrade',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date(ms));
 }
 
 export interface Integrations {
@@ -103,12 +136,87 @@ export interface Integrations {
   ): Promise<void>;
   /** Tihi uvoz kad je prošlo više od `thresholdMs`; i jednom dnevno jutarnja merenja. */
   pullIfDue(thresholdMs: number): void;
+  /** F9 korak 7: V4 iza zastavice `v4_pristup`. `null` kad Supabase nije podešen (tada je V4 uvek isključen). */
+  v4: {
+    /** Pri pokretanju: zastavica + red `plan_v4` → `useV4Store` (bez mreže: poslednje učitano stanje naloga). */
+    load(): Promise<void>;
+    /** Sinhrono, pre mreže: poslednje učitano V4 stanje naloga iz lokalnog keša. */
+    hydrateCached(): void;
+    plan: PlanApi;
+    events: EventsApi;
+    deviceId(): string;
+    /** Radnja nad planom (`commitAction`) → `useV4Store.row`; uz upisan plan dopisuje i događaje (`manual-edit`…).
+     *  `false` = nije sačuvano (mreža, odjava, sukob posle ponovljenih pokušaja). */
+    /** Korak 8: izvedene promene se primenjuju same (v. `refresh` u kodu). */
+    refresh(): Promise<void>;
+    commit(
+      action: PlanAction,
+      events?: readonly PlanEvent[] | (() => readonly PlanEvent[])
+    ): Promise<boolean>;
+  } | null;
 }
 
 const icuLinkStore = {
   get: (): IcuLink | null => useSettingsStore.getState().icu,
   set: (v: IcuLink | null): void => useSettingsStore.getState().setIcu(v)
 };
+
+/** Odluka učitavača V4 (čista, bez store-a): zastavica + red `plan_v4` → stanje `useV4Store`, ili `null` kad se
+ *  nalog promenio usred učitavanja (tada se ništa ne upisuje). Puštanje svima (15. 11. 2026): nema reda u
+ *  `v4_pristup` = uključen (`WITHOUT_ROW`). Izričito isključen (red `ukljuceno = false`) → isključeno i keš se briše.
+ *  Bez mreže ili sa greškom mreže/servera: poslednje učitano V4 stanje ovog naloga (`cached`, samo za prikaz), a bez
+ *  njega isključeno — korisnik koji ima samo `plan_v4` tako ne ostaje bez plana van mreže. */
+export type V4StartupResult = {
+  enabled: boolean;
+  row: PlanRow | null;
+  today: string;
+  /** Šta uraditi sa lokalnim kešom. */
+  cache: 'upisi' | 'obrisi' | 'zadrzi';
+};
+
+export async function v4Startup(p: {
+  online: boolean;
+  today: string;
+  access: () => Promise<{ enabled: boolean; state?: string }>;
+  load: () => Promise<LoadResult>;
+  same: () => boolean;
+  /** Poslednje uspešno učitano stanje ovog naloga (uključen, red plana), ili `null`. */
+  cached?: { row: PlanRow | null } | null;
+}): Promise<V4StartupResult | null> {
+  const fallback = (): V4StartupResult =>
+    p.cached
+      ? { enabled: true, row: p.cached.row, today: p.today, cache: 'zadrzi' }
+      : { enabled: false, row: null, today: p.today, cache: 'zadrzi' };
+  if (!p.online) return fallback();
+  const access = await p
+    .access()
+    .catch((): { enabled: boolean; state?: string } => ({ enabled: false, state: 'nepoznato' }));
+  if (!p.same()) return null;
+  if (access.state === 'nepoznato') return fallback();
+  if (!access.enabled) return { enabled: false, row: null, today: p.today, cache: 'obrisi' };
+  const r = await p
+    .load()
+    .catch((): LoadResult => ({ ok: false, reason: 'network', retryable: true }));
+  if (!p.same()) return null;
+  if (!r.ok) return fallback();
+  return { enabled: true, row: r.row, today: p.today, cache: 'upisi' };
+}
+
+/** Lokalni keš poslednjeg V4 stanja (samo prikaz van mreže); neispravan zapis = nema keša. */
+export function readV4Cache(kv: KeyValueStore, uid: string): { row: PlanRow | null } | null {
+  try {
+    const raw = kv.get(v4PlanKey(uid));
+    if (!raw) return null;
+    const v = JSON.parse(raw) as { v?: unknown; row?: unknown };
+    if (v.v !== 1) return null;
+    const row = v.row as PlanRow | null;
+    if (row !== null && (typeof row !== 'object' || typeof row.rev !== 'number' || !row.doc))
+      return null;
+    return { row };
+  } catch {
+    return null;
+  }
+}
 
 export function createIntegrations(deps: IntegrationDeps): Integrations {
   const { now } = deps;
@@ -161,7 +269,35 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       });
     }
   };
+  const v4Rest =
+    deps.supabaseUrl && deps.anonKey
+      ? createV4Rest({
+          fetcher: deps.fetcher,
+          session: deps.session,
+          supabaseUrl: deps.supabaseUrl,
+          anonKey: deps.anonKey
+        })
+      : null;
+  /* F9 korak 7 (6): uvoz aktivnosti za V4 (`aktivnost`) posle redovne sinhronizacije — SAMO dok je V4 uključen. */
+  const v4Activities =
+    v4Rest === null
+      ? undefined
+      : {
+          enabled: (): boolean => useV4Store.getState().enabled,
+          run: () =>
+            createActivityImport({
+              api: stravaApi,
+              store: createSupabaseActivityStore({
+                rest: v4Rest,
+                kv: deps.kv,
+                deviceId: deps.session.state.deviceId ?? 'uredjaj',
+                progressKey: v4ActivityKey
+              }),
+              now
+            }).run()
+        };
   const stravaSync = createStravaSync({
+    ...(v4Activities !== undefined ? { activities: v4Activities } : {}),
     accountKey: deps.accountKey,
     api: stravaApi,
     link: stravaLink,
@@ -362,7 +498,112 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     }
   };
 
+  /* ---------------------------------------------------------------- V4 (F9 korak 7) */
+  const v4Plan = v4Rest === null ? null : createPlanApi(v4Rest);
+  const v4Events = v4Rest === null ? null : createEventsApi(v4Rest);
+  const v4 =
+    v4Rest === null || v4Plan === null || v4Events === null
+      ? null
+      : {
+          plan: v4Plan,
+          events: v4Events,
+          deviceId: (): string => deps.session.state.deviceId ?? 'uredjaj',
+          async commit(
+            action: PlanAction,
+            eventsOf: readonly PlanEvent[] | (() => readonly PlanEvent[]) = []
+          ): Promise<boolean> {
+            const owner = deps.accountKey?.();
+            const device = deps.session.state.deviceId ?? 'uredjaj';
+            const r = await commitAction(v4Plan, action, device).catch(() => null);
+            if (r === null || !r.ok || deps.accountKey?.() !== owner) return false;
+            useV4Store.getState().set({ row: r.row });
+            const events = typeof eventsOf === 'function' ? eventsOf() : eventsOf;
+            if (r.wrote && events.length > 0)
+              await v4Events
+                .append(
+                  events.map((event) => ({
+                    event,
+                    vrsta: event.kind,
+                    revPlana: r.row?.rev ?? null
+                  })),
+                  device
+                )
+                .catch(() => undefined);
+            return true;
+          },
+          /** Keš ovog naloga u store PRE mreže (nema treptaja čarobnjaka kod korisnika koji ima samo `plan_v4`). */
+          hydrateCached(): void {
+            const uid = deps.session.state.userId;
+            if (!uid) return;
+            const c = readV4Cache(deps.kv, uid);
+            if (c !== null)
+              useV4Store.getState().set({ enabled: true, row: c.row, today: belgradeDate(now()) });
+          },
+          async load(): Promise<void> {
+            const owner = deps.accountKey?.();
+            const uid = deps.session.state.userId;
+            const next = await v4Startup({
+              online: deps.online(),
+              today: belgradeDate(now()),
+              access: () => readAccess(v4Rest),
+              load: () => v4Plan.load(),
+              same: () => deps.accountKey?.() === owner,
+              cached: uid ? readV4Cache(deps.kv, uid) : null
+            });
+            if (next === null) return;
+            const { cache, ...state } = next;
+            useV4Store.getState().set(state);
+            if (uid) {
+              try {
+                if (cache === 'upisi')
+                  deps.kv.set(v4PlanKey(uid), JSON.stringify({ v: 1, row: next.row }));
+                else if (cache === 'obrisi') deps.kv.remove(v4PlanKey(uid));
+              } catch {
+                /* pun ili zabranjen lokalni prostor: radi i bez keša */
+              }
+            }
+            if (!next.enabled) return;
+            /* korak 8: trčanja (forma iz trčanja) i odbijeni prijavljeni događaji; pa izvedene promene same */
+            const [runs, ev] = await Promise.all([
+              loadRuns(v4Rest),
+              v4Events.list().catch(() => null)
+            ]);
+            if (deps.accountKey?.() !== owner) return;
+            useV4Store.getState().set({
+              runs: runs ?? [],
+              rejected:
+                ev !== null && ev.ok
+                  ? ev.records.filter((r) => r.vrsta === 'odbijeno').map((r) => r.event.id)
+                  : []
+            });
+            await v4Self.refresh();
+          },
+          /** Izvedene promene (forma iz trčanja, propušten trening, pauza iz rupe) se primenjuju SAME (odluka vlasnika
+           *  1) — samo nad planom iz `plan_v4` i ne nad zaštićenim ličnim planom. Promene idu u traku. */
+          async refresh(): Promise<void> {
+            const st = useV4Store.getState();
+            const today = st.today;
+            if (!st.enabled || st.row === null || today === null) return;
+            if (personalProtected(activeGenPlan(), today)) return;
+            const log = useTrainingStore.getState().log;
+            const knee = useRecoveryStore.getState().knee;
+            let changes: Change[] = [];
+            await v4Self.commit((cur) => {
+              if (cur === null) return null;
+              const live = liveState({ doc: cur, today, runs: st.runs, log, knee });
+              if (live === null) return null;
+              const res = refreshPlan(cur, live, { rejected: st.rejected });
+              if (res.changes.length === 0) return null;
+              changes = res.changes;
+              return { doc: res.doc, otisak: otisakOf(res.doc, today) };
+            });
+            if (changes.length > 0) useV4Store.getState().set({ changes });
+          }
+        };
+  const v4Self = v4 as NonNullable<typeof v4>;
+
   return {
+    v4,
     weather,
     strava: {
       api: stravaApi,

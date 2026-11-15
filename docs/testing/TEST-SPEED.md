@@ -302,24 +302,18 @@ svi fajlovi, svi redovi, isti heševi; lokalno pun nivo posle izmena: 517 fajlov
   prvo, pa najduže (keš poslednjeg lokalnog pokretanja, inače tabela). Svaki posao računa istu podelu (isti fajlovi, ista
   tabela); unija delova = svi fajlovi bez preklapanja — dokazuje `web/scripts/testSequencer.node.test.ts`.
 - Tabela: reporter `web/scripts/test-durations.mjs` (trajanje = sakupljanje + testovi + `beforeAll`), osvežavanje:
-  `TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
+  `TEST_FULL=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
   lokalnog pokretanja posle izmena (517 fajlova, zbir 11 516 s): 6 delova po 28,2 min zbira ≈ 9,4 min zida lokalno.
   Na CI-ju (run 747) delovi 7,6–12,0 min: tabela je lokalna, a jsdom/ui fajlovi su na CI-ju relativno sporiji —
   osvežavanje iz CI izveštaja bi ujednačilo i deo 3.
 
-### 11.2 Projekat `v1`
+### 11.2 Projekat `v1` (ukinut u V1b, 10. 11. 2026)
 
-- Testovi poređenja v1 generatora sa referencama starog koda (`generators/*/equivalence*`, `otherDistances*`,
-  `runtimeIsolation*`, `personalPlan`, `guidance`, `training/generator/generator.{differential,fingerprint}`; 46 fajlova
-  u punom nivou) su vitest projekat `v1`: brz nivo ga isključuje (osim `TEST_V1=1`), pun ga uključuje (osim
-  `TEST_V1=0`). `npm run test:v1` = pun nivo samo tog projekta. Sabotaže postavljaju `TEST_V1=1`.
-- v1 kod se ne menja (0 od poslednjih 101 commita na grani), a v1 je podrazumevan u produkciji, pa se testovi ne brišu.
-  Udeo u CI run-a 741: 1713 s od 22 838 s (7,5 %; brojka od 59 % iz § 4.2 je stanje pre v2 mreža).
-- CI: delovi `web-test` rade `TEST_V1=0`; posao `v1-changes` traži poslednji zeleni run grane (`gh run list --status
-  success`) i pokreće `web-test-v1` (jedan posao, ~10 min) samo ako se od tog commita menja nešto što v1 koristi: domen
-  van `generators/*/v2/`, `src/test/`, `docs/qa/`, `package*.json`, `vitest.config.ts`, workflow. Na `main`-u, ručno i
-  bez zelenog run-a — uvek. Zeleni run je zelen i kad je posao preskočen, pa svaki zeleni commit ima v1 proveren direktno
-  ili preko prethodnog zelenog.
+- 5K, 10K i maraton v1 su obrisani zajedno sa svojim testovima poređenja (`equivalence*`, `otherDistances*`,
+  `runtimeIsolation*`, `guidance`, `generator.{differential,fingerprint}`). Ostaje zamrznut HM v1 samo za lični plan;
+  njegov dokaz `personalPlan.node.test.ts` (≈ 9 s) trči u redovnom projektu `node`. Projekat `v1`, `npm run test:v1`,
+  `TEST_V1` i CI posao `web-test-v1` ne postoje. Pre: projekat `v1` = 46 fajlova, 1 372 s lokalnog zbira (11,9 %),
+  1 713 s u CI run-u 741 (7,5 %). Izveštaj: `docs/generators-v2/perfection/reports/V1b-REPORT.md`.
 
 ### 11.3 Brzina produkcije, bajt-isti izlaz (v2, sve četiri distance)
 
@@ -371,3 +365,58 @@ Lanac starih regresija (`changed-<sha>.json`, `at7ba → at46e → atC13 → atB
 profil 10K `earlyGrid` 24 % (`planHash06c` → `undo07` → `undoF1`), 5K `segment08g.grid` ~7 % (`canon09`). Sabijanje na jednu
 aktuelnu baznu liniju po mreži uklanja taj trošak i šimove, ali gubi automatski dokaz uzroka svake stare izmene — nije
 urađeno bez odluke.
+
+
+## 13. CI po dometu izmene (T1, 9. 11. 2026, nalog korisnika: „ubrzati testove i CI")
+
+Izveštaj sa svim brojkama i komandama: `docs/generators-v2/perfection/reports/T1-REPORT.md`. (Pozivi „§ 12" u starijim
+komentarima znače § 11.2.)
+
+### 13.1 Šta CI pokreće
+
+Posao `scope` (bez `npm ci`, ~10 s) poziva `web/scripts/ciScope.mjs` sa commitom POSLEDNJEG ZELENOG run-a grane
+(`gh run list --status success`, isti lanac kao raniji `v1-changes`) i `git diff --no-renames` (ranije bez
+`--no-renames`: preimenovanje je sakrivalo staru putanju). Odluka je jedna funkcija, `decide` (test:
+`web/scripts/ciScope.node.test.ts`):
+
+| izmena od poslednjeg zelenog | web-test (pun nivo) | v1 | E2E | statičke |
+|---|---|---|---|---|
+| `main`, ručno, bez zelenog run-a, commit se ne dohvata | sve, 8 delova | sve (jedan posao, kao pre T1) | 3 dela | da |
+| `.github/**`, `docs/qa/**`, `web/src/test/**`, `web/scripts/**` (osim `test-durations.json`), `web/package*.json`, `vitest.config.ts`, `vite.config.ts`, `tsconfig*.json`, domen van `generators/<D>/v2/` (zajednički domen, v1, koren `generators/*.ts`, nepoznata distanca), nepoznat fajl u `web/` | sve | sve | da | da |
+| ostalo (`generators/<D>/v2/**`, ekrani, `public/`, `sw/`, `e2e/`, …, fajlovi van `web/`) | fajlovi čiji domet sadrži izmenu | ne (kao raniji `v1-changes` za v2 i van domena) | ako je izmena u grafu `src/main.tsx`, `public/`, `sw/`, `index.html`, `e2e/`, `playwright.config.ts` | ako je izmena u `web/` |
+
+Domet test fajla = zatvorenje grafa uvoza (statički, `export … from`, dinamički sa literalom, `vi.mock`, `?raw`, `@/`)
++ fajlovi koje modul u zatvorenju može da čita: `import.meta.url`/`__dirname`/`import.meta.glob` → ceo folder modula i
+svaka relativna putanja napisana u njemu (`` `./seg.${n}.json` `` → prefiks); `process.cwd()` → ceo `web/` (pregledan
+spisak `CWD_READS`, test traži da bude potpun); nerazrešen uvoz → ta putanja kao prefiks (nov ili obrisan fajl);
+`child_process` ili apsolutan uvoz → domet je sve (izuzeci pregledani u `PROCESS_READS`). Broj delova u izboru:
+zbir trajanja izabranih fajlova / 600 s (≈ 3,5 min na CI-ju), najviše 6.
+
+Brz nivo za neizabrane ne trči: test čiji se nijedan ulaz nije promenio od zelenog run-a ne može da promeni ishod.
+
+### 13.2 Zašto je izbor bezbedan
+
+- Graf je nadskup `vitest --changed` (graf uvoza samog vitest-a): 40 izvornih fajlova (10 izabranih + 30 nasumičnih),
+  u svakom slučaju `select` 0 fajlova koje vitest bira a izbor ne; fajlovi za koje je odluka `all` pokreću sve.
+- `isTestFile` = tačno spisak `vitest list --filesOnly` punog nivoa sa svim projektima (524 fajla + nov test izbora).
+- Fajlovi koje testovi čitaju kroz `fs` (bazne linije, `docs/qa`, izvor za provere izolacije) ulaze kroz pravilo
+  foldera/niske/`cwd`; test izbora proverava stvarno stablo (nijedan test sa dometom „sve", `CWD_READS` potpun, HM v2 →
+  svi HM testovi i nijedna mreža maratona, bazna linija → bez E2E).
+- Nepoznato → sve.
+
+### 13.3 Lanac
+
+Zeleni run je zelen i kad je posao preskočen. Za svaki zeleni commit C sa polaznim (prethodnim zelenim) B: svaki test
+fajl je ili izabran i prošao na C, ili mu se nijedan ulaz (domet) nije promenio od B, pa mu je ishod na C isti kao na B,
+gde je proveren direktno ili, indukcijom, preko B-ovog polaznog. Zavisnosti i okruženje (lock, node, konfiguracija,
+workflow) su pravilo „sve". `main` uvek pokreće sve, pa se lanac grane zatvara pri spajanju. Otkazan ili pao run nije
+polazni.
+
+### 13.4 Ostalo u workflow-u
+
+- `web` = samo statičke provere (tipovi, lint, format, build); E2E je poseban posao `web-e2e` u 3 dela
+  (`playwright --shard`), pregledač iz keša (`~/.cache/ms-playwright`).
+- `.github/actions/web-deps`: `node_modules` iz keša po hešu `package-lock.json` (snima se odmah posle `npm ci`).
+- V1b: posao `web-test-v1` je ukinut; „sve" = `npm test` u 10 delova (`ALL_SHARDS`).
+- Posao „sve" upisuje trajanje svakog fajla (`TEST_DURATIONS_OUT`, reporter `scripts/test-durations.mjs`) kao artefakt
+  `test-durations-*`; `test-durations.json` je prosek run-ova 765 i 766 (479 fajlova). Merenja pre/posle: T1-REPORT.md § 1.

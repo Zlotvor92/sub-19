@@ -1,0 +1,149 @@
+{
+ "distanca": "10K",
+ "krug": 6,
+ "stanje": "21d4b070",
+ "prethodno": "ef506f4c",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81.5,
+   "plan_stara": 81.5,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 76.5,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p03": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 78,
+   "plan_stara": 78,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 79,
+   "plan_stara": 80,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 72.5,
+   "plan_stara": 74,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80.5,
+   "plan_stara": 80.5,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p08": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 80.5,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p10": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 77.5,
+   "plan_stara": 77.5,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 79.5,
+   "plan_stara": 79.5,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 77.5,
+   "plan_stara": 77.5,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  }
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "4/12",
+   "sada": "5/12"
+  },
+  "plafon": {
+   "prethodno": "0/0",
+   "sada": "0/0"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 78.2,
+  "sada": 78.5
+ },
+ "B": {
+  "prethodno": 82.5,
+  "sada": 83.0,
+  "dogadjaji": {
+   "E1": 84.3,
+   "E2": 82.0,
+   "E3": 82.0,
+   "E4": 79.5,
+   "E5": 81.8,
+   "E6": 89.8,
+   "E7": 81.0
+  },
+  "scenariji": {
+   "s05": 83,
+   "s06": 82,
+   "s07": 82,
+   "s08": 81,
+   "s13": 82,
+   "s14": 78,
+   "s15": 80,
+   "s16": 78,
+   "s17": 82,
+   "s18": 81,
+   "s19": 81,
+   "s20": 83,
+   "s25": 81,
+   "s26": 80,
+   "s27": 82
+  }
+ },
+ "C": {
+  "prethodno": 82.5,
+  "sada": 83.5,
+  "parovi": {
+   "P1": 84,
+   "P2": 83.5,
+   "P3": 83
+  }
+ },
+ "zbirna": {
+  "prethodno": 80.4,
+  "sada": 80.9
+ }
+}

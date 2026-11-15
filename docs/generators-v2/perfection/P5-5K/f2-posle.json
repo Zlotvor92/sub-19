@@ -1,0 +1,548 @@
+{
+ "bases": 194,
+ "stat": {
+  "R:ctl": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 508,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "R:ctl+pain": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 508,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "R:ctl+fatigue": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 508,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "R:ctl+under": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 508,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "R:rpe9": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 365,
+   "notApplied": 143,
+   "noTrigger": 0,
+   "holdWeeks": 365,
+   "phase": {
+    "peak": 145,
+    "base": 137,
+    "sharpen": 83
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 143
+   },
+   "rejEx": []
+  },
+  "R:rpe9+pain": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 508,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 508
+   },
+   "rejEx": []
+  },
+  "R:rpe9+fatigue": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 508,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 365,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 143
+   },
+   "rejEx": []
+  },
+  "R:rpe9+under": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 201,
+   "notApplied": 307,
+   "noTrigger": 0,
+   "holdWeeks": 201,
+   "phase": {
+    "base": 89,
+    "peak": 72,
+    "sharpen": 40
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 199,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 108
+   },
+   "rejEx": []
+  },
+  "R:miss": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 256,
+   "notApplied": 252,
+   "noTrigger": 0,
+   "holdWeeks": 256,
+   "phase": {
+    "peak": 94,
+    "base": 106,
+    "sharpen": 56
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 120,
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 132
+   },
+   "rejEx": []
+  },
+  "R:miss+pain": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 508,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 376,
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol, manjak izvršenja).": 132
+   },
+   "rejEx": []
+  },
+  "R:miss+fatigue": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 334,
+   "noTrigger": 174,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 245,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 89
+   },
+   "rejEx": []
+  },
+  "R:miss+under": {
+   "flows": 508,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 508,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 447,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 61
+   },
+   "rejEx": []
+  },
+  "R:lanac": {
+   "flows": 365,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 208,
+   "noTrigger": 157,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "F:ctl": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 591,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "F:ctl+pain": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 591,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "F:ctl+fatigue": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 591,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "F:ctl+under": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 591,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "F:rpe9": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 429,
+   "notApplied": 162,
+   "noTrigger": 0,
+   "holdWeeks": 429,
+   "phase": {
+    "peak": 154,
+    "base": 156,
+    "sharpen": 119
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 162
+   },
+   "rejEx": []
+  },
+  "F:rpe9+pain": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 591,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 591
+   },
+   "rejEx": []
+  },
+  "F:rpe9+fatigue": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 591,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 429,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 162
+   },
+   "rejEx": []
+  },
+  "F:rpe9+under": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 208,
+   "notApplied": 383,
+   "noTrigger": 0,
+   "holdWeeks": 208,
+   "phase": {
+    "base": 98,
+    "peak": 59,
+    "sharpen": 51
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 270,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 113
+   },
+   "rejEx": []
+  },
+  "F:miss": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 340,
+   "notApplied": 251,
+   "noTrigger": 0,
+   "holdWeeks": 340,
+   "phase": {
+    "peak": 129,
+    "base": 115,
+    "sharpen": 96
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 112,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 139
+   },
+   "rejEx": []
+  },
+  "F:miss+pain": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 591,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 479,
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol, manjak izvršenja).": 112
+   },
+   "rejEx": []
+  },
+  "F:miss+fatigue": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 394,
+   "noTrigger": 197,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 296,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 98
+   },
+   "rejEx": []
+  },
+  "F:miss+under": {
+   "flows": 591,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 591,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 519,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 72
+   },
+   "rejEx": []
+  },
+  "F:lanac": {
+   "flows": 429,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 233,
+   "noTrigger": 196,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "B:ctl": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 402,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "B:ctl+pain": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 402,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "B:ctl+fatigue": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 402,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "B:ctl+under": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 402,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  },
+  "B:rpe9": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 201,
+   "notApplied": 201,
+   "noTrigger": 0,
+   "holdWeeks": 201,
+   "phase": {
+    "sharpen": 105,
+    "peak": 78,
+    "base": 18
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 201
+   },
+   "rejEx": []
+  },
+  "B:rpe9+pain": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 402,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 402
+   },
+   "rejEx": []
+  },
+  "B:rpe9+fatigue": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 402,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 201,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 201
+   },
+   "rejEx": []
+  },
+  "B:rpe9+under": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 2,
+   "notApplied": 400,
+   "noTrigger": 0,
+   "holdWeeks": 2,
+   "phase": {
+    "peak": 1,
+    "sharpen": 1
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 282,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 118
+   },
+   "rejEx": []
+  },
+  "B:miss": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 201,
+   "notApplied": 201,
+   "noTrigger": 0,
+   "holdWeeks": 201,
+   "phase": {
+    "sharpen": 105,
+    "peak": 78,
+    "base": 18
+   },
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 201
+   },
+   "rejEx": []
+  },
+  "B:miss+pain": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 402,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (bol).": 402
+   },
+   "rejEx": []
+  },
+  "B:miss+fatigue": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 402,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (umor).": 201,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 201
+   },
+   "rejEx": []
+  },
+  "B:miss+under": {
+   "flows": 402,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 402,
+   "noTrigger": 0,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {
+    "Treninzi kvaliteta D preteški ili preskočeni: nadjačano (manjak izvršenja).": 284,
+    "Treninzi kvaliteta D preteški ili preskočeni: sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste.": 118
+   },
+   "rejEx": []
+  },
+  "B:lanac": {
+   "flows": 201,
+   "rej": 0,
+   "applied": 0,
+   "notApplied": 0,
+   "noTrigger": 201,
+   "holdWeeks": 0,
+   "phase": {},
+   "msgs": {},
+   "rejEx": []
+  }
+ },
+ "cmp": {
+  "n": 995,
+  "higher": 18,
+  "lower": 520,
+  "same": 457,
+  "targetDiff": 0,
+  "laterDiff": 0,
+  "ex": [
+   "r-d4-8w-40km-v32-0@2026-11-15 n3 {\"I\":0,\"T\":3.2,\"R\":1.5} > {\"I\":0,\"T\":3,\"R\":1.5}",
+   "r-d4-9w-15km-v38-1@2026-11-15 n3 {\"I\":0,\"T\":1.5,\"R\":0.8} > {\"I\":0,\"T\":1,\"R\":0.8}",
+   "r-d4-9w-30km-v32-1@2026-11-15 n3 {\"I\":0,\"T\":3.2,\"R\":1.5} > {\"I\":0,\"T\":3,\"R\":1.5}",
+   "r-d4-11w-15km-v32-1@2026-11-15 n3 {\"I\":0,\"T\":1.5,\"R\":0.8} > {\"I\":0,\"T\":1,\"R\":0.8}",
+   "r-d4-13w-15km-v58-0@2026-11-15 n3 {\"I\":0,\"T\":1.5,\"R\":0.8} > {\"I\":0,\"T\":1,\"R\":0.8}"
+  ]
+ }
+}

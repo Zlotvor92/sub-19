@@ -54,8 +54,17 @@ describe('HM-10 T1: lagan prema dugom u nedeljama izgradnje', () => {
   });
 
   it('manje laganih dana kad najkraći lagan ne staje ispod 0,8 × dugi (16 km, 3 lagana → 2, dugi se ne podiže iznad svog plafona)', () => {
-    const rule = planRule(4, 'beginner')!;
+    // T1 sa udelom 0,8 (pravilo 3 dana); P8 G6: 4+ dana 0,7 — tada ova nedelja (na minimumu 16 km) ide po izuzetku
+    // t1MinWeek sa sva 3 lagana dana.
+    // Odluka posle STOP: početnik 0,80 bez obzira na broj dana; redovan plan 4+ dana 0,70.
+    const rule7 = planRule(4, 'regular')!;
+    expect(rule7.easyLongMaxShare).toBe(0.7);
+    expect(planRule(4, 'beginner')!.easyLongMaxShare).toBe(0.8);
+    expect(planRule(3, 'regular')!.easyLongMaxShare).toBe(0.8);
+    const rule = { ...rule7, easyLongMaxShare: 0.8 };
     const p = pacesFromVdot(35);
+    expect(buildLengths(160, 0, 3, rule7, p)!.easy10.length).toBe(3);
+    expect(buildEasyCap10(100, rule7)).toBe(70);
     const len = buildLengths(160, 0, 3, rule, p)!;
     expect(len.easy10.length).toBe(2);
     for (const e of len.easy10) {
@@ -84,8 +93,10 @@ describe('HM-10 T3: posle novog starta taper zadržava 1 kvalitet, trkačka krat
     const taper = p.weeks.find((w) => w.phase === 'taper')!;
     const q = taper.days.filter((d) => d.workout.kind === 'quality');
     expect(q.length).toBe(1);
-    expect(q[0]!.workout.dose!.zone).toBe('T');
-    expect(q[0]!.workout.dose!.doseM).toBeGreaterThanOrEqual(2000);
+    // P8 G2: RP 2 × 2000 m (najmanja doza) staje u taper i posle novog starta — kvalitet tapera je RP (bilo: T).
+    expect(q[0]!.workout.dose!.zone).toBe('RP');
+    // K3-B: ≤ 60 % poslednje RP doze (5000 m) — 2 × 1500 m van lestvice (bilo 2 × 2000 m).
+    expect(q[0]!.workout.dose!.doseM).toBe(3000);
     const race = p.weeks.find((w) => w.phase === 'race')!;
     expect(race.days.some((d) => d.role === 'sharpener')).toBe(true);
     expect(errors(p)).toEqual([]);
@@ -125,10 +136,11 @@ describe('HM-10 C4: urađen dan posle asOf u zbiru zaštićenih = planirani km (
 });
 
 describe('HM-10 C12: najniži nivo RP se u mešovitoj nedelji ne odbacuje (kao MAR MP)', () => {
-  it('d3-10w-25km-v55-B-sun ned 6, urađeni dani × 1,6 do 2026-12-07: RP 2 × 2000 m ostaje (bilo lagan)', () => {
+  // K4-A: ned 6 je nedelja B (3 dana: dan kvaliteta lagan, blok u dugom) — RP trening je u ned 7 (nedelja A).
+  it('d3-10w-25km-v55-B-sun ned 7, urađeni dani × 1,6 do 2026-12-14: RP 2 × 2000 m ostaje (bilo lagan)', () => {
     const p0 = ok(generateHmV2(input('d3-10w-25km-v55-B-sun')));
-    const w = p0.weeks[5]!;
-    const asOf = '2026-12-07';
+    const w = p0.weeks[6]!;
+    const asOf = '2026-12-14';
     const rp = w.days.find((d) => d.workout.dose?.zone === 'RP')!;
     expect(rp.workout.dose!.doseM).toBe(4000);
     const facts = {
@@ -143,7 +155,7 @@ describe('HM-10 C12: najniži nivo RP se u mešovitoj nedelji ne odbacuje (kao M
         }))
     };
     const p = ok(adaptHmV2(p0, facts, asOf));
-    const kept = p.weeks[5]!.days.find((d) => d.date === rp.date)!;
+    const kept = p.weeks[6]!.days.find((d) => d.date === rp.date)!;
     expect(kept.workout.dose?.zone).toBe('RP');
     expect(errors(p)).toEqual([]);
   });

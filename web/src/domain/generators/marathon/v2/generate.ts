@@ -10,21 +10,34 @@ import { checkInput } from './input.ts';
 import {
   jumpBase10,
   jumpLongs10,
+  longCap10,
   longestLong10,
   longJumpCap10,
   longJumpNote,
   longRuleOf,
   longMaxSecOf,
   longShortOf,
+  longsOf,
   longTimeCapNote,
-  recentLongNote
+  longWave10,
+  recentLongNote,
+  seedLongest10
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
-import { isBuildPhase, periodize, taperStep } from './periodize.ts';
+import {
+  introOf,
+  isBuildPhase,
+  lengthWarningOf,
+  periodize,
+  taperStep,
+  testKindOf
+} from './periodize.ts';
 import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
 import { same } from './same.ts';
+import { lastHardBefore, stridesDateOf, stridesSpecOf } from './strides.ts';
+import { bAllowed, specificTypesOver } from './specific.ts';
 import {
   basePaces,
   basisAt,
@@ -55,15 +68,27 @@ import {
   enterWeek,
   fit10,
   fittedNote,
-  initialAdaptHistory,
+  initialHistoryOf,
   leaveWeek,
   nominal10,
+  growthCtx,
+  nominalPeak10,
   peakCap10,
   raceWeekTarget10,
+  shortTaperUp10,
   startKm10
 } from './volume.ts';
-import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
+import {
+  type BuiltWeek,
+  buildWeek,
+  type QualityMode,
+  raceWeek,
+  SHORT_REST_PLAN_NOTE,
+  shortEasyWeeks,
+  shortRestWeek,
+  type WeekContext
+} from './week.ts';
+import { easyStridesWorkout, fmtKm, fmtSec, longBlockKm, warmupCooldown } from './workouts.ts';
 import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
@@ -116,10 +141,21 @@ const planned100Of = (days: readonly PlanDay[]): number =>
   days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0);
 
 /** Prošlost = upisani dani (pouka 29): izbor doze nedelje (stanje M12) iz upisanih dana kvaliteta. */
-const writtenPicks = (days: readonly PlanDay[]): Picks => ({
-  q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
-  q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
-});
+const writtenPicks = (days: readonly PlanDay[]): Picks => {
+  const long = days.find((d) => d.role === 'long');
+  const blockM = long ? Math.round(longBlockKm(long.workout) * 1000) : 0;
+  return {
+    q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
+    q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null,
+    ...(blockM > 0 ? { blockM } : {})
+  };
+};
+
+/** M17: uvod početnika u napomeni plana (W1-A: kratak plan može biti bez uvoda ili sa kraćim). */
+const introText = (count: number): string =>
+  count === 0
+    ? 'skraćena priprema bez uvoda — od prve nedelje '
+    : `uvod ${count} ${count === 1 ? 'nedelja' : 'nedelje'} bez kvaliteta, zatim `;
 
 export function generateMarathonV2(raw: unknown): GenerateResult {
   return construct(raw, []);
@@ -143,6 +179,31 @@ export function construct(
   /** RECENT_LONG_TOO_SHORT: računaj prag poruke (false u samoj pretrazi praga). */
   threshold = true
 ): GenerateResult {
+  // K4-B: odluka iz plana sastavljenog bez nje (week.shortEasyWeeks) — u tim nedeljama jedan lagan dan je odmor.
+  const r = constructWith(raw, steps, prior, threshold, new Map());
+  if (!r.ok) return r;
+  const short = shortEasyWeeks(r.plan.weeks);
+  if (short.length === 0) return r;
+  // Dugi tih nedelja ostaje kakav je (km dana odmora idu samo u lagane dane).
+  const keep = new Map(
+    short.map((i) => {
+      const l = r.plan.weeks[i - 1]!.days.find((d) => d.role === 'long');
+      return [i, l ? Math.round(l.workout.km * 10) : Infinity] as const;
+    })
+  );
+  const k = constructWith(raw, steps, prior, threshold, keep);
+  return k.ok ? k : r;
+}
+
+function constructWith(
+  raw: unknown,
+  steps: readonly MarathonV2AdaptStep[],
+  prior: Written | undefined,
+  threshold: boolean,
+  /** K4-B: nedelje malog obima (shortEasyWeeks) → dugi te nedelje u planu bez K4-B [0,1 km] — jedan lagan dan je
+      odmor, dugi se ne produžava, planirano < cilj. */
+  shortRest: ReadonlyMap<number, number>
+): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, pace, pattern, rule, shortResult } = chk;
@@ -150,8 +211,9 @@ export function construct(
   const km = input.currentWeeklyKm;
   // M16: po osećaju E = lagan tempo ± 15 s, brze zone i MP iz procene VDOT-a (orijentir).
   const paces = basePaces(pace, km);
-  // M16/M17: test 5 km samo u planu po osećaju koji nije početnik.
-  const base = periodize(input.startDate, weeks, feel && rule.feelTest);
+  // M16/M17/P5-F1: test 5 km — plan po osećaju koji nije početnik (kraj baze) i plan sa rezultatom (razvoj).
+  const testKind = testKindOf(rule, feel, weeks);
+  const base = periodize(input.startDate, weeks, testKind, rule.weeksMin);
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima M5.');
   const adapted = steps.length > 0;
   const frames = adapted
@@ -181,7 +243,12 @@ export function construct(
   const recentJ = jumpRecentKm(recent, steps);
   const pre = preStartOf(steps);
   const start10 = startKm10(km);
-  const cap10 = peakCap10(start10, rule);
+  // P8-G1: okviri polaznog rasporeda — prinudno rasterećenje i nov start adaptacije ne menjaju korak rasta već
+  // upisanih nedelja.
+  const g1 = growthCtx(base, paces);
+  const cap10 = peakCap10(start10, rule, g1);
+  // K4-A: plafon obima plana za plato dugog (talas 3 dana) — nominalni vrh polaznog rasporeda.
+  const peakNom10 = nominalPeak10(base, start10, cap10, rule, g1);
   const av = adapted ? adaptVolume(steps) : null;
   // A1: tempo nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9/pouka 33: odstupanja za mali
   // obim samo posle smanjenja obima.
@@ -192,6 +259,25 @@ export function construct(
     const p = pacesAt(pace, steps, w, km);
     return { ...ctx0, paces: p, raceSec: predictedMarathon(p), feel: false, ...reduced };
   };
+  // M19: raspored tipova A/B specifične faze iz okvira (posle koraka adaptacije: iz adaptiranih okvira, S3).
+  const kept = new Set([...(prior?.lockedDayIds ?? []), ...(prior?.doneDayIds ?? [])]);
+  const typeOf = specificTypesOver(
+    rule,
+    steps.map((s) => s.firstWeek),
+    (k) =>
+      k === steps.length
+        ? frames
+        : framesFor(
+            base,
+            pattern,
+            input.runDays,
+            input.raceDate,
+            pace,
+            steps.slice(0, k),
+            null,
+            kept
+          )
+  );
   const restarts = restartWeeks(steps);
   const doseRestarts = doseRestartWeeks(steps);
 
@@ -199,7 +285,9 @@ export function construct(
   // poslednji dugi i poslednja T doza (M5); progresija doze od ned 2 kreće od početnog nivoa (kao planirana ned 1).
   const ref = stateRefOf(steps);
   let quality: QualityState = ref ? { ...INITIAL_QUALITY, t: ref.tM } : INITIAL_QUALITY;
-  let h = initialAdaptHistory(cap10);
+  let h = initialHistoryOf(frames, cap10, start10);
+  // W1-A: plan koji počinje taperom — polazni najduži dugi po pravilu udela pri trenutnom obimu.
+  const seedLong10 = seedLongest10(frames, start10, rule, pacesAt(pace, steps, 1, km));
   let lastLong10: number | null = ref ? Math.round(ref.longKm * 10) : null;
   /** Prošlost = upisani dani (pouka 29): dani nedelja kakvi se upisuju — iz njih najduži dugi (M7), dugi
       prethodnih nedelja (M13a), poslednji dugi (M5), stanje doze i N−1 za trkačku nedelju (M8). */
@@ -211,7 +299,12 @@ export function construct(
   for (const frame of frames) {
     // F2: početnik u vrhu dugog — pravilo dugog nedelje (lengths.longRuleOf, isto u validatoru).
     const ctxW = ctxAt(frame.index);
-    const ctx = { ...ctxW, rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index) };
+    let ctx = {
+      ...ctxW,
+      rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index),
+      // P5-F2 (A18): nedelja bez rasta doze iz koraka adaptacije.
+      ...(steps.some((s) => s.holdDose === frame.index) ? { hold: true } : {})
+    };
     if (doseRestarts.has(frame.index))
       quality = [...restarts].some((r) => r <= frame.index)
         ? { ...INITIAL_QUALITY, restart: true }
@@ -249,18 +342,44 @@ export function construct(
       continue;
     }
     const taper = taperStep(phases, frame.index);
-    if (av) h = enterWeek(h, frame, av, rule);
+    if (av) h = enterWeek(h, frame, av, rule, g1);
     const { nominal, downOnly } = av
-      ? adaptNominal10(frame, h, start10, taper, rule, av)
-      : { nominal: nominal10(frame, h, start10, cap10, taper, rule), downOnly: false };
-    const longest10 = longestLong10(written);
+      ? adaptNominal10(frame, h, start10, taper, rule, av, g1)
+      : { nominal: nominal10(frame, h, start10, cap10, taper, rule, g1), downOnly: false };
+    // K4-A: talas dugog 3 dana (lengths.longWave10; plato po plafonu dugog pri nominalnom cilju) — plafon dugog u
+    // pravilu nedelje; nedelja sa ograničenjem koraka (A3/A4) ga nema.
+    const wave = frame.limits
+      ? null
+      : longWave10(
+          rule,
+          frames,
+          frame.index,
+          longsOf(written),
+          longCap10(nominal, ctx.rule, ctx.paces),
+          longCap10(peakNom10, ctx.rule, ctx.paces)
+        );
+    if (wave !== null) ctx = { ...ctx, rule: { ...ctx.rule, longWave10: wave } };
+    const longest10 = longestLong10(written, seedLong10);
     const longs10 = jumpLongs10(written, steps, frame.index);
     const jump10 = longJumpCap10(longs10, frame.index, recentJ);
     // MAR-11 (T1): `drop` lagana dana nedelje izgradnje su odmor — samo kad nijedan cilj nije izvodljiv sa svim
     // danima (lagani u granicama 0,8 × dugi i ≥ 5 km / 20 min ne nose cilj).
-    let drop = 0;
-    let under = false;
+    // K4-B: nedelja malog obima — jedan lagan dan je odmor, lagani do granice udela dugog (planirano < cilj).
+    const short = shortRest.has(frame.index) && taper === null && !frame.deload;
+    // Dugi na plafonu skoka (M13a) već ne raste — granica samo kad je ispod plafona skoka (napomena M13a ostaje).
+    const keep10 = short ? shortRest.get(frame.index)! : Infinity;
+    if (short)
+      ctx = {
+        ...ctx,
+        shortRest: true,
+        ...(keep10 < (jump10 ?? Infinity) ? { rule: { ...ctx.rule, longKeep10: keep10 } } : {})
+      };
+    let drop = short ? 1 : 0;
+    let under = short;
     let relaxT1 = false;
+    // M19 (S3): nedelja tipa B po rasporedu, bez ograničenja koraka i testa, sa ciljem po pravilu (ne povratak ni nov
+    // start koji ide samo naniže, A3/A8).
+    const bWeek = typeOf(frame.index) === 'B' && bAllowed(frame, !downOnly);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,
@@ -274,7 +393,8 @@ export function construct(
         jump10,
         drop,
         under,
-        relaxT1
+        relaxT1,
+        bWeek
       );
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts 'relax'): M11 ispred M12 u izgradnji, zona tapera koja ne staje u plafon otpada. Segment 04
@@ -289,6 +409,14 @@ export function construct(
           : lq === 'one'
             ? ['one', 'none']
             : ['rule', 'relax', 'one', 'none'];
+    // W1-A: taper kratkog plana sme naviše do cilja prethodne nedelje (volume.shortTaperUp10).
+    const prevW = out[out.length - 1];
+    const taperUp10 = shortTaperUp10(
+      g1,
+      rule,
+      prevW ? Math.round(prevW.targetKm * 10) : null,
+      start10
+    );
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';
     // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi kvaliteta na
@@ -306,7 +434,8 @@ export function construct(
         av ? h.cap10 : cap10,
         rule,
         (t10) => make(t10, m) !== null,
-        downOnly
+        downOnly,
+        taperUp10
       );
       if (fit) {
         mode = m;
@@ -341,7 +470,8 @@ export function construct(
           av ? h.cap10 : cap10,
           rule,
           (t10) => make(t10, m) !== null,
-          downOnly
+          downOnly,
+          taperUp10
         );
         if (fit) {
           mode = m;
@@ -351,6 +481,10 @@ export function construct(
       if (fit) break;
     }
     if (!fit) [drop, under, relaxT1] = [0, false, false];
+    if (short && drop !== 1) {
+      const { longKeep10: _k, ...rest } = ctx.rule;
+      ctx = { ...ctx, shortRest: false, rule: rest };
+    }
     // M13a (pouka 6): RECENT_LONG_TOO_SHORT samo kad je uzrok zaista skok dugog iz ulaza — isti plan bez
     // skorašnjeg najdužeg trka ne zastaje na ovoj ni ranijoj nedelji; inače WEEK_INFEASIBLE (MAR-04b: umor pre
     // starta je odbijan sa ovom porukom, a uzrok je bio nedostatak reference rasterećenja).
@@ -410,6 +544,25 @@ export function construct(
         mixNote = mixedNote(m, keptKm100(kept, prior!.factKm) / 100, fit.target10);
       }
     }
+    // P5-F3: ubrzanja na jednom laganom danu (strides.ts, jedino mesto odluke); km dana se ne menja. Izbor na nedelji
+    // kakva se upisuje (zaštićeni dani prethodnog plana + sastavljeni), kao validator; zaštićen dan se upisuje iz
+    // prethodnog plana (written.ts), sastavljeni dan istog datuma dobija isti sadržaj.
+    const spec = stridesSpecOf(frame, rule, weeks);
+    if (spec) {
+      const prevDays = written[written.length - 1]?.days ?? [];
+      const s1 = prior?.weeks[frame.index - 1];
+      const asWritten = prior && s1 ? writtenDays(s1, w.days, prior) : w.days;
+      const sd = stridesDateOf(asWritten, frame, lastHardBefore(prevDays, frame.startDate));
+      if (sd)
+        w = {
+          ...w,
+          days: w.days.map((d) =>
+            d.date === sd && d.role === 'easy'
+              ? { ...d, workout: easyStridesWorkout(d.workout.km, ctx.paces, spec.reps, spec.sec) }
+              : d
+          )
+        };
+    }
     const notes = [...w.notes, ...(mixNote ? [mixNote] : [])];
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
     // M13a: dugi na plafonu skoka; bez skorašnjeg najdužeg trka — napomena nedelje 1 sa pragom.
@@ -436,16 +589,25 @@ export function construct(
       for (const d of wd)
         if (d.role === 'easy') taperEasy10 = Math.min(taperEasy10, Math.round(d.workout.km * 10));
     }
+    // P8-G1 (pouka 29 i za obim): nedelja cela ≤ asOf ostaje iz prethodnog plana (written.ts) — istorija obima (osnov
+    // rasta, vrh, osnov tapera) čita njen upisani cilj, ne ponovo sastavljeni (korak < 3 % se ne primenjuje, pa cilj
+    // sledeće nedelje zavisi od stvarno upisanog prethodnog).
+    const sPast = prior?.weeks[frame.index - 1];
+    const hist10 =
+      prior && sPast && mustDay(sPast.endDate) <= prior.asOf
+        ? Math.round(sPast.targetKm * 10)
+        : fit.target10;
     if (isBuildPhase(frame.phase) && !frame.deload) {
-      if (!av) {
-        h.lastBuild10 = fit.target10;
-        h.peak10 = Math.max(h.peak10, fit.target10);
+      // W1-B: osnovna priprema nije osnov rasta (standardni deo kreće od trenutnog obima).
+      if (!av && !frame.prep) {
+        h.lastBuild10 = hist10;
+        h.peak10 = Math.max(h.peak10, hist10);
       }
       const long = wd.find((d) => d.role === 'long');
       if (long) lastLong10 = Math.round(long.workout.km * 10);
       if (w.picks) quality = advance(same(wd, w.days) ? w.picks : writtenPicks(wd), quality);
     }
-    if (av) h = leaveWeek(h, frame, fit.target10, av);
+    if (av) h = leaveWeek(h, frame, hist10, av);
   }
 
   // A1: nivo plana iz tempa poslednje nedelje (budućnost); ocena cilja za nedelje od rezultata do trke.
@@ -489,14 +651,19 @@ export function construct(
       `Plan po osećaju (M16): ${pace.why}. E = lagan tempo ${fmtSec(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R i MP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE (MP ${P.feel.rpe.MP.min}–${P.feel.rpe.MP.max} „${P.feel.rpe.MP.cue}").`,
       t && td
         ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (M16). Ocena cilja, prognoza maratona i MP tempo: posle testa (adaptacija, segment 04).`
-        : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
-          : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
+        : rule.feelTest && !base.some((f) => f.test)
+          ? `Plan nema kontrolni test ${P.test.km} km: u ovako kratkoj pripremi pao bi pre četvrte nedelje. Tempo treninga ostaje procena dok ne uneseš rezultat trke ili probnog trčanja.`
+          : rule.feelTest
+            ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+            : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
     );
   }
+  // W1-C: plan van preporučene dužine — jedna rečenica u napomeni plana (validator: isto upozorenje PLAN_LENGTH).
+  const lw = lengthWarningOf(weeks, rule);
+  if (lw) plan.notes.push(lw);
   if (rule.beginner)
     plan.notes.push(
-      `Početnik (M17): uvod ${rule.introWeeks} nedelje bez kvaliteta, zatim jedan kvalitet nedeljno (T kontinuirano → T cruise → MP), bez I i R; WU/CD ${ctx0.wc.warmupSec / 60}/${ctx0.wc.cooldownSec / 60} min.`
+      `Početnik (M17): ${introText(introOf(weeks, rule).count)}jedan kvalitet nedeljno (T kontinuirano → T cruise → MP), bez I i R; WU/CD ${ctx0.wc.warmupSec / 60}/${ctx0.wc.cooldownSec / 60} min.`
     );
   if (shortResult)
     plan.notes.push(
@@ -515,11 +682,17 @@ export function construct(
       )
     );
   // N11: najduži dugi ograničen trajanjem (M13, namerna granica) — rečenica u opisu plana, ne upozorenje.
-  const ls = longShortOf(seen, rule.longShortKm, pW, (i) =>
-    longMaxSecOf(longRuleOf(rule, rule.beginner, seen, i))
+  const ls = longShortOf(
+    seen,
+    rule.longShortKm,
+    pW,
+    (i) => longMaxSecOf(longRuleOf(rule, rule.beginner, seen, i)),
+    rule.longGoalSec
   );
   if (ls?.timeCapped)
     plan.notes.push(longTimeCapNote(ls.longestKm, rule.longShortKm, rule.beginner, ls.capSec));
+  // K4-B: jedna rečenica u napomeni plana kad plan ima nedelje malog obima sa danom odmora.
+  if (seen.some(shortRestWeek)) plan.notes.push(SHORT_REST_PLAN_NOTE);
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {

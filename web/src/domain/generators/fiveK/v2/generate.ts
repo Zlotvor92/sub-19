@@ -12,13 +12,14 @@ import {
   pacesFromVdot,
   raceTimeForVdot
 } from './paces.ts';
-import { controlTest, isShortPrep, periodize, phaseCounts } from './periodize.ts';
+import { isFirstIWeek, isShortPrep, periodize, phaseCounts, testKindOf } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
 import {
   athleteAt,
   baseAthlete,
+  beginnerAboveTable,
   baseVdot,
   doseResetAt,
   framesFor,
@@ -36,6 +37,7 @@ import type {
   Phase,
   PlanDay,
   PlanWeek,
+  QualityCap,
   Reason,
   WeekFrame,
   Weekday
@@ -45,12 +47,18 @@ import { adaptVolume, pauseRemainderKm, planVolume, type VolumePlan } from './vo
 import {
   buildRaceWeek,
   buildTrainingWeek,
+  EASY_CAP_NOTE,
   mixedWeek,
   protectedKm,
-  secondEasyDose
+  secondEasyDose,
+  SHORT_REST_PLAN_NOTE,
+  shortEasyWeeks,
+  shortRestWeek
 } from './week.ts';
-import type { WeekDose } from './workouts.ts';
+import { raceWarmup, type WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
+
+const kmPlain = (x: number): string => String(x).replace('.', ',');
 
 const fmt = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
@@ -75,11 +83,43 @@ export interface Constructed {
  * adaptacije (assess.ts), redom; bez njih je ovo tačno generator 2.4.1. Ograničenja ulaze u okvire
  * (steps.framesFor), ciljeve (volume.adaptVolume) i tempo nedelje (steps.pacesAt); nema koraka koji
  * posle konstrukcije menja nedelju.
+ * 5k-v2.17.0 (K4-B): odluka week.shortEasyWeeks se čita iz plana sastavljenog bez nje; kad pogađa nedelje, plan se
+ * sastavlja još jednom sa tim nedeljama (WeekFrame.shortRest), dok se skup ne ustali (unija). Sastav koji ne uspe →
+ * plan bez pravila. Adaptacija prenosi odluku prethodnog plana.
  */
 export function construct(
   input: FiveKV2Input,
   steps: readonly AdaptStep[] = [],
   prior: Written | null = null
+): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
+  // Adaptacija: odluka prethodnog plana (nedelje sa napomenom week.shortRestNote) je poznata unapred i samo se prenosi
+  // (AGENTS uslov 4; nova odluka bi zavisila od upisane istorije — „bez promene" ≠ generator, ponovljena adaptacija ≠
+  // ista). Nedelja sa ograničenjima adaptacije ostaje bez pravila (constructWith).
+  if (prior) {
+    const seed = prior.weeks.filter(shortRestWeek).map((w) => w.index);
+    const s = seed.length > 0 ? constructWith(input, steps, prior, new Set(seed)) : null;
+    return s?.ok ? s : constructWith(input, steps, prior, new Set());
+  }
+  const first = constructWith(input, steps, prior, new Set());
+  if (!first.ok) return first;
+  // Generator: nepokretna tačka (week.shortEasyWeeks, unija) — najviše onoliko sastava koliko plan ima nedelja.
+  let res = first;
+  let known: number[] = [];
+  for (;;) {
+    const short = shortEasyWeeks(res.c.weeks, first.c.athlete.beginner, known);
+    if (short.length === known.length) return res;
+    known = short;
+    const next = constructWith(input, steps, prior, new Set(known));
+    if (!next.ok) return first;
+    res = next;
+  }
+}
+
+function constructWith(
+  input: FiveKV2Input,
+  steps: readonly AdaptStep[],
+  prior: Written | null,
+  short: ReadonlySet<number>
 ): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
   // 2.4.0: ko trči (jedino mesto): broj dana, početnik, plan po osećaju (bez pouzdanog rezultata).
   const a = baseAthlete(input);
@@ -95,7 +135,7 @@ export function construct(
     input.startDate,
     totalWeeks,
     rules.deloadEvery,
-    controlTest(a),
+    testKindOf(a, totalWeeks),
     a.beginner
   );
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
@@ -123,7 +163,13 @@ export function construct(
   const testDone = wt?.done ? wt.week : null;
   const push = (w0: PlanWeek): void => {
     // 5k-v2.11.0 (Z2): napomene nedelje u formatu teksta korisniku pre spajanja (prethodni plan je u istom formatu).
-    const w = { ...w0, notes: w0.notes.map(userText) };
+    // 5k-v2.15.3 (P8 G3/G6): napomena o granici laganog samo u prvoj takvoj nedelji plana (ostale nedelje imaju
+    // upozorenje PLANNED_BELOW_TARGET, zbirno u prikazu).
+    const seen = weeks.some((x) => x.notes.some((n) => n.startsWith(EASY_CAP_NOTE)));
+    const w = {
+      ...w0,
+      notes: w0.notes.map(userText).filter((n) => !seen || !n.startsWith(EASY_CAP_NOTE))
+    };
     weeks.push(w);
     written.push(prior ? writtenWeek(prior.weeks[w.index - 1]!, w, prior).week : w);
   };
@@ -150,7 +196,9 @@ export function construct(
       (s) => s.firstWeek === f.index && pauseRemainderKm(s, f, w.targetKm) !== null
     );
     const planKm = protectedKm(kept);
-    const m = owner ? null : mixedWeek(w, kept, keptKm, p, planKm);
+    const m = owner
+      ? null
+      : mixedWeek(w, kept, keptKm, p, planKm, input.runDays.length, ctx(f.index).a.beginner);
     const out = m?.week ?? w;
     const keptDates = new Set(kept.map((d) => d.date));
     const freeKm = out.days
@@ -180,6 +228,8 @@ export function construct(
       // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano UPISANOG tapera (pouka 29); zaštićeni dani trkačke nedelje
       // ulaze u zbir (week.raceWeekRest).
       const taper = written[written.length - 1];
+      // 5k-v2.15.0 (P8 d): WU/CD trke po vrhu obima; trkački dan ne sme biti najduži dan plana (workouts.raceWarmup).
+      const raceBand = raceWarmup(adapted.peakKm, longestDayKm(written));
       const priorRace = prior?.weeks[f.index - 1];
       const cap = taper
         ? {
@@ -204,7 +254,8 @@ export function construct(
         p,
         prevLong,
         cap,
-        input.weekOffset
+        input.weekOffset,
+        raceBand
       );
       // 2.6.0: i kad oštrenje ostavlja nedelju ispod minimuma trkačke nedelje (mala granica posle
       // smanjenja) — oštrenje otpada (pravilo f), lagani dani nose granicu.
@@ -220,7 +271,8 @@ export function construct(
           p,
           prevLong,
           cap,
-          input.weekOffset
+          input.weekOffset,
+          raceBand
         );
         if (short && r.ok)
           r.week.notes.push(
@@ -231,6 +283,14 @@ export function construct(
       else reasons.push(r.reason);
       return;
     }
+    // 5k-v2.15.0 (P8 b): granica kvaliteta i dugog rasterećenja/tapera iz upisanih nedelja (qualityCapOf).
+    // 5k-v2.17.0 (K4-B): nedelja malog obima (construct, week.shortEasyWeeks); ne u nedelji sa ograničenjima adaptacije.
+    const fc0 = qualityCapOf(
+      short.has(f.index) && !f.limits ? { ...f, shortRest: true } : f,
+      written
+    );
+    // 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek).
+    const fc: WeekFrame = isFirstIWeek(f, written) && !f.hold ? { ...fc0, firstI: true } : fc0;
     const build = (g: WeekFrame) =>
       buildTrainingWeek(
         g,
@@ -241,11 +301,11 @@ export function construct(
         aw,
         phaseCounts(totalWeeks, a.beginner).taper
       );
-    let r = build(f);
+    let r = build(fc);
     // 2.10.2 (K9): kontrolno trčanje koje ne staje otpada PRVO samo (ista ograničenja, isti obim); tek onda manje
     // kvaliteta — inače ponovljena adaptacija (bez testa u prethodnom planu) gradi drugu dozu.
     if (!r.ok && adaptive && f.test) {
-      const t = build({ ...f, test: false });
+      const t = build({ ...fc, test: false });
       if (t.ok) {
         t.week.notes.push(`Adaptacija: kontrolno trčanje ne staje u obim ${target} km — otpada.`);
         r = t;
@@ -258,7 +318,7 @@ export function construct(
       if (r.ok || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
       // 2.6.0: kontrolno trčanje je glavni kvalitet nedelje — kad ne staje, otpada sa njim.
-      r = build({ ...f, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
+      r = build({ ...fc, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
       if (r.ok)
         r.week.notes.push(
           `${adaptive ? 'Adaptacija: k' : 'K'}valitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test && testDone !== f.index ? ' (bez kontrolnog trčanja)' : ''}${adaptive ? '' : '; više obima ili 4 dana trčanja daju puni kvalitet'}.`
@@ -330,6 +390,64 @@ export function construct(
       dropped
     }
   };
+}
+
+/** 5k-v2.15.0 (P8 G3): rasterećenja kako ih plan stvarno ima (ne „svake N. nedelje"). */
+function deloadText(frames: readonly WeekFrame[], off = 0): string {
+  const ws = frames.filter((f) => f.deload).map((f) => String(weekLabel(f.index, off)));
+  if (ws.length === 0) return '';
+  return ws.length === 1
+    ? `, rasterećenje u nedelji ${ws[0]!}`
+    : `, rasterećenje u nedeljama ${ws.slice(0, -1).join(', ')} i ${ws[ws.length - 1]!}`;
+}
+
+/** 5k-v2.15.0 (P8 d): najduži trening upisanih nedelja [km] (konstruktor i validator, workouts.raceWarmup). */
+export const longestDayKm = (weeks: readonly PlanWeek[]): number =>
+  Math.max(
+    0,
+    ...weeks.flatMap((w) => w.days.filter((d) => d.role !== 'race').map((d) => d.workout.km))
+  );
+
+const isBuildPhase = (ph: Phase): boolean => ph === 'base' || ph === 'peak' || ph === 'sharpen';
+
+/**
+ * 5k-v2.15.0 (P8 b, heuristika, odluka organizatora P8, nalaz slepe ocene) — JEDINO mesto granice: nedelja rasterećenja
+ * (izgradnja) i tapera dobija granicu rada svake zone = udeo (quality.deloadQualityShare 0,6 / taperQualityShare 0,7) ×
+ * rad te zone u poslednjoj UPISANOJ ne-rasteretnoj nedelji izgradnje sa tom zonom; rasterećenje i dugi ≤
+ * max(easy.minKm, deloadLongShare × dugi poslednje ne-rasteretne nedelje izgradnje). Zone bez ranije doze nemaju granicu. Najniži nivo
+ * lestvice uvek staje (workouts.cappedBudget, feel.cappedFeel).
+ */
+export function qualityCapOf(f: WeekFrame, written: readonly PlanWeek[]): WeekFrame {
+  const deload = f.deload && isBuildPhase(f.phase);
+  if (!deload && f.phase !== 'taper') return f;
+  const share = deload ? P.quality.deloadQualityShare : P.quality.taperQualityShare;
+  const build = written.filter((w) => !w.deload && isBuildPhase(w.phase));
+  const cap: QualityCap = {};
+  const workOf = (w: PlanWeek, z: 'I' | 'RP' | 'T' | 'R'): number =>
+    w.days.filter((d) => d.workout.kind === 'quality').reduce((x, d) => x + d.workout.workKm[z], 0);
+  for (const z of ['I', 'RP', 'T', 'R'] as const) {
+    // 5k-v2.15.0 (P8 dopuna G5): taper od NAJVEĆEG rada zone u izgradnji; rasterećenje od poslednjeg.
+    if (!deload) {
+      const top = Math.max(0, ...build.map((w) => workOf(w, z)));
+      if (top > 1e-9) cap[z] = Math.round(share * top * 100) / 100;
+      continue;
+    }
+    for (let i = build.length - 1; i >= 0; i--) {
+      const work = workOf(build[i]!, z);
+      if (work > 1e-9) {
+        cap[z] = Math.round(share * work * 100) / 100;
+        break;
+      }
+    }
+  }
+  const lastLong = build[build.length - 1]?.days.find((d) => d.role === 'long')?.workout.km;
+  // Ne ispod najkraćeg laganog (easy.minKm): kraći dugi bi bio degenerisan (i lagan ≤ dugi ne bi stao).
+  if (deload && lastLong !== undefined)
+    cap.longKm = Math.max(
+      P.easy.minKm,
+      Math.floor(lastLong * P.quality.deloadLongShare * 10 + 1e-9) / 10
+    );
+  return Object.keys(cap).length > 0 ? { ...f, qcap: cap } : f;
 }
 
 function dateIn(f: WeekFrame, w: Weekday): string {
@@ -410,10 +528,23 @@ function generateRaw(raw: unknown): GenerateResult {
           .replace('{date}', old.date)
       );
   }
+  // 5k-v2.14.0 (P5 F1): plan sa rezultatom ≥ 10 nedelja — kontrolno trčanje pred oštrenje.
+  const rTest = a.feel ? undefined : frames.find((f) => f.test);
+  if (rTest)
+    notes.push(
+      P.feel.resultTestNote.replace('{week}', String(weekLabel(rTest.index, input.weekOffset)))
+    );
+  const lifted = beginnerAboveTable(input);
+  if (lifted !== null)
+    notes.push(
+      `Trenutni obim ${kmPlain(input.currentWeeklyKm)} km je veći od onoga što plan za početnika nosi (${kmPlain(lifted)} km uz ${a.days} dana), pa plan kreće od tvog stvarnog obima, kao za redovnog trkača (sa dva kvaliteta nedeljno kad dani to dopuštaju). Ako ti je napor prevelik, unesi manji trenutni obim.`
+    );
   if (a.beginner)
     notes.push(
-      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog, rasterećenje svake ${rules.deloadEvery}. nedelje.`
+      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog${deloadText(frames, input.weekOffset)}.`
     );
+
+  if (weeks.some(shortRestWeek)) notes.push(SHORT_REST_PLAN_NOTE);
 
   const plan: FiveKV2Plan = {
     policyId: P.id,

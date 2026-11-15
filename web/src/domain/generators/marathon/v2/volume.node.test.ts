@@ -7,10 +7,14 @@ import {
   recentLongNote,
   recentLongThreshold10
 } from './lengths.ts';
+import { pacesFromVdot } from './paces.ts';
 import { planRule } from './policy.ts';
 import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import { capacityMessage, fit10, growth10, nominal10, peakCap10 } from './volume.ts';
+
+/** P8-G1: priprema ≥ 16 nedelja (faktor 1,40), brz tempo (satni plafon ne veže), specifična faza (korak M6). */
+const G = { weeks: 16, p: pacesFromVdot(75, 75), rem: () => 0 };
 
 /* M6 obim (jedini vlasnik cilja; pouke 1 i 9), M5/M7 ciljevi rasterećenja i tapera. */
 
@@ -32,20 +36,31 @@ describe('M6 pravilo obima', () => {
     expect(growth10(900, rule)).toBe(50); // max 5,0
   });
 
-  it('granica izgradnje = min(start × 1,5; start + 30; 80 km)', () => {
-    expect(peakCap10(350, rule)).toBe(525);
-    expect(peakCap10(600, rule)).toBe(800);
-    expect(peakCap10(650, rule)).toBe(800);
+  it('granica izgradnje = min(start × 1,5; start + 30; 80 km; P8-G1: start × 1,40 za ≥ 16 nedelja)', () => {
+    expect(peakCap10(350, rule, G)).toBe(490);
+    expect(peakCap10(350, rule, { ...G, weeks: 12 })).toBe(455);
+    // Satni plafon: VDOT 35 → 9 h laganim tempom; start iznad plafona → vrh = start.
+    expect(peakCap10(1000, planRule(6)!, { ...G, p: pacesFromVdot(35, 35) })).toBe(1000);
+    expect(peakCap10(600, rule, G)).toBe(800);
+    expect(peakCap10(650, rule, G)).toBe(800);
   });
 
   it('cilj po pravilu: ned 1 start; izgradnja rast do granice; rasterećenje 0,8 ×; taper 0,8 / 0,6 × vrh', () => {
     const h = { lastBuild10: 500, peak10: 600 };
-    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null, rule)).toBe(450);
-    expect(nominal10(frame(), h, 450, 675, null, rule)).toBe(530);
-    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null, rule)).toBe(675);
-    expect(nominal10(frame({ deload: true }), h, 450, 675, null, rule)).toBe(400);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0, rule)).toBe(480);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1, rule)).toBe(360);
+    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null, rule, G)).toBe(450);
+    expect(nominal10(frame(), h, 450, 675, null, rule, G)).toBe(530);
+    // P8-G1b: korak manji od 3 % tekućeg cilja (1,5 km na 66 km) se ne primenjuje.
+    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null, rule, G)).toBe(
+      660
+    );
+    expect(nominal10(frame(), { lastBuild10: 640, peak10: 640 }, 450, 675, null, rule, G)).toBe(
+      675
+    );
+    // P8-G1: rast raspoređen na preostale ne-rasteretne nedelje do kraja razvoja (17,5 km / 7 = 2,5 km).
+    expect(nominal10(frame(), h, 450, 675, null, rule, { ...G, rem: () => 7 })).toBe(525);
+    expect(nominal10(frame({ deload: true }), h, 450, 675, null, rule, G)).toBe(400);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0, rule, G)).toBe(480);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1, rule, G)).toBe(360);
   });
 
   it('pouka 1: neizvodljiv cilj → najbliži izvodljiv (pri jednakoj udaljenosti niži); ned 1, rasterećenje i taper samo naniže', () => {
@@ -66,35 +81,47 @@ describe('M6 pravilo obima', () => {
 
   it('poruka kapaciteta imenuje ograničenje; preporuka više dana samo kad veći broj dana postoji u M15 (6 dana bez)', () => {
     expect(capacityMessage(4, rule, ['time'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 180 min; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['share'])).toBe(
       '4 dana ne nose ovaj obim uz dugi ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 180 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(3, planRule(3)!, ['share'])).toBe(
       '3 dana ne nose ovaj obim uz dugi ≤ 50 % nedelje; preporuka 4–6 dana.'
     );
     expect(capacityMessage(5, planRule(5)!, ['time'])).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 6 dana.'
+      '5 dana ne nose ovaj obim uz dugi ≤ 180 min; preporuka 6 dana.'
     );
     expect(capacityMessage(6, planRule(6)!, ['time'])).toBe(
-      '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
+      '6 dana ne nose ovaj obim uz dugi ≤ 180 min.'
+    );
+    // P2-S2: gornja granica dugog 32 km (lengths.longKmCap10).
+    expect(capacityMessage(6, planRule(6)!, ['time', 'km', 'share'])).toBe(
+      '6 dana ne nose ovaj obim uz dugi ≤ 180 min i ≤ 32,0 km i ≤ 32 % nedelje.'
+    );
+    // Početnik: 150 min (bez promene, P2-S2).
+    expect(capacityMessage(4, planRule(4, 'beginner')!, ['time'])).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5 dana.'
     );
   });
 });
 
 describe('M6 u planu (pouke 1 i 9)', () => {
-  it('pouka 9: spor trkač velikog obima — ned 1 ispod obima samo uz dugi ned 1 na 150 min', () => {
+  it('pouka 9: spor trkač velikog obima — ned 1 ispod obima samo uz dugi ned 1 na plafonu (180 min ili udeo M15)', () => {
     const r = generateMarathonV2(inputOf({ weeks: 16, km: 65, vdot: 30, days: SCHEDULES.A.days }));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const w1 = r.plan.weeks[0]!;
     expect(w1.targetKm).toBeLessThan(65);
     const long = w1.days.find((d) => d.role === 'long')!;
-    expect(Math.round(long.workout.km * 10)).toBe(longTimeCap10(r.plan.paces));
+    // MAR-11 (T1) i P2-S2: dugi ned 1 na plafonu trajanja (180 min) ili na udelu nedelje (lagani ≤ 0,8 × dugi).
+    expect([
+      longTimeCap10(r.plan.paces),
+      Math.floor(0.4 * Math.round(w1.targetKm * 10) + 1e-9)
+    ]).toContain(Math.round(long.workout.km * 10));
     expect(r.plan.warnings.map((w) => w.rule)).toContain('CAPACITY_LIMITED');
   });
 
@@ -103,15 +130,17 @@ describe('M6 u planu (pouke 1 i 9)', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const p = r.plan;
-    expect(p.peakCapKm).toBe(80);
+    // P8-G1a: satni plafon VDOT 35 (9 h laganim tempom) = 75,7 km (pre 80 km, max nedelje 4 dana).
+    expect(p.peakCapKm).toBe(75.7);
     const steady = p.weeks.filter(
       (w) => !w.deload && ['base', 'development', 'specific'].includes(w.phase)
     );
     for (let i = 1; i < steady.length; i++) {
       const last = Math.round(steady[i - 1]!.targetKm * 10);
-      expect(Math.round(steady[i]!.nominalKm * 10)).toBe(
-        Math.min(last + growth10(last, rule), 800)
-      );
+      // P8-G1: rast najviše korak M6, raspoređen do kraja razvoja; korak < 3 % se ne primenjuje.
+      const nominal = Math.round(steady[i]!.nominalKm * 10);
+      expect(nominal).toBeLessThanOrEqual(Math.min(last + growth10(last, rule), 757));
+      expect(nominal).toBeGreaterThanOrEqual(last);
     }
     expect(steady.some((w) => w.fitted === 'down')).toBe(true);
   });

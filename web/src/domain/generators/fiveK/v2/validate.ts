@@ -4,20 +4,27 @@
    2.8.0 (pouka 29): provere koje zavise od prošlosti (dugi prethodne nedelje za trkačku, lanac doze, kontrolno
    trčanje) čitaju upisani plan i u mešovitoj nedelji (bez preskakanja); pouka 30: trkačka ≤ taper. */
 
-import { weekLabel } from './input.ts';
+import { lowVolumeForPace, weekLabel } from './input.ts';
 import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
-  controlTest,
   deloadFirstOf,
+  expectedTestWeek,
+  isFirstIWeek,
   noRegularDeload,
   periodize,
   phaseCounts,
-  testWeekOf
+  testKindOf
 } from './periodize.ts';
-import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import {
+  isRunDaysCount,
+  MAX_DAYS,
+  FIVE_K_V2_POLICY as P,
+  rulesOf,
+  type Athlete
+} from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
-import { belowTargetShown } from './text.ts';
-import { easyCapKm, easyMinKm, weekLengths } from './lengths.ts';
+import { belowTargetAdvice, belowTargetShown } from './text.ts';
+import { easyCapKm, easyMinKm, easyShareOf, weekLengths } from './lengths.ts';
 import {
   easyMinOf,
   easyVsLongOff,
@@ -28,13 +35,24 @@ import {
   raceWeekEasyCap,
   SECOND_EASY_NOTE,
   secondQualityEasy,
-  sharpenerCandidates
+  sharpenerCandidates,
+  SHORT_REST_PLAN_NOTE,
+  shortRestWeek
 } from './week.ts';
-import { athleteAt, baseAthlete, doseResetDate, inRange, pacesAt, vdotAt } from './steps.ts';
+import {
+  athleteAt,
+  baseAthlete,
+  doseResetDate,
+  holdWeek,
+  inRange,
+  pacesAt,
+  vdotAt
+} from './steps.ts';
 import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
   PaceModel,
+  Paces,
   Phase,
   PlanDay,
   PlanWeek,
@@ -53,7 +71,21 @@ import {
   returnBaseKm,
   returnLevelAt
 } from './volume.ts';
-import { qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
+import { feelFirstLevelOf } from './feel.ts';
+import {
+  firstIBudget,
+  firstLevelBudget,
+  iMaxShareOf,
+  firstIPeakBudget,
+  iPeakBudget,
+  longStridesOf,
+  minuteCapKm,
+  qualityBudgets,
+  raceWarmup,
+  tFormOf,
+  tMaxSec,
+  warmupBand
+} from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
 /** 2.4.0: + treninzi po osećaju (feel.ts) i kontrolno trčanje (samo nedelja testa, v. TEST_WEEK). */
@@ -163,6 +195,9 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const fTol = P.volume.factorTolerance;
   const q = P.quality;
   const weeks = plan.weeks;
+  // 5k-v2.17.0 (K4-B): plan sa nedeljama malog obima nosi rečenicu u napomeni plana.
+  if (weeks.some(shortRestWeek) && !plan.notes.includes(SHORT_REST_PLAN_NOTE))
+    err('SHORT_REST', 'Plan ima nedelje malog obima bez napomene plana.');
   const runDays = new Set(plan.input.runDays);
   const nDays = plan.input.runDays.length;
   if (!isRunDaysCount(nDays)) {
@@ -284,6 +319,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           `Nedelja ima ${w.days.length} treninga umesto ${nDays - restN - easyRest}.`,
           w.index
         );
+      // 5k-v2.17.0 (K4-B): nedelja malog obima (napomena week.shortRestNote) — ista funkcija sa `drop` 1.
+      const short = shortRestWeek(w);
+      if (short && (easyRest === 0 || limited(w)))
+        err('SHORT_REST', 'Oznaka „odmor ili 20 min po želji" bez laganog dana manje.', w.index);
       if (easyRest > 0 && !limited(w)) {
         const nEasy = w.days.filter((d) => d.role === 'easy').length;
         const qKm = qualities.reduce((s, d) => s + d.workout.km, 0);
@@ -294,9 +333,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           w.phase,
           pw(w),
           aw(w),
-          easyVsLongOff(w, a.beginner)
+          easyVsLongOff(w, a.beginner),
+          Infinity,
+          w.index,
+          short ? 1 : 0
         );
-        if (L.shares.length !== nEasy)
+        if (L.shares.length !== nEasy || L.shortRest !== short)
           err('EASY_REST', `Lagan dan manje (${easyRest}) ne odgovara dužinama nedelje.`, w.index);
       }
       const longs = roles.filter((r) => r === 'long').length;
@@ -305,7 +347,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // 2.8.1 (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (oznaka week.SECOND_EASY_NOTE).
       const secondEasy = w.notes.some((n) => n.includes(SECOND_EASY_NOTE));
       const oneQuality =
-        w.deload || w.taperStep === 2 || rule.qualityDays === 1 || oneQ(w) || secondEasy;
+        w.deload ||
+        w.taperStep === 2 ||
+        rule.qualityDays === 1 ||
+        oneQ(w) ||
+        secondEasy ||
+        // 5k-v2.15.0 (P8 dopuna G7): nedelja testa — test je jedini kvalitet.
+        w.test;
       const expectedQ =
         w.stridesOnly || lim?.quality === 'none' ? 0 : oneQuality ? 1 : rule.qualityDays;
       // 5k-v2.12.0 (T1): nedelja sa laganim danom manje može izgubiti i dan samo sa ubrzanjima (week.buildTrainingWeek).
@@ -335,7 +383,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
             w.phase,
             pw(w),
             aw(w),
-            w.deload
+            w.deload,
+            w.index
           ) !== null
         )
           err(
@@ -463,6 +512,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       'PACE_MODE',
       'Način tempa ne odgovara ulazu (po osećaju ⇔ nema rezultata mlađeg od 12 nedelja ni novog rezultata).'
     );
+  // 5k-v2.13.0 (P4 S2, B2): VDOT u upotrebi uz 3 dana / 12 km ne sme da proizvede plan (ista funkcija kao ulaz).
+  if (
+    vNow !== null &&
+    lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, vNow)
+  )
+    err('VOLUME_LOW_FOR_PACE', `VDOT ${vNow}: ${P.input.lowVolumeForPace.message}.`);
   if (a.feel) {
     const e = plan.input.typicalEasyPaceSecPerKm ?? NaN;
     const s = P.feel.easySpreadSec;
@@ -498,14 +553,18 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   );
   const lockedTest = (w: PlanWeek): boolean =>
     w.days.some((d) => d.workout.qualityType === 'TEST_3K' && protectedDay(d));
-  const expectTest = controlTest(a) ? testWeekOf(weeks) : null;
-  // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening.
+  // 5k-v2.14.0 (P5 F1): vrsta testa plana (periodize.testKindOf) — po osećaju nedelja 3/4, sa rezultatom poslednja
+  // ne-rasteretna nedelja vrhunca.
+  const testKind = testKindOf(a, weeks.length);
+  const expectTest = expectedTestWeek(testKind, weeks);
+  // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening. 5k-v2.14.0: plan sa
+  // rezultatom — test u nedelji sa tempom (nov rezultat ga ukida od svoje nedelje, steps.framesFor).
   if (ad) {
     const flagged = weeks.filter((w) => w.test);
     if (
       flagged.length > 1 ||
       testWeeks.length > 1 ||
-      flagged.some((w) => !aw(w).feel) ||
+      flagged.some((w) => testKind !== 'result' && !aw(w).feel) ||
       weeks.some((w) => !lockedTest(w) && w.test !== testWeeks.includes(w))
     )
       err('TEST_WEEK', 'Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.');
@@ -516,9 +575,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   )
     err(
       'TEST_WEEK',
-      a.feel
+      testKind === 'feel'
         ? `Plan po osećaju: kontrolno trčanje tačno jednom, u nedelji ${expectTest === null ? '—' : weekLabel(expectTest, plan.input.weekOffset)} (3. ili 4., ne rasteretna).`
-        : 'Plan sa rezultatom nema kontrolno trčanje.'
+        : testKind === 'result'
+          ? `Plan sa rezultatom (≥ ${P.feel.resultTest.minWeeks} nedelja): kontrolno trčanje tačno jednom, u nedelji ${expectTest === null ? '—' : weekLabel(expectTest, plan.input.weekOffset)} (poslednja ne-rasteretna nedelja vrhunca).`
+          : `Plan nema kontrolno trčanje (početnik ili plan sa rezultatom kraći od ${P.feel.resultTest.minWeeks} nedelja).`
     );
 
   // --- Aritmetika komponenti.
@@ -615,17 +676,26 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       easy.every(
         (d) =>
           Math.abs(
-            d.workout.km - easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))
+            d.workout.km -
+              easyCapKm(
+                long.workout.km,
+                w.phase,
+                easyVsLongOff(w, a.beginner),
+                nDays,
+                aw(w).beginner,
+                w.index
+              )
           ) < tolKm
       ) &&
       w.plannedKm < w.targetKm;
     if (w.easyCappedAtLong && !cappedOk && !limited(w))
       err('EASY_CAP', 'Oznaka „lagan = dugi" ne odgovara danima nedelje.', w.index);
     if (cappedOk) {
-      if (belowTargetShown(w.plannedKm, w.targetKm))
+      // 5k-v2.17.0 (K4-B): u nedelji malog obima bez upozorenja po nedelji (rečenica u napomeni plana).
+      if (belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w))
         warn(
           'PLANNED_BELOW_TARGET',
-          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))} km uz dugi ${long.workout.km} km; za pun obim treba više dana trčanja).`,
+          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner), nDays, aw(w).beginner, w.index)} km uz dugi ${long.workout.km} km; ${belowTargetAdvice(nDays, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}).`,
           w.index
         );
     } else if (limited(w) && w.plannedKm <= w.targetKm + tolKm) {
@@ -773,7 +843,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           plan.input.startDate,
           weeks.length,
           rulesOf(a0).deloadEvery,
-          controlTest(a0),
+          testKindOf(a0, weeks.length),
           a0.beginner
         ),
         plan.input.currentWeeklyKm,
@@ -826,7 +896,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   // 2.6.0: povratak sme do nivoa pre smanjenja i kad je iznad vrha novog starta.
   for (const w of build) {
     if (!checked(w)) continue;
-    const peakCap = peakKm(startRef(w.index), capOf(w), aw(w));
+    const peakCap = peakKm(startRef(w.index), capOf(w), aw(w), {
+      weeks: weeks.length,
+      p: pacesAt(plan.input, steps, 1)
+    });
     const level = levelAt(w.index);
     if (w.targetKm > peakCap + 0.05 && !(level !== null && w.targetKm <= level + 0.05))
       err(
@@ -908,6 +981,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   }
 
   // --- Kvalitet: budžeti, udeli, dužine ponavljanja, donji prag u vrhuncu.
+  const VDOT_TYPES: ReadonlySet<string> = new Set([
+    'R',
+    'R_sharpen',
+    'T_short',
+    'T_cruise',
+    'I',
+    'RP',
+    'RP_sharpener'
+  ]);
   for (const w of weeks) {
     if (!checked(w)) continue;
     // 2.1.0: udeli se mere od ciljnog km (isti osnov kao budžeti); planirano < cilj samo kad je lagan = dugi.
@@ -929,11 +1011,43 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // Ubrzanja (stride) su R tempo, ali ih ne računamo u R udeo; trajanje im se ipak proverava.
       bout.R = Math.max(bout.R, b.R);
     }
-    if (sum.I > base * q.iMaxShare + EPS)
-      err('I_SHARE', `I/RP ${sum.I.toFixed(2)} km > ${q.iMaxShare * 100}% od ${base} km.`, w.index);
-    if (sum.T > base * q.tMaxShare + EPS)
+    // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × osnov, prvi nivo lestvice vrste treninga u toj zoni) — ista
+    // funkcija kao konstruktor (workouts.firstLevelBudget; po osećaju feel.feelFirstLevelOf).
+    const firstOf = (bucket: 'I' | 'T' | 'R'): number =>
+      Math.max(
+        0,
+        ...w.days
+          .filter((d) => d.countsToWeek && d.workout.kind === 'quality' && d.workout.qualityType)
+          .filter((d) => {
+            const k = d.workout.workKm;
+            return bucket === 'I' ? k.I + k.RP > 0 : k[bucket] > 0;
+          })
+          .map((d) => {
+            const t = d.workout.qualityType!;
+            const fl = VDOT_TYPES.has(t)
+              ? firstLevelBudget(t, pw(w) as Paces, w.phase)
+              : feelFirstLevelOf(t, bucket, w.phase, pw(w));
+            return Number.isFinite(fl) ? fl : 0;
+          })
+      );
+    // 5k-v2.16.0 (K3-A): u vrhuncu (sa rezultatom) plafon I je i budžet iz opsega po cilju nedelje (workouts.iPeakBudget).
+    const vdotWeek = !aw(w).feel && !a.beginner && pw(w).vdot !== null;
+    const capI = Math.max(
+      base * iMaxShareOf(base),
+      firstOf('I'),
+      vdotWeek && w.phase === 'peak' ? iPeakBudget(w.budgets.I, base, pw(w) as Paces) : 0
+    );
+    const capT = Math.max(base * q.tMaxShare, firstOf('T'));
+    const capR = Math.max(base * q.rMaxShare, firstOf('R'));
+    if (sum.I > capI + EPS)
+      err(
+        'I_SHARE',
+        `I/RP ${sum.I.toFixed(2)} km > ${Math.round(iMaxShareOf(base) * 100)}% od ${base} km.`,
+        w.index
+      );
+    if (sum.T > capT + EPS)
       err('T_SHARE', `T ${sum.T.toFixed(2)} km > ${q.tMaxShare * 100}% od ${base} km.`, w.index);
-    if (sum.R > base * q.rMaxShare + EPS)
+    if (sum.R > capR + EPS)
       err('R_SHARE', `R ${sum.R.toFixed(2)} km > ${q.rMaxShare * 100}% od ${base} km.`, w.index);
     if (bout.I > q.iRepMaxSec)
       err('I_REP', `I/RP ponavljanje ${bout.I} s > ${q.iRepMaxSec} s.`, w.index);
@@ -957,17 +1071,42 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         w.index
       );
     // 2.4.0: donji prag ne važi bez tempa (po osećaju) ni za početnika (nema I; RP kratko).
+    // 5k-v2.15.1 (P8 završetak, odluka 2): u vrhuncu prag važi samo za prvi I lanca — posle ranije nedelje vrhunca sa
+    // I radom doza raste najviše jedan korak lestvice (workouts.iStepUp), pa sme da ostane ispod praga budžeta.
     if (
       (w.phase === 'peak' || w.phase === 'sharpen') &&
       !w.deload &&
       !w.limits?.quality &&
       !w.test &&
+      !w.hold &&
       !aw(w).feel &&
+      !(
+        w.phase === 'peak' &&
+        weeks.some(
+          (x) =>
+            x.index < w.index &&
+            x.phase === 'peak' &&
+            !x.deload &&
+            x.days.some((d) => d.workout.workKm.I > 0)
+        )
+      ) &&
       !a.beginner
     ) {
       const zone = w.phase === 'peak' ? 'I' : 'RP';
       const work = mainWork(w);
-      const need = w.budgets.I * q.mainMinShareOfBudget;
+      // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
+      // 5k-v2.15.0 (P8 dopuna G4): i plafon minuta zone (workouts.minuteCapKm).
+      // 5k-v2.16.0 (K3-A): budžet I vrhunca i plafon minuta iz opsega po cilju nedelje (iPeakBudget, minuteCapKm).
+      const bI = zone === 'I' ? iPeakBudget(w.budgets.I, base, pw(w) as Paces) : w.budgets.I;
+      const need =
+        Math.min(
+          isFirstIWeek(w, weeks.slice(0, w.index - 1))
+            ? zone === 'I'
+              ? firstIPeakBudget(bI, base, pw(w) as Paces)
+              : firstIBudget(bI)
+            : bI,
+          minuteCapKm(zone, pw(w) as Paces, base)
+        ) * q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(
           w.phase === 'peak' ? 'PEAK_MAIN_FLOOR' : 'SHARPEN_MAIN_FLOOR',
@@ -1026,7 +1165,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           `Glavni ${b.phase === 'sharpen' ? 'RP' : 'I'} rad ${fmtDose(mainDose(b))} manji od prethodne nedelje (${fmtDose(mainDose(a))}).`,
           b.index
         );
-    if (qualityKey(a) === qualityKey(b))
+    // 5k-v2.14.0 (P5 F2, Odluka 10): nedelja zadržane doze sme da ponovi par (ponavlja poslednju dozu).
+    if (qualityKey(a) === qualityKey(b) && !b.hold)
       err(
         'QUALITY_REPEAT',
         `Isti par kvaliteta kao nedelja ${weekLabel(a.index, plan.input.weekOffset)}.`,
@@ -1061,12 +1201,54 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   for (let i = P.quality.baseSameDoseMaxWeeks; i < baseSteady.length; i++) {
     const ws = baseSteady.slice(i - P.quality.baseSameDoseMaxWeeks, i + 1);
     const run = ws.map(baseKey);
-    if (run.every((k) => k === run[0]) && ws.every((w) => seg(w) === seg(ws[0]!)))
+    if (
+      run.every((k) => k === run[0]) &&
+      ws.every((w) => seg(w) === seg(ws[0]!)) &&
+      !ws.some((w) => w.hold)
+    )
       err(
         'BASE_PLATEAU',
         `${run.length} uzastopne ne-rasteretne nedelje baze iste doze (${run[0]}).`,
         baseSteady[i]!.index
       );
+  }
+
+  // 5k-v2.14.0 (P5 F2, Odluka 10): oznaka zadržane doze ⇔ steps.holdWeek (isto pravilo kao konstruktor); u toj nedelji
+  // rad nijedne zone (I uključujući RP, T, R) nije veći od poslednje ne-rasteretne nedelje izgradnje iste faze i
+  // segmenta doze sa tom zonom, i nedelja testa (DOSE_HOLD).
+  for (const w of weeks)
+    if (checked(w) && !!w.hold !== holdWeek(w, steps))
+      err('DOSE_HOLD', 'Oznaka zadržane doze ne odgovara koraku adaptacije.', w.index);
+  for (const b of steady.filter((w) => w.hold)) {
+    const zw = (w: PlanWeek, z: 'I' | 'T' | 'R'): number =>
+      w.days
+        .filter((d) => d.countsToWeek && d.workout.kind === 'quality')
+        .reduce(
+          (x, d) =>
+            x + (z === 'I' ? d.workout.workKm.I + d.workout.workKm.RP : d.workout.workKm[z]),
+          0
+        );
+    // Referenca: i nedelja kontrolnog trčanja (drugi kvalitet u njoj nastavlja progresiju; test nije rad zone).
+    const ref = weeks.filter(
+      (w) =>
+        isBuild(w) &&
+        !w.deload &&
+        !w.stridesOnly &&
+        !w.limits?.quality &&
+        segOf(w) !== null &&
+        w.index < b.index &&
+        w.phase === b.phase &&
+        seg(w) === seg(b)
+    );
+    for (const z of ['I', 'T', 'R'] as const) {
+      const a = [...ref].reverse().find((w) => zw(w, z) > EPS);
+      if (a && zw(b, z) > zw(a, z) + EPS)
+        err(
+          'DOSE_HOLD',
+          `Nedelja zadržane doze: ${z} ${zw(b, z).toFixed(2)} km > ${zw(a, z).toFixed(2)} km (nedelja ${weekLabel(a.index, plan.input.weekOffset)}).`,
+          b.index
+        );
+    }
   }
 
   // --- Dugi, lagani, zagrevanje/hlađenje.
@@ -1093,7 +1275,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           w.index,
           long.date
         );
-      if (lw.segments.some((s) => s.zone !== 'E' || s.kind !== 'long'))
+      // 5k-v2.16.0 (K3-C): dugi sme da ima samo ubrzanja zadata istom funkcijom kao konstruktor (workouts.longStridesOf).
+      const ls = longStridesOf(w, { days: nDays, beginner: aw(w).beginner });
+      const extra = lw.segments.filter((s) => s.zone !== 'E' || s.kind !== 'long');
+      const stridesOk =
+        ls !== null &&
+        extra.every((s) => s.kind === 'stride' || s.kind === 'recovery') &&
+        extra.filter((s) => s.kind === 'stride').length === ls.reps &&
+        extra.every((s) => s.kind !== 'stride' || s.sec === ls.sec);
+      if (extra.length > 0 && !stridesOk)
         err(
           'LONG_NOT_EASY',
           'Dugo trčanje sme biti samo lagano, bez brzog završetka.',
@@ -1113,11 +1303,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         else if (
           d.role === 'easy' &&
           !easyVsLongOff(w, a.beginner) &&
-          d.workout.km > easyCapKm(lw.km, w.phase, false) + EPS
+          d.workout.km > easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner, w.index) + EPS
         )
           err(
             'EASY_VS_LONG',
-            `Lagan ${d.workout.km} km > ${easyCapKm(lw.km, w.phase, false)} km (${P.easy.buildMaxShareOfLong * 100} % dugog ${lw.km} km).`,
+            `Lagan ${d.workout.km} km > ${easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner, w.index)} km (${Math.round(easyShareOf(nDays, aw(w).beginner, w.index) * 100)} % dugog ${lw.km} km).`,
             w.index,
             d.date
           );
@@ -1133,7 +1323,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // 5k-v2.12.0 (T2): nedelja sa WU/CD na minimumu (week.qualityWarmupMin) — najniži pojas.
       const band =
         d.workout.kind === 'race'
-          ? P.warmup.race
+          ? raceWarmup(
+              peakRefAt(raceWeek.index),
+              Math.max(
+                0,
+                ...weeks
+                  .filter((x) => x.phase !== 'race')
+                  .flatMap((x) => x.days.map((y) => y.workout.km))
+              )
+            )
           : w.wuMin && isBuild(w)
             ? P.warmup.bands[0]
             : warmupBand(bandKm);

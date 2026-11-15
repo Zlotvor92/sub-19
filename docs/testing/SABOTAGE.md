@@ -70,8 +70,7 @@ JSON niz. Putanje su relativne na `web/`.
   primenjuje uopšte (GREŠKA), alat ide dalje, izlaz je ≠ 0.
 - Poklapanje je bajt-tačno (razmaci, `\n`); fajl mora biti ispravan UTF-8. Izmena koja ne menja fajl je greška.
 - `tests`: postojeći fajlovi; `*.full.node.test.ts` samo uz `--full` (u brzom nivou nisu u projektu `node`). Alat
-  postavlja `TEST_V1=1`, pa i testovi projekta `v1` (poređenje v1 sa referencama, u brzom nivou inače isključen) mogu
-  da budu cilj sabotaže.
+  ranije je postavljao `TEST_V1=1` za projekat `v1`; V1b je projekat ukinuo (lični plan je u projektu `node`).
 - Dodatni ključevi (npr. `"opis"`) se ignorišu; imena moraju biti jedinstvena.
 - Novu sabotažu prvo proveri sa `--dry-run --only <ime>`.
 

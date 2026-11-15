@@ -1,0 +1,182 @@
+PLAN — 10 km
+Profil: po osećaju, lagan tempo 6:00/km, 4 dana, sredina obima, srednja priprema
+
+Početak: 2026-11-02 (12 nedelja), trka: 2027-01-24.
+Dani trčanja: uto, čet, sub, ned; dugi trk: ned.
+Trenutni obim: 40 km nedeljno.
+Bez rezultata trke; lagan tempo 6:00/km.
+Ciljno vreme: nije zadato.
+
+============================================================
+
+TEMPO ZONE (min/km)
+  lagano 5:45–6:15 · T (prag) 5:00 · I (interval) 4:36 · R (repeticije) 4:20 · tempo trke 4:54
+  VDOT 41
+
+OCENA CILJA
+  Cilj nije zadat ili nije ocenjen.
+  Prognoza: nema pouzdanog rezultata.
+  Napomena plana: Plan po osećaju: bez rezultata trke. E = lagan tempo 6:00/km ± 15 s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT 41,0 — trening vodi RPE.
+  Napomena plana: Test 5 km: nedelja 4, 2026-11-26. Ocena cilja i prognoza 10K: posle testa.
+  Napomena plana: 4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana. Vrh 52,0 km umesto do 55,0 km.
+
+------------------------------------------------------------
+NEDELJA 1 — faza: osnova
+  02.11.–08.11. · cilj 39,1 km · planirano 39,1 km
+  Utorak     03.11.  WU 20 min + R 6 × 200 m (oporavak 200 m džog) + CD 15 min
+      8,0 km · 46 min · radnih 5 min
+  Četvrtak   05.11.  WU 20 min + T 2,0 km kontinuirano + CD 15 min
+      7,8 km · 45 min · radnih 10 min
+  Subota     07.11.  Lagano 10,3 km
+      10,3 km · 1 h 02 min
+  Nedelja    08.11.  Dugi 12,9 km lagano
+      12,9 km · 1 h 17 min
+  Napomena: Nedelja ne može da se sastavi na 40,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 39,1 km.
+
+------------------------------------------------------------
+NEDELJA 2 — faza: osnova
+  09.11.–15.11. · cilj 41,4 km · planirano 41,4 km
+  Utorak     10.11.  WU 20 min + R 8 × 200 m (oporavak 200 m džog) + CD 15 min
+      8,8 km · 50 min · radnih 7 min
+  Četvrtak   12.11.  WU 20 min + T 2,5 km kontinuirano + CD 15 min
+      8,3 km · 48 min · radnih 13 min
+  Subota     14.11.  Lagano 10,6 km
+      10,6 km · 1 h 04 min
+  Nedelja    15.11.  Dugi 13,6 km lagano
+      13,6 km · 1 h 22 min
+
+------------------------------------------------------------
+NEDELJA 3 — faza: osnova
+  16.11.–22.11. · cilj 43,9 km · planirano 43,9 km
+  Utorak     17.11.  WU 20 min + R 6 × 300 m (oporavak 300 m džog) + CD 15 min
+      9,1 km · 52 min · radnih 8 min
+  Četvrtak   19.11.  WU 20 min + T 3,0 km kontinuirano + CD 15 min
+      8,8 km · 50 min · radnih 15 min
+  Subota     21.11.  Lagano 11,5 km
+      11,5 km · 1 h 09 min
+  Nedelja    22.11.  Dugi 14,4 km lagano
+      14,4 km · 1 h 26 min
+
+------------------------------------------------------------
+NEDELJA 4 — faza: osnova — RASTEREĆENJE — kontrolno trčanje
+  23.11.–29.11. · cilj 35,1 km · planirano 35,1 km
+  Utorak     24.11.  Lagano 6,4 km
+      6,4 km · 38 min
+  Četvrtak   26.11.  WU 20 min + test 5 km kontrolisano maksimalno + CD 15 min
+      10,8 km · 59 min · radnih 24 min
+  Subota     28.11.  Lagano 6,4 km
+      6,4 km · 38 min
+  Nedelja    29.11.  Dugi 11,5 km lagano
+      11,5 km · 1 h 09 min
+  Napomena: Rasterećenje: cilj 35,1 km, test 5 km umesto kvaliteta rasterećenja, dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+  Napomena: Test 5 km: kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat se koristi za prilagođavanje plana, do tada tempo ostaje procena.
+
+------------------------------------------------------------
+NEDELJA 5 — faza: razvoj
+  30.11.–06.12. · cilj 43,4 km · planirano 43,4 km
+  Utorak     01.12.  WU 20 min + I 2 × 1000 m (oporavak 4:00 džog) + CD 15 min
+      8,5 km · 48 min · radnih 9 min
+  Četvrtak   03.12.  WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      9,2 km · 52 min · radnih 15 min
+  Subota     05.12.  Lagano 11,4 km
+      11,4 km · 1 h 08 min
+  Nedelja    06.12.  Dugi 14,3 km lagano
+      14,3 km · 1 h 26 min
+  Napomena: Nedelja ne može da se sastavi na 46,5 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 43,4 km.
+
+------------------------------------------------------------
+NEDELJA 6 — faza: razvoj
+  07.12.–13.12. · cilj 46,0 km · planirano 46,0 km
+  Utorak     08.12.  WU 20 min + I 3 × 800 m (oporavak 3:30 džog) + CD 15 min
+      9,4 km · 53 min · radnih 11 min
+  Četvrtak   10.12.  WU 20 min + T 3 × 1200 m (oporavak 1:00 džog) + CD 15 min
+      9,8 km · 55 min · radnih 18 min
+  Subota     12.12.  Lagano 11,7 km
+      11,7 km · 1 h 10 min
+  Nedelja    13.12.  Dugi 15,1 km lagano
+      15,1 km · 1 h 31 min
+
+------------------------------------------------------------
+NEDELJA 7 — faza: razvoj
+  14.12.–20.12. · cilj 48,8 km · planirano 48,8 km
+  Utorak     15.12.  WU 20 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 15 min
+      10,2 km · 57 min · radnih 14 min
+  Četvrtak   17.12.  WU 20 min + T 4 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      10,3 km · 58 min · radnih 20 min
+  Subota     19.12.  Lagano 12,2 km
+      12,2 km · 1 h 13 min
+  Nedelja    20.12.  Dugi 16,1 km lagano
+      16,1 km · 1 h 37 min
+
+------------------------------------------------------------
+NEDELJA 8 — faza: specifična
+  21.12.–27.12. · cilj 49,4 km · planirano 49,4 km
+  Utorak     22.12.  WU 20 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      9,2 km · 52 min · radnih 15 min
+  Četvrtak   24.12.  WU 20 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 15 min
+      11,0 km · 1 h 01 min · radnih 24 min
+  Subota     26.12.  Lagano 13,0 km
+      13,0 km · 1 h 18 min
+  Nedelja    27.12.  Dugi 16,3 km lagano
+      16,3 km · 1 h 38 min
+  Napomena: Nedelja ne može da se sastavi na 51,7 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 49,4 km.
+
+------------------------------------------------------------
+NEDELJA 9 — faza: specifična — RASTEREĆENJE
+  28.12.–03.01. · cilj 39,5 km · planirano 39,5 km
+  Utorak     29.12.  Lagano 9,1 km
+      9,1 km · 55 min
+  Četvrtak   31.12.  WU 20 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 15 min
+      8,4 km · 48 min · radnih 12 min
+  Subota     02.01.  Lagano 9,0 km
+      9,0 km · 54 min
+  Nedelja    03.01.  Dugi 13,0 km lagano
+      13,0 km · 1 h 18 min
+  Napomena: Rasterećenje: cilj 39,5 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+
+------------------------------------------------------------
+NEDELJA 10 — faza: specifična
+  04.01.–10.01. · cilj 52,0 km · planirano 52,1 km
+  Utorak     05.01.  WU 20 min + RP 4 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      10,3 km · 58 min · radnih 20 min
+  Četvrtak   07.01.  WU 20 min + T 5 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      11,5 km · 1 h 04 min · radnih 25 min
+  Subota     09.01.  Lagano 13,4 km
+      13,4 km · 1 h 20 min
+  Nedelja    10.01.  Dugi 16,8 km lagano
+      16,8 km · 1 h 41 min
+  Napomena: Nedelja ne može da se sastavi na 52,4 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 52,0 km.
+
+------------------------------------------------------------
+NEDELJA 11 — faza: taper
+  11.01.–17.01. · cilj 39,0 km · planirano 39,0 km
+  Utorak     12.01.  WU 20 min + RP 2 × 1200 m (oporavak 1:00 džog) + CD 15 min
+      8,4 km · 48 min · radnih 12 min
+  Četvrtak   14.01.  WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      9,2 km · 52 min · radnih 15 min
+  Subota     16.01.  Lagano 8,8 km
+      8,8 km · 53 min
+  Nedelja    17.01.  Dugi 12,6 km lagano
+      12,6 km · 1 h 16 min
+  Napomena: Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži.
+
+------------------------------------------------------------
+NEDELJA 12 — faza: trka
+  18.01.–24.01. · cilj 16,1 km · planirano 16,1 km
+  Utorak     19.01.  Lagano 35 min
+      5,8 km · 35 min
+  Četvrtak   21.01.  WU 15 min + RP 2 × 1000 m (oporavak 1:30 džog) + CD 10 min
+      6,4 km · 36 min · radnih 10 min
+  Subota     23.01.  Lagano 20 min + 4 × 20 s ubrzanja
+      3,9 km · 23 min
+  Nedelja    24.01.  Trka 10 km (WU 15 min + CD 10 min)
+      14,2 km · 1 h 14 min · ne ulazi u obim nedelje
+  Napomena: Trkačka nedelja: oštrenje 2 × 1000 m RP (≤ RP doza tapera 2,4 km), trka 10 km se ne računa u obim.
+
+============================================================
+UPOZORENJA PLANA
+  - nedelja 1: Nedelja spuštena na 39,1 km, koliko nedelja može da se sastavi (redovan rast 40 km).
+  - nedelja 5: Nedelja spuštena na 43,4 km, koliko nedelja može da se sastavi (redovan rast 46,5 km).
+  - nedelja 8: Nedelja spuštena na 49,4 km, koliko nedelja može da se sastavi (redovan rast 51,7 km).
+  - nedelja 10: Nedelja spuštena na 52 km, koliko nedelja može da se sastavi (redovan rast 52,4 km).
+  - 4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.

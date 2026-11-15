@@ -1,0 +1,15 @@
+tokova 104800, odbijeno 0, 213 s
+under50: 59/4192 tokova, 111 ned {"base":22,"sharpen":45,"taper":34,"peak":10}
+pause10: 90/4192 tokova, 179 ned {"base":53,"sharpen":53,"taper":47,"peak":26}
+pause20: 77/4192 tokova, 146 ned {"sharpen":66,"taper":54,"base":15,"peak":11}
+pause35: 189/4192 tokova, 334 ned {"peak":33,"taper":148,"sharpen":133,"base":20}
+pain5: 111/4192 tokova, 227 ned {"base":84,"peak":36,"sharpen":58,"taper":49}
+pain8: 117/4192 tokova, 196 ned {"peak":28,"sharpen":50,"taper":49,"base":69}
+slower: 10/4192 tokova, 14 ned {"peak":14}
+chain: 90/4192 tokova, 179 ned {"base":53,"sharpen":53,"taper":47,"peak":26}
+chain/2: 152/4192 tokova, 354 ned {"peak":89,"taper":66,"base":105,"sharpen":94}
+painPause: 131/4192 tokova, 217 ned {"peak":39,"sharpen":79,"taper":53,"base":46}
+
+real	3m32.798s
+user	3m56.252s
+sys	0m3.750s

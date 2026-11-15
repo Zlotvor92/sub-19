@@ -407,6 +407,35 @@ export function longWorkout(km: number, p: Paces): Workout {
   );
 }
 
+/** P1-S1: dugi sa završnim blokom u RP — `km` ukupno (dužina dugog iz lengths.ts), poslednjih `blockKm` kontinuirano u
+    trkačkom tempu (RP), ostatak lagano; `feel` → RPE zone RP (H16). Jedino mesto sastava dugog sa blokom. */
+export function longBlockWorkout(km: number, blockKm: number, p: Paces, feel = false): Workout {
+  const eKm = Math.round((km - blockKm) * 10) / 10;
+  const w = assemble(
+    'long',
+    null,
+    `Dugi ${fmtKm(km)} km: ${fmtKm(eKm)} km lagano + ${fmtKm(blockKm)} km u trkačkom tempu`,
+    [
+      { kind: 'long', km: eKm },
+      { kind: 'continuous', zone: 'RP', km: blockKm }
+    ],
+    [
+      distEasy('long', eKm, p),
+      seg('continuous', 'RP', blockKm, Math.round(blockKm * p.RP), p.RP, 'exact', 'estimated')
+    ],
+    null
+  );
+  return feel ? { ...w, rpe: rpeOf('RP') } : w;
+}
+
+/** P1-S1: km bloka u RP na kraju dugog (0 = lagan dugi). Jedna funkcija za konstruktor, validator, adaptaciju (A5). */
+export const longBlockKm = (w: Pick<Workout, 'kind' | 'workKm'>): number =>
+  w.kind === 'long' ? w.workKm.RP : 0;
+
+/** P1-S1: trajanje dugog sa blokom za granicu dugog — lagan deo sporim E + blok RP [s]. */
+export const longBlockSec = (km: number, blockKm: number, p: Paces): number =>
+  Math.round((km - blockKm) * p.E.slow + blockKm * p.RP);
+
 /** H8: lagan trening zadat vremenom (35 min E). */
 export function easyTimeWorkout(sec: number, p: Paces): Workout {
   return assemble(
@@ -453,15 +482,54 @@ export function eveWorkout(p: Paces, strides = true): Workout {
   );
 }
 
-/** H8: oštrenje trkačke nedelje — WU + 2 × 2000 m RP (2:00) + CD (WU/CD po H14). */
+/** P5-F3: lagan dan `km` (dužina iz lengths.ts, ne menja se) sa `reps` × 20 s ubrzanja na kraju — ista struktura kao
+    dan pred trku (R tempo, oporavak isti metraž džogom, H14); lagan deo = km − ubrzanja − oporavci. */
+export function easyStridesWorkout(km: number, reps: number, p: Paces): Workout {
+  const sec = P.strides.sec;
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail: Segment[] = [];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) tail.push(recoverySegment(rec, p));
+    tail.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  const eKm = (km100(km) - tail.reduce((a, x) => a + km100(x.km), 0)) / 100;
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km, na kraju ${reps} × ${sec} s ubrzanja`,
+    [
+      { kind: 'easy', km: eKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    [distEasy('easy', eKm, p), ...tail],
+    null
+  );
+}
+
+/** P5-F3: broj ubrzanja lagani dan (0 = bez). */
+export const stridesOf = (w: Pick<Workout, 'kind' | 'segments'>): number =>
+  w.kind === 'easy' ? w.segments.filter((s) => s.kind === 'stride').length : 0;
+
+/** G5 (P8): deonica oštrenja [m] — najduža deljiva sa 100 m, ≤ 2000 m, za koju dve deonice u trkačkom tempu nedelje
+    traju ≤ 12 min; null kad ni 2 × 400 m ne staje (bez oštrenja). Jedna funkcija za konstruktor i validator. */
+export function sharpenerRepM(p: Paces): number | null {
+  const s = P.raceWeek.sharpener;
+  const byTime = Math.floor(((s.maxWorkSec / s.reps / p.RP) * 1000 + 1e-6) / s.roundM) * s.roundM;
+  const repM = Math.min(s.repM, byTime);
+  return repM >= s.minRepM ? repM : null;
+}
+
+/** H8/G5: oštrenje trkačke nedelje — WU + 2 × deonica RP (2:00) + CD (WU/CD po H14); deonica sharpenerRepM. */
 export function sharpenerWorkout(p: Paces, wc: WarmupCooldown, feel = false): Workout {
   const s = P.raceWeek.sharpener;
+  const repM = sharpenerRepM(p) ?? s.minRepM;
   return qualityWorkout(
     {
       ladder: 'RP_sharpener',
       zone: 'RP',
-      doseM: s.reps * s.repM,
-      structure: { form: 'reps', reps: s.reps, repM: s.repM },
+      doseM: s.reps * repM,
+      structure: { form: 'reps', reps: s.reps, repM },
       step: 'sharpener'
     },
     p,

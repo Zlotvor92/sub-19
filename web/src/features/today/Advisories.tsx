@@ -2,6 +2,7 @@ import { parseIsoDate, addDays } from '../../domain/date';
 import { backupDue } from '../../domain/settings';
 import { foreignPlanWithEntries } from '../../domain/personal';
 import { getApp } from '../../app/appContext';
+import { isLegacyPlan } from '../../domain/generators/select';
 import { Notice } from '../../components/ui/primitives';
 import { downloadText } from '../../lib/download';
 import { useSettingsStore, useTrainingStore } from '../../stores';
@@ -12,6 +13,7 @@ import { useHmV2Needed } from '../../stores/hmV2Actions';
 import { useMarathonV2Needed } from '../../stores/marathonV2Actions';
 import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
+import { LegacyPlanNotice } from '../plan/LegacyPlanNotice';
 import { useAdjustments } from '../plan/useAdjustments';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 
@@ -32,6 +34,7 @@ export function Advisories({ today }: { today: string }) {
   const patchUi = useSettingsStore((s) => s.patchUi);
   const signedIn = useAuthStore((s) => s.hasSession);
   const hasGenPlan = useTrainingStore((s) => !!s.genPlan);
+  const legacy = useTrainingStore((s) => isLegacyPlan(s.genPlan));
   const log = useTrainingStore((s) => s.log);
   const owner = useIsOwner();
   const openScreen = useUIStore((s) => s.openScreen);
@@ -55,6 +58,9 @@ export function Advisories({ today }: { today: string }) {
   const tone = rec?.ready.tone;
   const worrying = !injury && (tone === 'amber' || tone === 'red');
   const items: React.ReactNode[] = [];
+
+  // V1b: plan starog generatora — poruka i „Generiši nov plan".
+  if (legacy) items.push(<LegacyPlanNotice key="legacy" id="legacy-plan-today" />);
 
   if (foreign)
     items.push(

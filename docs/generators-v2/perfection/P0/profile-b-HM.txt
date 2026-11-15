@@ -1,0 +1,3 @@
+profil (b) HM
+ulaz: {"startDate":"2026-10-19","raceDate":"2026-12-13","runDays":["tue","thu","sat","sun"],"currentWeeklyKm":30,"recentResult":{"distanceM":5000,"timeSec":1225,"date":"2026-10-12"},"goalTimeSec":null,"longRunDay":"sun"}
+ODBIJENO: PLAN_TOO_SHORT: Plan od 8 nedelja je prekratak: polumaraton traži najmanje 10 nedelja; preporuka: 10K plan.

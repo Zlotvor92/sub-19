@@ -1,0 +1,399 @@
+{
+ "krug": "V4-HM-05",
+ "sudija": "drugi, nezavisan",
+ "procitano_van_obaveznog": "zaglavlja parova 'MORA DA SE RAZLIKUJE'/'BROJEVI' (deo dozvoljenih fajlova) pre zapisivanja očekivanja",
+ "planovi": {
+  "p01": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 78,
+   "dao_bih": "da, uz sitne izmene teksta",
+   "zamerke": [
+    "N8: test 10 km punim naporom (sub) + dugi 12 km (ned), a zbir kaže 'brz rad 0 %'",
+    "prag 4:42/km brži od praga za 46:00/10 km (≈4:48–4:52); 24 min u komadu u N11",
+    "dan trke 'današnja forma 1:41:59' vs zaglavlje 1:41:58"
+   ]
+  },
+  "p02": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 7,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 77,
+   "dao_bih": "da, uz izmenu sužavanja",
+   "zamerke": [
+    "N12 36,5 km < N13 37,1 km — sužavanje ne opada",
+    "N6 test 10 km a 'brz rad 0 %'",
+    "dugi 14,5 km 7 dana pred trku, gornja granica"
+   ]
+  },
+  "p03": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 6,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 6,
+    "Q7": 6
+   },
+   "ukupno": 68,
+   "dao_bih": "da uz izmenu (kraći dugi)",
+   "zamerke": [
+    "N11 dugi 2 h 15 min = 18,2/38,8 km = 47 % nedelje, duži od trke",
+    "N13 3×10 prag + dugi sa 35 min RP = 25 % brzog na 3 dana",
+    "upozorenje '+20 min → 39,8 km' ne može da se izvede (38,8+2,7=41,5)"
+   ]
+  },
+  "p04": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 8,
+    "Q3": 7,
+    "Q4": 5,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 6
+   },
+   "ukupno": 70,
+   "dao_bih": "da uz izmenu (sredina plana stoji)",
+   "zamerke": [
+    "N15 i N17 identične (65 km, isti treninzi) — vršna nije vršna",
+    "prag zaglavljen na 36 min od N7 do N17",
+    "dugi 2 h 10–11 min osam puta; rečenica 'u 8 nedelja staje' nejasna"
+   ]
+  },
+  "p05": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 8,
+    "Q5": 6,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 76,
+   "dao_bih": "da uz izmenu (start trke, gel)",
+   "zamerke": [
+    "start 3:47–3:52 = 5–10 s/km sporije, 25–50 s gubitka za 1:18",
+    "dan trke bez napomene o gelu, a dugi kažu 'isto pravilo kao na trci'",
+    "prag 3:40 sporiji od Danielsovog T za VDOT 60 (≈3:35) [srednja]"
+   ]
+  },
+  "p06": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 6,
+    "Q5": 6,
+    "Q6": 5,
+    "Q7": 6
+   },
+   "ukupno": 63,
+   "dao_bih": "ne u ovom obliku",
+   "zamerke": [
+    "traženo 5 dana, 4 dana u svih 10 nedelja; upozorenje kaže 'u nekim nedeljama (1–9)' i obećava dodavanje dana koje se ne desi",
+    "upozorenje 44,5 km / 22 % / 25 % / 'do 60 km' nerazumljivo i neizvodljivo za 10 nedelja",
+    "samo jedan intervalni trening (3×3 min) u celom planu"
+   ]
+  },
+  "p07": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 6,
+    "Q3": 8,
+    "Q4": 7,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 71,
+   "dao_bih": "da uz izmenu (sporiji rast)",
+   "zamerke": [
+    "obim 55 → 67,8 → 71 km u N3–N4 (+29 % za 3 nedelje)",
+    "N4: 3×3 km RP + 2×18 prag + dugi — tri teška dana u nedelji rasta",
+    "dugi 21,5 km sa 10 km RP 3 nedelje pred trku posle brzog rasta"
+   ]
+  },
+  "p08": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 4,
+    "Q5": 8,
+    "Q6": 6,
+    "Q7": 7
+   },
+   "ukupno": 65,
+   "dao_bih": "da uz izmenu (plan ne raste)",
+   "zamerke": [
+    "20 nedelja, obim 41–47 km; vršna N17 44,3 km < polaznih 45",
+    "utorak 13 od 20 nedelja isto 'lagano 13–14,5 km + ubrzanja'",
+    "'vršna' nedelja ima prag 13 min"
+   ]
+  },
+  "p09": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 6,
+    "Q6": 6,
+    "Q7": 7
+   },
+   "ukupno": 69,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dan trke 'po osećaju' iako su u planu dva testa (N4, N8)",
+    "'tempo trke = napor 6/10' preslabo za polumaraton",
+    "N11 tri teška dana (3×3 km RP, 3×9 prag, dugi 22 km)"
+   ]
+  },
+  "p10": {
+   "ocene": {
+    "Q1": 6,
+    "Q2": 7,
+    "Q3": 6,
+    "Q4": 6,
+    "Q5": 5,
+    "Q6": 5,
+    "Q7": 6
+   },
+   "ukupno": 60,
+   "dao_bih": "ne u ovom obliku",
+   "zamerke": [
+    "trka opisana kao 'napor sat i po do dva' za trkača od ≈2:10",
+    "isto upozorenje (4. dan 70 min) dvaput; p03 sličnog profila dobija 20 min",
+    "rast 25 → 37 km za 17 nedelja sporiji od potrebnog, pa 'planiraj 22 nedelje' nije opravdano"
+   ]
+  },
+  "p11": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 7,
+    "Q4": 7,
+    "Q5": 8,
+    "Q6": 6,
+    "Q7": 6
+   },
+   "ukupno": 73,
+   "dao_bih": "da",
+   "zamerke": [
+    "faza unazad: N12 'specifična', N13–14 'razvoj'",
+    "prognoza 7:02 brže optimistična za početnika",
+    "N17 'vršna' ima kraći dugi (1 h 42) od N14 (1 h 55)"
+   ]
+  },
+  "p12": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 7,
+    "Q3": 7,
+    "Q4": 7,
+    "Q5": 6,
+    "Q6": 5,
+    "Q7": 6
+   },
+   "ukupno": 66,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "N14 (17 dana pred trku) 2×21 min RP za početnika — najteži RP plana u sužavanju",
+    "faza unazad (N8 specifična → N9 razvoj)",
+    "opis trke 'sat i po do dva' za očekivanih 2:01; dugi 2 h 10 duži od trke"
+   ]
+  }
+ },
+ "prosek_planova": 69.7,
+ "broj_planova": {
+  "ge80": 0,
+  "ge70": 6,
+  "lt65": 2
+ },
+ "vlasnik": {
+  "vlasnik-v1": {
+   "ocene": {
+    "Q1": 7,
+    "Q2": 8,
+    "Q3": 6,
+    "Q4": 7,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 71,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "RP svakog utorka N3–N10, monotono",
+    "dugi staje na 15 km iako je 16 km moguće u N5/N7; upozorenje '11 nedelja' nije nužno",
+    "1:40:59 na danu trke vs 1:41:00 u zaglavlju"
+   ]
+  },
+  "vlasnik-v2": {
+   "ocene": {
+    "Q1": 8,
+    "Q2": 8,
+    "Q3": 7,
+    "Q4": 8,
+    "Q5": 8,
+    "Q6": 7,
+    "Q7": 7
+   },
+   "ukupno": 76,
+   "dao_bih": "da",
+   "zamerke": [
+    "N1 nazvana 'gradnja' iako je oporavak",
+    "N17 32,8 km > N16 31,6 km",
+    "prag 3×6 u 'vršnoj' slabiji od N9 (21 min u komadu)"
+   ]
+  }
+ },
+ "scenariji": {
+  "s01": {
+   "ocena": 9,
+   "komentar": "tempa −5 s/km, 70 % razlike, struktura netaknuta, objašnjeno"
+  },
+  "s02": {
+   "ocena": 6,
+   "komentar": "'prvi rezultat' uprkos odrađenom testu; prag zakazan na dan trke; nema oporavka posle neplanirane trke"
+  },
+  "s03": {
+   "ocena": 7,
+   "komentar": "tempa dobra; 3 km test ostaje zakazan na dan trke 5 km"
+  },
+  "s04": {
+   "ocena": 8,
+   "komentar": "usporena tempa, skinuto upozorenje, 3 dana bez brzog; ignorisan odrađen 3 km test"
+  },
+  "s05": {
+   "ocena": 8,
+   "komentar": "postepen povratak, test pomeren; 11,5 km lagano dan pre dugog čudno"
+  },
+  "s06": {
+   "ocena": 6,
+   "komentar": "25 → 42 → 64 km; RP deo izbrisan iz ključnog dugog 4 nedelje pred trku"
+  },
+  "s07": {
+   "ocena": 8,
+   "komentar": "razuman povratak, test pomeren"
+  },
+  "s08": {
+   "ocena": 8,
+   "komentar": "lagana N14, kraći RP u N15"
+  },
+  "s09": {
+   "ocena": 3,
+   "komentar": "sledeći dugi 15 → 6 km dve nedelje pred trku — degenerisano"
+  },
+  "s10": {
+   "ocena": 7,
+   "komentar": "dugi 2 h 10 → 1 h 50 nepotrebno (2 h 11 već trčano)"
+  },
+  "s11": {
+   "ocena": 9,
+   "komentar": "bez nadoknade, bez promena, objašnjeno"
+  },
+  "s12": {
+   "ocena": 5,
+   "komentar": "dugi u sužavanju raste 95 → 105 min, lagani −5 min bez razloga"
+  },
+  "s13": {
+   "ocena": 8,
+   "komentar": "dobar protokol bola"
+  },
+  "s14": {
+   "ocena": 6,
+   "komentar": "posle zaštite odmah dugi 2 h 10 (posle 90/70 min)"
+  },
+  "s15": {
+   "ocena": 6,
+   "komentar": "dugi 75 → 115 min (+53 %) po isteku zaštite"
+  },
+  "s16": {
+   "ocena": 6,
+   "komentar": "dugi 75 → 110 min (+47 %); zastarelo upozorenje o testu 28. 11."
+  },
+  "s17": {
+   "ocena": 7,
+   "komentar": "oporavak do 16. 11. a brzi 12. 11.; 'prvi rezultat' uz unet rezultat"
+  },
+  "s18": {
+   "ocena": 7,
+   "komentar": "N2 43 km, N3 dugi 2 h 05; kontradikcija datuma oporavka"
+  },
+  "s19": {
+   "ocena": 8,
+   "komentar": "blag dug povratak početnika"
+  },
+  "s20": {
+   "ocena": 7,
+   "komentar": "forma prihvaćena; oporavak do 21. 11. a prag 19. 11."
+  },
+  "s21": {
+   "ocena": 9,
+   "komentar": "treninzi isti; očekivano vreme +1 s"
+  },
+  "s22": {
+   "ocena": 8,
+   "komentar": "treninzi isti; napomena dana trke promenjena za 1 s bez događaja"
+  },
+  "s23": {
+   "ocena": 10,
+   "komentar": "nula promena"
+  },
+  "s24": {
+   "ocena": 9,
+   "komentar": "nula promena; zastarelo upozorenje ostaje"
+  }
+ },
+ "prosek_scenarija": 7.29,
+ "prosek_scenarija_x10": 72.9,
+ "parovi": {
+  "P1": {
+   "ocena": 7,
+   "komentar": "razlike tačne i u pravoj meri; B lažno tvrdi da nema trčanja sa sata"
+  },
+  "P2": {
+   "ocena": 5,
+   "komentar": "smer dobar; obrnut smer prognoze u tekstu, '16 nedelja' za trku za 20, 26 vs 16 nedelja, nula napretka za novog početnika"
+  },
+  "P3": {
+   "ocena": 7,
+   "komentar": "A dobija objašnjenje za prebrze lagane; posle nula kvaliteta odmah 23 min praga; vrh 61,5 vs 65"
+  }
+ },
+ "prosek_parova": 6.33,
+ "ispravke_po_vaznosti": [
+  "Propušten dugi ne sme da sruši sledeći dugi (s09: 15 → 6 km); 'prethodni korak' važi za RP deo, dno = 0,75 × poslednji odrađeni dugi",
+  "Posle zaštite (bol/bolest) postepen povratak dugog i nedelje (s14, s15, s16, s06); u s06 sačuvati RP deo ključnog dugog",
+  "Odrađena provera/trka postaje rezultat; ukloniti 'prvi rezultat koji imam' i zastarela upozorenja; neplanirana trka briše trening istog dana i daje oporavak",
+  "Ispraviti netačne tekstove: obrnut smer prognoze (p2b), '16 nedelja' za trku za 20, 26 vs 16, 'nemam trčanja sa sata' (p1b), datum oporavka posle prvog brzog (s17, s18, s20)",
+  "Opis napora trke prema očekivanom vremenu (ne 'sat i po do dva' za >2 h) i rastući kroz trku; posle planiranih testova dan trke sa tempom",
+  "Plan mora da raste: p08 bez rasta 20 nedelja, p04 N15=N17 i prag zaglavljen, p10 prespor rast; p07 prebrz rast",
+  "Upozorenja usklađena sa planom: p06 obećani dani, nerazumljivo upozorenje; p03 neizvodljiv broj; p10 duplirano",
+  "Startni tempo skalirati (p05, p06 gube 25–50 s); gel na danu trke p05",
+  "Oznake: faza unazad (p11, p12), oporavak='gradnja', 'brz rad 0 %' uz test, N-1 > N-2 u sužavanju, dupla tačka, 1 s razlike, promena od 1 s bez događaja",
+  "Udeo dugog ≤ ~40 % i ne duži od trke kod sporih (p03, p12); p12 2×21 min RP u sužavanju; s12 bez nadoknade dugog u sužavanju"
+ ],
+ "za_pregled_vlasnika": [
+  "p01",
+  "vlasnik-v2",
+  "s09 (uz p08)"
+ ]
+}

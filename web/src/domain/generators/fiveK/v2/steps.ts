@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { hasFreshResult } from './input.ts';
 import { feelPaces, pacesFromVdot, vdotFromResult } from './paces.ts';
-import { controlTest, noRegularDeload, periodize, rePeriodize } from './periodize.ts';
+import { noRegularDeload, periodize, rePeriodize, testKindOf } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
 import type {
   AdaptStep,
@@ -18,6 +18,7 @@ import type {
   WeekLimits,
   Weekday
 } from './types.ts';
+import { capacityKm } from './volume.ts';
 import type { Written } from './written.ts';
 
 const isBuild = (f: Pick<WeekFrame, 'phase'>): boolean =>
@@ -27,10 +28,26 @@ export const inRange = (d: IsoDate, r: DateRange | null): boolean =>
   r !== null && mustDay(d) >= mustDay(r.from) && mustDay(d) <= mustDay(r.to);
 
 /** Trkač iz ulaza (isto kao generate): broj dana, početnik, plan po osećaju. */
+/**
+ * 5k-v2.15.0 (P8 e, heuristika, odluka organizatora P8, nalaz slepe ocene: početnik sa 45 km spušten na 30 km) —
+ * JEDINO mesto: početnik čiji je trenutni obim (na 0,1 km) iznad kapaciteta plana početnika za izabrane dane (tabela
+ * izvodljivih ciljeva početnika, volume.capacityKm) dobija plan bez oznake početnika (kao HM). Vraća kapacitet
+ * početnika kad važi, inače null.
+ */
+export function beginnerAboveTable(input: FiveKV2Input): number | null {
+  if (input.experience !== 'beginner') return null;
+  const days = input.runDays.length as RunDaysCount;
+  const feel = !hasFreshResult(input);
+  const v = baseVdot(input);
+  const p = v === null ? feelPaces(input.typicalEasyPaceSecPerKm!) : pacesFromVdot(v);
+  const cap = capacityKm(p, { days, beginner: true, feel });
+  return Math.round(input.currentWeeklyKm * 10) / 10 > cap + 1e-9 ? cap : null;
+}
+
 export function baseAthlete(input: FiveKV2Input): Athlete {
   return {
     days: input.runDays.length as RunDaysCount,
-    beginner: input.experience === 'beginner',
+    beginner: input.experience === 'beginner' && beginnerAboveTable(input) === null,
     feel: !hasFreshResult(input),
     ...(input.weekOffset ? { weekOffset: input.weekOffset } : {})
   };
@@ -70,6 +87,14 @@ function dateOf(f: WeekFrame, w: Weekday): IsoDate {
  * kvaliteta ('none' / 'one', zamena q1 ↔ q2 kad je samo q1 u zabrani); dan u oneQuality → 'one'.
  * Trkačka nedelja: samo dani (oštrenje bira dan van zabrane, week.ts). Bez ograničenja → undefined.
  */
+/** 5k-v2.14.0 (P5 F2, Odluka 10) — JEDINO mesto: nedelja izgradnje bez rasterećenja u opsegu koraka `hard.hold`; doza
+    nijednog slota ne raste (konstruktor quality.ts, validator DOSE_HOLD). */
+export const holdWeek = (
+  f: Pick<WeekFrame, 'phase' | 'deload' | 'startDate'>,
+  steps: readonly AdaptStep[]
+): boolean =>
+  isBuild(f) && !f.deload && steps.some((s) => s.hard?.hold && inRange(f.startDate, s.hard.hold));
+
 export function limitsOf(
   f: WeekFrame,
   pattern: Pattern,
@@ -166,7 +191,7 @@ export function framesFor(
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
-  let frames = periodize(input.startDate, totalWeeks, every, controlTest(a), a.beginner);
+  let frames = periodize(input.startDate, totalWeeks, every, testKindOf(a, totalWeeks), a.beginner);
   if (steps.length === 0) return frames;
   // 2.8.0 (pouka 29, N2a): kontrolno trčanje iz prethodnog (upisanog) plana — test u zaštićenom danu je urađen
   // (ostaje u svojoj nedelji, ne premešta se); inače nedelja testa prethodnog plana (premeštanje iz ranijeg
@@ -210,6 +235,7 @@ export function framesFor(
   for (const f of frames) {
     const l = limitsOf(f, pattern, input.runDays, input.raceDate, steps);
     if (l) f.limits = l;
+    if (holdWeek(f, steps)) f.hold = true;
   }
   const last = steps[steps.length - 1]!.asOf;
   const t = frames.find((f) => f.test);

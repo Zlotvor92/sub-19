@@ -63,41 +63,48 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
   it('10w-25km-v30-A-sat, asOf kraj ned 3: ned 5 više nije rasterećenje (4917959: pauza 17,0, bol 5 14,9, manjak 19,0)', () => {
     const id = '10w-25km-v30-A-sat';
     // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): bazni plan i povratak niži (10k-v2.9.0: 29,8 / 23,8 / 31,6 / 33,5).
+    // P8 (10k-v2.13.0, G6 lagan ≤ 0,70 × dugi za 4+ dana, G1): bazni plan i povratak niži (10k-v2.12.0: 27,4 / 21,9 / 27,9 / 27,9);
+    // brojke ovog fajla izvedene iz baznog plana niže za 2–3 km (mehanizam A17 isti). K3-B (10k-v2.15.0, 4 dana lagan ≤
+    // 0,75 × dugi): bazni plan i povratak viši za 1–2 km (24,5 / 19,6 / 25,5 / 25,8 → 26,4 / 21,1 / 26,8 / 26,8).
     expect(rows(reliefPlan(id), 4, 7)).toEqual([
-      [27.4, false],
-      [21.9, true],
-      [27.9, false],
-      [30, false]
+      [26.4, false],
+      [21.1, true],
+      [26.8, false],
+      // P3 (10k-v2.11.0, D34): ned 7 je specifična nedelja B — cilj 30,0 → 27,9 (nedelja B sme do 3,0 km niže).
+      [26.8, false]
     ]);
     const pause = adapt(id, 3, 'pause10');
+    // K3-B (10k-v2.15.0): 19,0 / 20,9 / 23,0 / 24,4 → 20,4 / 22,4 / 24,4 / 25,9.
     expect(rows(pause.plan, 4, 7)).toEqual([
-      [21.1, false],
-      [23.2, false],
-      [25, false],
-      [26.5, false]
+      [20.4, false],
+      [22.4, false],
+      [24.4, false],
+      [25.9, false]
     ]);
     expect(msg(pause, 'PAUSE')).toMatch(
       / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena\.$/
     );
     const pain = adapt(id, 3, 'pain5');
+    // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): bazni plan viši — 24,5 / 18,3 / 20,1 / 22,1 → 27,1 / 19,7 / 21,7 / 23,9.
     expect(rows(pain.plan, 4, 7)).toEqual([
-      [28.3, false],
-      [20.4, false],
-      [22.4, false],
-      [24.6, false]
+      [27.1, false],
+      [19.7, false],
+      [21.7, false],
+      [23.9, false]
     ]);
     expect(msg(pain, 'PAIN')).toContain(
-      'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (18,5 km).'
+      'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (17,9 km).'
     );
     expect(msg(pain, 'PAIN')).toMatch(
       / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena\.$/
     );
     const under = adapt(id, 3, 'under');
+    // K3-B (10k-v2.15.0): 19,6 / 21,6 / 23,7 / 25,1 → 21,1 / 23,2 / 25,5 / 26,8.
     expect(rows(under.plan, 4, 7)).toEqual([
-      [21.9, false],
-      [24.1, false],
-      [26.4, false],
-      [28, false]
+      [21.1, false],
+      [23.2, false],
+      [25.5, false],
+      [26.8, false] // P8 G1 (D39): rast raspoređen do kraja razvoja; G6: 27,9 → 25,1.
     ]);
     expect(msg(under, 'UNDER_EXECUTION')).toMatch(/nedelja 4 je smanjena\.$/);
     // Pauza + bol na kraju nedelje (r = n): jedna rečenica A17, u poruci pauze.
@@ -106,9 +113,10 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     expect(msg(both, 'PAIN')).not.toContain('Redovno rasterećenje u nedelji');
     // Umor: prinudno rasterećenje ned 4 (A5), redovno ned 5 ukida A5 — A17 bez dejstva.
     const tired = adapt(id, 3, 'fatigue');
+    // K3-B (10k-v2.15.0): 18,5 / 24,5 → 20,5 / 26,4.
     expect(rows(tired.plan, 4, 5)).toEqual([
-      [21.4, true],
-      [27.4, false]
+      [20.5, true],
+      [26.4, false]
     ]);
     expect(a17Of(tired)).toBe(false);
   });
@@ -119,7 +127,8 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     expect(buildRun(p12, 4)).toBe(5);
     const p17 = adapt('17w-25km-v30-A-sat', 6, 'pain5').plan;
     expect(p17.weeks.filter((w) => w.deload).map((w) => w.index)).toEqual([4, 13]);
-    expect(p17.weeks.slice(7, 12).map((w) => w.targetKm)).toEqual([20.4, 22.4, 24.6, 26.4, 27.6]); // 10K-08 (T1): 23 … 31,6
+    // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): 18,3 … 25,1 → 19,7 … 26,7.
+    expect(p17.weeks.slice(7, 12).map((w) => w.targetKm)).toEqual([19.7, 21.7, 23.9, 25.5, 26.7]); // 10K-08 (T1): 23 … 31,6; P8 (G6): 20,4 … 27,6
     expect(buildRun(p17, 8)).toBe(5);
   });
 });
@@ -153,9 +162,11 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
       false
     ]);
     expect(st.returnFrom).toEqual({ week: 6, share: A.painEasyFactor });
+    // P5 (D35): kontrolni test u nedelji bola otpada (A13, TEST_MOVED).
     expect(mid.reasons.filter((x) => x.applied).map((x) => x.condition)).toEqual([
       'PAIN',
-      'OVER_EXECUTION'
+      'OVER_EXECUTION',
+      'TEST_MOVED'
     ]);
     expect(deloads(mid.plan)).toEqual([4, 8, 11]);
     expect(a17Of(mid)).toBe(false);
@@ -210,11 +221,11 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
     old.policyVersion = '10k-v2.4.1';
     const again = ok(adaptTenKV2(old, {}, asOf)).plan;
     expect(again.weeks.slice(3, 7).map((w) => [w.targetKm, w.deload])).toEqual([
-      // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): 21,2 / 23,3 → 21,1 / 23,2.
-      [21.1, false],
-      [23.2, false],
-      [25, false],
-      [26.5, false]
+      // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): 21,2 / 23,3 → 21,1 / 23,2. K3-B (4 dana 0,75): 19,0 … 24,4 → 20,4 … 25,9.
+      [20.4, false],
+      [22.4, false],
+      [24.4, false],
+      [25.9, false]
     ]);
     expect(again.weeks).toEqual(ok(adaptTenKV2(fresh, {}, asOf)).plan.weeks);
   });
@@ -260,7 +271,7 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
     ];
     const dropped = new Map<number, number>();
     const f = framesFor(
-      baseFrames(chk.input.startDate, chk.weeks, false)!,
+      baseFrames(chk.input.startDate, chk.weeks, null)!,
       q.pattern,
       chk.input.runDays,
       chk.input.raceDate,

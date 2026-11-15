@@ -25,6 +25,9 @@ const S = JSON.stringify;
 const EPS = 0.05;
 /** Primer nalaza organizatora (mixed-deload.ts): 5K b-d3-8w-25km-v36-1 k3 cilj 15,9 → 18,28. */
 export const EXAMPLE_08I = 'b-d3-8w-25km-v36-1';
+/** 5k-v2.15.0 (P8 G7): test ne ide pre nedelje 4 — plan od 6 nedelja (BRZ_PLANOVI) više nema test; primer toka u kom
+    kontrolno trčanje otpada uz napomenu (umor u nedelji testa 4, zaključan Q1 nedelje 5). */
+export const EXAMPLE_08I_TEST = 'f-d4-7w-30km-e480-1';
 
 export interface MixedStats {
   bad: string[];
@@ -122,14 +125,15 @@ export function basesOf(
   part: number,
   parts: number
 ): { id: string; input: Record<string, unknown> }[] {
-  const ex = earlyGridInputs().filter((b) => b.id === EXAMPLE_08I && part === 1);
-  const all = earlyGridBases();
-  return [
-    ...(FULL
-      ? all.filter((_, i) => i % parts === part - 1)
-      : all.filter((b) => BRZ_PLANOVI.includes(b.id))),
-    ...ex
-  ];
+  const main = FULL
+    ? earlyGridBases().filter((_, i) => i % parts === part - 1)
+    : earlyGridBases().filter((b) => BRZ_PLANOVI.includes(b.id));
+  const ex = earlyGridInputs().filter(
+    (b) =>
+      part === 1 &&
+      (b.id === EXAMPLE_08I || (b.id === EXAMPLE_08I_TEST && !main.some((m) => m.id === b.id)))
+  );
+  return [...main, ...ex];
 }
 
 export function describe08i(label: string, part: 1 | 2 | 3): void {

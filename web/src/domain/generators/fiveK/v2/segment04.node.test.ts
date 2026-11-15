@@ -71,12 +71,13 @@ const S04: Record<string, Profile> = {
 };
 const S04_ALL = Object.entries(S04);
 /** Brz trkač, mali obim (Segment 03). 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja, a 4 dana / 15 km
-    sada nosi kvalitet u rasterećenju — rasterećenje samo sa ubrzanjima: 3 dana, 12 km, VDOT ~52, 9 ned (ned 5). */
+    sada nosi kvalitet u rasterećenju — rasterećenje samo sa ubrzanjima: 3 dana, 12 km, VDOT ~52, 9 ned (ned 5).
+    5k-v2.13.0 (P4 S1: I 10 % cilja) i VDOT ~52 / 12 km nosi kvalitet u rasterećenju — samo ubrzanja: VDOT 62 (S2). */
 const FAST_SMALL_8: Profile = {
   weeks: 9,
   km: 12,
   distanceM: 5000,
-  timeSec: 1157,
+  timeSec: 994,
   days: ['tue', 'thu', 'sun']
 };
 
@@ -99,7 +100,8 @@ describe('Odluka 1: šablon po broju dana', () => {
       }
       const q = quality(w)[0]?.workout.qualityType;
       if (w.phase === 'base' && !w.deload) baseTypes.push(q === 'R' ? 'R' : 'T');
-      if (w.phase === 'peak' && !w.deload) expect(q).toBe('I');
+      // 5k-v2.14.0 (P5 F1): poslednja ne-rasteretna nedelja vrhunca je kontrolno trčanje.
+      if (w.phase === 'peak' && !w.deload) expect(q).toBe(w.test ? 'TEST_3K' : 'I');
       if (w.phase === 'sharpen') expect(q).toBe('RP');
     }
     expect(baseTypes.length).toBeGreaterThanOrEqual(2);
@@ -112,7 +114,8 @@ describe('Odluka 1: šablon po broju dana', () => {
     expect(plan.pattern.easy).toHaveLength(2);
     for (const w of plan.weeks.filter((x) => x.phase !== 'race')) {
       expect(w.days).toHaveLength(5);
-      expect(quality(w).length).toBe(w.deload || w.taperStep === 2 ? 1 : 2);
+      // 5k-v2.15.0 (P8 G7): u nedelji kontrolnog testa test je jedini kvalitet.
+      expect(quality(w).length).toBe(w.deload || w.taperStep === 2 || w.test ? 1 : 2);
       const long = roleDay(w, 'long')!.workout;
       expect(long.km).toBeLessThanOrEqual(w.targetKm * 0.3 + 1e-9);
       expect(long.km * plan.paces.E.slow).toBeLessThanOrEqual(P.long.maxSec);
@@ -169,7 +172,10 @@ describe('Odluka 2: kapacitet i vrh obima po broju dana', () => {
   it.each(S04_ALL)('%s: vrh ≤ peakKm(start, kapacitet, dani), svaki cilj ≤ kapaciteta', (_, p) => {
     const plan = planOf(p);
     const n = p.days.length as 3 | 4 | 5;
-    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm, plan.capacityKm, n));
+    // 5k-v2.15.0 (P8 G1a): faktor vrha po dužini pripreme (1,30 / 1,35 / 1,40) i satni plafon.
+    expect(plan.peakKm).toBeLessThanOrEqual(
+      volume.peakKm(plan.startKm, plan.capacityKm, n, { weeks: plan.weeks.length, p: plan.paces })
+    );
     expect(plan.peakKm).toBeLessThanOrEqual(days.days[n]!.maxWeekKm);
     for (const w of plan.weeks) expect(w.targetKm).toBeLessThanOrEqual(plan.capacityKm);
   });
@@ -239,17 +245,13 @@ describe('Odluka 4: trkačka nedelja — cilj = planirano, 50% vrha je gornja gr
 });
 
 describe('Odluka 5: zamena u rasterećenju — R ≥ 1,2 km, inače samo ubrzanja 6 × 20 s', () => {
-  it('15 km + VDOT ~53, 8 ned: rasteretni vrhunac = samo ubrzanja 6 × 20 s, ne R 4 × 150 m', () => {
+  // 5k-v2.15.0 (P8 G2): najniži nivo lestvice uvek staje — rasteretni vrhunac ima I prvog nivoa (2 × 700 m), ne samo
+  // ubrzanja; samo ubrzanja ostaju kad kvalitet ne staje u dužine nedelje (početnik po osećaju, 4 dana, 15 km).
+  it('3 dana, 12 km, VDOT 62, 9 ned: rasteretni vrhunac = I prvog nivoa lestvice (G2), ne samo ubrzanja', () => {
     const plan = planOf(FAST_SMALL_8);
     const w = plan.weeks.find((x) => x.phase === 'peak' && x.deload)!;
-    expect(w.stridesOnly).toBe(true);
-    expect(quality(w)).toEqual([]);
-    const so = w.days.filter(
-      (d) => d.workout.segments.filter((s) => s.kind === 'stride').length === 6
-    );
-    expect(so).toHaveLength(1);
-    expect(so[0]!.workout.segments.find((s) => s.kind === 'stride')!.sec).toBe(20);
-    expect(w.notes.some((n) => n.includes('samo ubrzanja 6 × 20 s'))).toBe(true);
+    expect(w.stridesOnly).toBe(false);
+    expect(quality(w).map((d) => d.workout.title)).toEqual(['I: 2 × 700 m (oporavak 2:15 lagano)']);
     expect(errorsOf(plan)).toEqual([]);
   });
 
@@ -271,8 +273,20 @@ describe('Odluka 5: zamena u rasterećenju — R ≥ 1,2 km, inače samo ubrzanj
     w.stridesOnly = false;
     w.days[0] = { ...w.days[0]!, role: 'q1', hard: true, workout: r.workout };
     expect(errorsOf(plan)).toContain('DELOAD_R_MIN');
-    const plan2 = planOf(FAST_SMALL_8);
-    plan2.weeks.find((x) => x.stridesOnly)!.deload = false;
+    // 5k-v2.15.0 (P8 G2): nedelja samo sa ubrzanjima — početnik po osećaju, 4 dana, 15 km (kvalitet ne staje u dužine).
+    const r2 = generateFiveKV2({
+      startDate: '2026-11-02',
+      raceDate: '2027-01-03',
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 15,
+      typicalEasyPaceSecPerKm: 420,
+      experience: 'beginner',
+      canRun30Min: true,
+      goalTimeSec: null
+    });
+    if (!r2.ok) throw new Error('plan');
+    const plan2 = r2.plan as FiveKV2Plan;
+    plan2.weeks.find((x) => x.stridesOnly && x.deload)!.deload = false;
     expect(errorsOf(plan2)).toContain('DELOAD_STRIDES_ONLY');
   });
 });

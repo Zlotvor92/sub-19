@@ -9,6 +9,7 @@ import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
 import { construct, preStartRef } from './generate.ts';
 import { checkInput } from './input.ts';
+import { testKindOf } from './periodize.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import { same } from './same.ts';
 import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
@@ -174,7 +175,7 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
   const base = baseFrames(
     chk.input.startDate,
     chk.weeks,
-    chk.pace.kind === 'feel' && chk.rule.feelTest
+    testKindOf(chk.pace.kind === 'feel', chk.rule, chk.weeks)
   );
   if (base)
     framesFor(
@@ -267,7 +268,8 @@ const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', '
 const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
   'NEW_RESULT',
   'UNDER_EXECUTION',
-  'OVER_EXECUTION'
+  'OVER_EXECUTION',
+  'QUALITY_HOLD'
 ]);
 
 /**

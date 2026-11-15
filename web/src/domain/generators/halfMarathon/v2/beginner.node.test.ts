@@ -45,6 +45,11 @@ describe('H17 pravilo plana početnika', () => {
       peakAddKm: 15,
       longMaxSec: 8100,
       longWarnKm: 14,
+      // P8 G8 (STOP S2 → O2): dugi početnika do 50 % cilja nedelje da bi dostigao 16 km.
+      longReachShare: 0.5,
+      longReachKm: 16,
+      // K3-A: specifična nedelja sme do 10 % iznad granice izgradnje da dugi ne padne.
+      specHoldOverPeak: 0.1,
       tFirstKm: 1.5
     });
     expect(planRule(3, 'beginner')).toBeNull();
@@ -69,15 +74,17 @@ describe('H17 pravilo plana početnika', () => {
   it('HI10: lestvica T kont. početnika [1,5; 2,0; …]; početni nivo = prvi nivo; T kont. kad prvi nivo faze ne staje', () => {
     expect(ladderLevels('T_continuous', true).map(doseOf).slice(0, 3)).toEqual([1500, 2000, 2500]);
     expect(ladderLevels('T_continuous').map(doseOf)[0]).toBe(2000);
-    // Redovan plan bi pri 40 km krenuo od 2,0 km (≤ 60 % plafona 4,0 km); početnik od 1,5 km.
-    expect(doseOf(startLevel('T_continuous', 40)!)).toBe(2000);
+    // Redovan plan bi pri 40 km krenuo od 3,0 km (P5-F4: ≤ 80 % plafona 4,0 km); početnik od 1,5 km.
+    expect(doseOf(startLevel('T_continuous', 40)!)).toBe(3000);
     expect(doseOf(startLevel('T_continuous', 40, true)!)).toBe(1500);
     // Razvoj 22 km: T cruise 2 × 1200 m > 2,2 km → T kontinuirano; specifično 26 km: RP 4,0 km > 3,9 km.
-    expect(buildLadder('development', 22, B4)).toBe('T_continuous');
+    // P8 G2: prvi nivo lestvice faze uvek staje — početnik dobija T cruise u razvoju i RP u specifičnoj fazi i pri
+    // malom obimu (bilo: T kontinuirano umesto lestvice faze, bez kvaliteta pri 14 km).
+    expect(buildLadder('development', 22, B4)).toBe('T_cruise');
     expect(buildLadder('development', 24, B4)).toBe('T_cruise');
-    expect(buildLadder('specific', 26, B4)).toBe('T_continuous');
+    expect(buildLadder('specific', 26, B4)).toBe('RP');
     expect(buildLadder('specific', 26.7, B4)).toBe('RP');
-    expect(buildLadder('base', 14, B4)).toBeNull();
+    expect(buildLadder('base', 14, B4)).toBe('T_continuous');
     expect(buildLadder('development', 22, planRule(3, 'regular')!)).toBe('T_cruise');
     const w = pickBuild(
       {
@@ -89,7 +96,8 @@ describe('H17 pravilo plana početnika', () => {
       feelPaces(450),
       B4
     )!;
-    expect([w.q1!.ladder, w.q1!.doseM, w.q2]).toEqual(['T_continuous', 2000, null]);
+    // P8 G2: T cruise prvi nivo (2 × 1200 m) staje i pri 22 km — prelaz sa T kontinuirano 2,0 km.
+    expect([w.q1!.ladder, w.q1!.doseM, w.q2]).toEqual(['T_cruise', 2400, null]);
   });
 });
 
@@ -151,9 +159,21 @@ describe('H17 plan početnika', () => {
     const p = plan('b-d4-12w-25km-e330-A');
     const t = p.weeks.find((w) => w.phase === 'taper')!;
     const q = t.days.find((d) => d.role === 'q1')!.workout.dose!;
-    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['T_continuous', 1500, 24.5]);
-    expect(t.notes[0]).toContain('Taper (HI10)');
-    expect(p.weeks.at(-1)!.days.some((d) => d.role === 'sharpener')).toBe(false);
+    // P8 G2/G5: RP 2 × 2000 m staje u taper (najmanja doza), trkačka nedelja ima oštrenje ≤ 12 min rada (bilo: T 1,5 km,
+    // bez oštrenja); P8 G1: 12 nedelja → vrh 1,30 × start, taper 22,4 km;
+    // K3-A: specifična nedelja podignuta da dugi ne padne → vrh i taper 22,6 km; K3-B: RP ≤ 60 % poslednje doze
+    // (4000 m) → 2 × 1200 m van lestvice (bilo 2 × 2000 m uz napomenu „najmanja doza").
+    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 2400, 22.6]);
+    expect(t.notes.join(' ')).not.toContain('najmanja doza u trkačkom tempu');
+    const sharp = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
+    expect(sharp.workout.dose!.doseM).toBe(2400);
+    // Najmanji obim, brz lagan tempo: do K3 taper bez kvaliteta (RP nije imao izvodljive dužine); K3-A podiže specifične
+    // nedelje (dugi ne pada), pa veći taper nosi T 1,5 km (HI10) — u mreži početnika nema više tapera bez kvaliteta.
+    const small = plan('b-d4-12w-20km-e330-A');
+    expect(
+      small.weeks.find((w) => w.phase === 'taper')!.days.find((d) => d.workout.dose)?.workout.dose
+        ?.doseM
+    ).toBe(1500);
     // Rasterećenje u razvoju: 1,5 km kontinuirano pod lestvicom T cruise (nema nivo 1,5 km).
     const d5 = p.weeks[4]!.days.find((d) => d.workout.kind === 'quality')!.workout;
     expect([p.weeks[4]!.deload, d5.dose!.ladder, d5.qualityType, d5.dose!.doseM]).toEqual([
@@ -165,7 +185,20 @@ describe('H17 plan početnika', () => {
   });
 
   it('upozorenje LONG_RUN_SHORT kad je najduži dugi < 14 km (redovan plan: 16 km)', () => {
-    const p = plan('b-d5-12w-30km-e330-A');
+    // P8 G8: 5 d 30 km sada dostiže ≥ 14 km (udeo do 50 %); upozorenje ostaje kod najmanjeg obima (4 d 20 km).
+    const longOf = (q: HmV2Plan): number =>
+      Math.max(
+        ...q.weeks.flatMap((x) => x.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+      );
+    const reach = plan('b-d5-12w-30km-e330-A');
+    expect(longOf(reach)).toBeGreaterThanOrEqual(14);
+    for (const w of reach.weeks.filter((x) => x.phase !== 'race')) {
+      const l = w.days.find((d) => d.role === 'long')!.workout.km;
+      expect(l).toBeLessThanOrEqual(
+        Math.max(0.32 * w.targetKm, Math.min(0.5 * w.targetKm, 16)) + 1e-9
+      );
+    }
+    const p = plan('b-d4-12w-20km-e330-A');
     const w = p.warnings.find((v) => v.rule === 'LONG_RUN_SHORT')!;
     expect(w.message).toContain('< 14 km (H17)');
     const longest = Math.max(

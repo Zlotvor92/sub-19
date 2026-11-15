@@ -1,0 +1,364 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P5-10K/sabotage-P5.json",
+ "head": "01623a1",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 23.8,
+ "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+ "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P5-F1a bez kontrolnog testa (plan sa rezultatom)",
+   "files": [
+    "src/domain/generators/tenK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F1 (D35): kontrolni test u planu sa rezultatom > ≥ 12 nedelja: tačno jedan test u poslednjoj ne-rasteretnoj nedelji razvoja, na danu Q1; < 12 i početnik: nijedan",
+    "message": "AssertionError: 3 d 12 ned: expected [] to deeply equal [ 7 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "c6c7fa472866aa9b66787391677accbb30f62345298ad2589b48bde19068e06d",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.9
+  },
+  {
+   "index": 2,
+   "name": "P5-F1b kontrolni test u poslednjoj nedelji razvoja i kad je rasterećenje",
+   "files": [
+    "src/domain/generators/tenK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F1 (D35): kontrolni test u planu sa rezultatom > ≥ 12 nedelja: tačno jedan test u poslednjoj ne-rasteretnoj nedelji razvoja, na danu Q1; < 12 i početnik: nijedan",
+    "message": "AssertionError: 3 d 14 ned: expected [ 8 ] to deeply equal [ 7 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "78235d4f4d5ba278dc5dd22a7f7a3d8d2e79862ae721909121a553ca2141e643",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.9
+  },
+  {
+   "index": 3,
+   "name": "P5-F1c O1: test nedelja sa spuštanjem nije referenca",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F1 (D35): kontrolni test u planu sa rezultatom > O1: test nedelja sa spuštenim drugim slotom ne obara „glavna doza ne opada\" (d5 48 km 18 ned VDOT 35)",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"MAIN_DOSE_DECREASE: Glavna doza 10000 m < 10800 m (D12, nedelja A, D34).\",\"week\":13}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "1a35fd37bbba0ad9647c333e780566b38fa96b011cb0de52e3547d0872f681ba",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  },
+  {
+   "index": 4,
+   "name": "P5-F2a okidač bez RPE (samo preskočeni)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F2 (D38): dva preteška ili preskočena kvaliteta → sledeća nedelja bez rasta doze > RPE ≥ 9 na oba: nedelja 3 drži dozu oba slota (druga struktura), cilj po pravilu isti; RPE 8: bez efekta",
+    "message": "TypeError: Cannot read properties of undefined (reading 'applied')"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "ce6139290b8bdfd533bd8d1b37e2ba96c6bc4a272020e53c52433913cbad5caf",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 5,
+   "name": "P5-F2e neodrađen po dayId (trčanje van plana na taj datum se ne vidi)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F2 (D38): dva preteška ili preskočena kvaliteta → sledeća nedelja bez rasta doze > trčanje van plana na datum kvaliteta (uvoz bez dayId) = odrađen dan; RPE takvog zapisa ne okida D38",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "312636a4129c65672db32331ce859155827409a8f128c61652ce956f921bc3a1",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 6,
+   "name": "P5-F2b zadržana nedelja ipak raste",
+   "files": [
+    "src/domain/generators/tenK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F2 (D38): dva preteška ili preskočena kvaliteta → sledeća nedelja bez rasta doze > RPE ≥ 9 na oba: nedelja 3 drži dozu oba slota (druga struktura), cilj po pravilu isti; RPE 8: bez efekta",
+    "message": "AssertionError: expected 1800 to be 1600 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "26001284e65beb6d054a3a93e4c138ace6063136e3dfe7c16e9bed09e1404cf9",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 7,
+   "name": "P5-F2c F2 ispred bola/manjka (prioritet)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F2 (D38): dva preteška ili preskočena kvaliteta → sledeća nedelja bez rasta doze > preskočena oba (bez zapisa uz pokrivenost) → primenjeno; uz bol → applied false",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "f2a693ad60aebbec3fe560c93918942fdc0e4ce6af5025dfef46f16855f192f6",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 8,
+   "name": "P5-F2d isti zapisi se sude ponovo",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F2 (D38): dva preteška ili preskočena kvaliteta → sledeća nedelja bez rasta doze > RPE ≥ 9 na oba: nedelja 3 drži dozu oba slota (druga struktura), cilj po pravilu isti; RPE 8: bez efekta",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "51fca0131a29c1b180ecbb088f0f0dc71f35d1d4476511a97743df36aec164c5",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 9,
+   "name": "P5-F3a ubrzanja uvek 4 × 20 s",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F3 (D36): ubrzanja na laganom danu > nedelja izgradnje i tapera: tačno jedan lagan dan, najudaljeniji od poslednjeg zahtevnog dana; baza 4 × 20 s, posle 6 × 20 s",
+    "message": "AssertionError: expected 4 to be 6 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "1780205ed1db205d8da1d808a75dbf44878f4c096ffe29fcb727913f675bbd2d",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  },
+  {
+   "index": 10,
+   "name": "P5-F3b dan ubrzanja = prvi lagan dan",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F3 (D36): ubrzanja na laganom danu > nedelja izgradnje i tapera: tačno jedan lagan dan, najudaljeniji od poslednjeg zahtevnog dana; baza 4 × 20 s, posle 6 × 20 s",
+    "message": "AssertionError: d3-8w-20km-v30-A-sat 4: expected '2026-11-24' to be '2026-11-26' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "b03aa8ac58c14e6aed82abaf052341be811659a4ceaa00ec7a9eb82385a878df",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  },
+  {
+   "index": 11,
+   "name": "P5-F3c ubrzanja i u uvodu početnika",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F3 (D36): ubrzanja na laganom danu > početnik: bez ubrzanja u uvodu (ned 1–2), posle 4 × 20 s",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "39a918a6fb222c157fb37b6095f16014cd8c90a5f0e1af742a7bb6489c923c13",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.8
+  },
+  {
+   "index": 12,
+   "name": "P5-F4 početni nivo T i I ostaje 60 %",
+   "files": [
+    "src/domain/generators/tenK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "F1 (D35): kontrolni test u planu sa rezultatom > O1: test nedelja sa spuštenim drugim slotom ne obara „glavna doza ne opada\" (d5 48 km 18 ned VDOT 35)",
+    "message": "AssertionError: expected 'alt' to be 'drop' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "1fe77a169dbfefff5b2a63bd29453ccee56885c5777811fbc71b126dd0da1606",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.1
+  },
+  {
+   "index": 13,
+   "name": "P5-F4b P-b: veća početna doza i kad stvara nedelju pouke 35",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p35.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p35.node.test.ts",
+    "test": "pouka 35 u generatoru > 12 ned, 35 km, VDOT 70, 6 dana: ned 1 — T dan je lagan (10K-08: na 10 ned / 25 km / 4 dana lagani su odmor po T1, dugi 8,2 km je najduži)",
+    "message": "AssertionError: expected 'Drugi dan kvaliteta (WU 20 min + T 2,…' to match /^Drugi dan kvaliteta \\(WU 20 min \\+ T…/"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "e8ef7b3a5334315a5358efbf8baeec55497eeb1e0cf7736c010d37b3236cd4b4",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 14,
+   "name": "P5-V test nedelja određuje stanje Q1 posle mešovite nedelje",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p5.node.test.ts",
+    "test": "validator: nedelja testa posle mešovite nedelje (P5, mreža E) > f-d3-17w-35km-e315-B-sat, asOf sreda ned 5, manjak/pauza: test nedelja ne određuje stanje Q1 — rasterećenje se ne sudi",
+    "message": "AssertionError: under: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "hashSabotaged": "334c9bd972d64505c964d6e27f8b3546157300eb79860948ab4d14c8e81a76b1",
+   "hashAfter": "3ade805e512d2bd3861176ee21bd9f3df57c6df304b99e150dff1224363193cc",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.1
+  }
+ ]
+}

@@ -243,6 +243,12 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
   });
 
   it('rezultati po scenariju (primenjeni uslovi, nedelje iste kao pre, mešovite nedelje)', () => {
+    // P8 (10k-v2.13.0, G7: plan po osećaju od 8–11 nedelja nema test; G1/G6: drugi bazni planovi): TEST_MOVED niži u svim
+    // scenarijima (pause10 9 → 5, pause20 13 → 9, pause35 21 → 13, pain5 9 → 5, pain8 13 → 9, fatigue 8 → 4,
+    // faster/slower/test5k 33 → 29, painPause 13 → 9, chain 6 → 1); over120 same 14 → 21, fatigue same 37 → 34 / mixed 3 → 6,
+    // pause35 mixed 60 → 57.
+    // P9b (10k-v2.14.0, D52: plan po osećaju od 10 nedelja ponovo ima test, u ned 4): TEST_MOVED +4 u pause20 (9 → 13),
+    // pause35 (13 → 17), pain8 (9 → 13), painPause (9 → 13), faster/slower/test5k (29 → 33); ostali bez promene.
     expectStats(stats, {
       none: { n: 120, NO_FACTS: 120, same: 120 },
       done100: { n: 120, same: 120 },
@@ -250,29 +256,34 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       // 06i (pouka 37): zaštićeni dani po činjenicama (× 1,2) prelaze sastavljene → preostali dani na ostatak do cilja
       // (mešovita nedelja; same 44 → 14); 1 tok: test otpada sa kvalitetom koji ne staje (TEST_MOVED).
       // 10K-07 (Z1): TEST_MOVED 1 → 0 — test mešovite nedelje ostaje uz upisani višak zaštićenih dana (≤ 10 %).
-      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60 },
+      // K3 (10k-v2.15.0, K3-A/B drugi bazni planovi): same 21 → 23.
+      over120: { n: 120, OVER_EXECUTION: 80, same: 23, mixed: 60 },
+      // P5 (D35): kontrolni test plana sa rezultatom u nedelji sa ograničenjem otpada (A13) — TEST_MOVED raste u svim
+      // scenarijima sa ograničenjem ili novim rezultatom (pause10 5 → 9, pause20 9 → 13, pause35 13 → 21, pain5 5 → 9,
+      // pain8 9 → 13, fatigue 4 → 8, faster/slower/test5k 13 → 33, painPause 9 → 13); chain 7 → 6.
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
-      pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 },
-      pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },
+      pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 13 },
+      // K3 (10k-v2.15.0): mixed 57 → 58.
+      pause35: { n: 120, PAUSE: 120, mixed: 58, TEST_MOVED: 17 },
       // 06c (A17): TEST_MOVED 5 → 6 — d4-f-14w w2end: rasterećenje ned 4 sa testom (D27) ukinuto; u izgradnji
       // 27,0 km test i Q2 ne staju → jedan kvalitet doze rasterećenja, test otpada (A9/A13).
       // 10K-08 (T1): TEST_MOVED 6 → 5.
       pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 5 },
       // 06b (10k-v2.4.1): TEST_MOVED 10 → 9 — viši cilj posle sidra, test 5 km ostaje u svojoj nedelji.
-      pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 9 },
+      pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 13 },
       // 06i (pouka 37): 3 toka sa ostatkom do cilja (zapis umora 6 km na zaštićenom danu > sastavljeno); same 40 → 37.
-      fatigue: { n: 120, FATIGUE: 80, same: 37, mixed: 3, TEST_MOVED: 4 },
-      faster: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 13 },
-      slower: { n: 120, NEW_RESULT: 108, mixed: 1, TEST_MOVED: 13, same: 12 },
-      test5k: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 13 },
+      fatigue: { n: 120, FATIGUE: 80, same: 34, mixed: 6, TEST_MOVED: 4 },
+      faster: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 33 },
+      slower: { n: 120, NEW_RESULT: 108, mixed: 1, TEST_MOVED: 33, same: 12 },
+      test5k: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 33 },
       incomplete: { n: 120, NO_FACTS: 120, same: 120 },
       locked: { n: 120, same: 120 },
       // 06c (A17): TEST_MOVED 13 → 8 — d6-f-14w i d3/d4/d5/d6-f-18w w2end: prvi korak (pauza) ukida rasterećenje
       // sa testom, drugi korak (manjak) više ne uklanja test.
       // 10K-08 (T1): TEST_MOVED 8 → 7.
-      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 7 },
+      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 1 },
       // 06b (10k-v2.4.1): TEST_MOVED 13 → 9 — osnova min(0,7 × nivo, cilj pauze) umesto 0,7 × cilj pauze.
-      painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 }
+      painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 13 }
     });
   });
   /** Pun: tačno. Brz: svaki scenario u uzorku, po scenariju expectCounts uz n = broj tokova scenarija (120). */
@@ -555,7 +566,14 @@ describe('pouka 7', () => {
     };
     const r = ok(adaptTenKV2(p, facts, asOf));
     const got = Object.fromEntries(r.reasons.map((x) => [x.condition, x.applied]));
-    expect(got).toEqual({ PAIN: true, PAUSE: true, UNDER_EXECUTION: false });
+    // P5: D38 (dva neodrađena kvaliteta) nadjačan pauzom/bolom; kontrolni test (D35) otpada zbog ograničenja (A13).
+    expect(got).toEqual({
+      PAIN: true,
+      PAUSE: true,
+      UNDER_EXECUTION: false,
+      QUALITY_HOLD: false,
+      TEST_MOVED: true
+    });
     // Bol + umor + manjak: obim samo umor (viši od izvršenja), bol po datumima.
     const f2 = {
       workouts: [
@@ -568,7 +586,8 @@ describe('pouka 7', () => {
     };
     const r2 = ok(adaptTenKV2(p, f2, asOf));
     const got2 = Object.fromEntries(r2.reasons.map((x) => [x.condition, x.applied]));
-    expect(got2).toEqual({ PAIN: true, FATIGUE: true, UNDER_EXECUTION: false });
+    // P5 (D35): kontrolni test u nedelji sa ograničenjem otpada (A13, TEST_MOVED).
+    expect(got2).toEqual({ PAIN: true, FATIGUE: true, UNDER_EXECUTION: false, TEST_MOVED: true });
   });
 
   it('(f) zaštita: prošlost, urađeno i zaključano bajt-isto; završna zaštita samo proverava', () => {
@@ -640,9 +659,12 @@ describe('odluke A1–A15', () => {
     // od tempa 35 min E).
     // 10K-08 (T1): najkraći lagan = 20 min laganim tempom — kapacitet nedelje zavisi od tempa, pa od prve nedelje
     // spuštene na novom tempu (ned 10) nominalni ciljevi slede stvarno dobijen cilj (D6), ne plan pre rezultata.
-    expect(r.plan.weeks.slice(0, 9).map((w) => w.nominalKm)).toEqual(
-      p.weeks.slice(0, 9).map((w) => w.nominalKm)
+    // P8 G6 (D47, lagan ≤ 0,70 × dugi): prva nedelja na novom tempu (ned 7) je već spuštena na izvodljiv cilj, pa se
+    // nominalni ciljevi poklapaju do nje (ranije do ned 9).
+    expect(r.plan.weeks.slice(0, 7).map((w) => w.nominalKm)).toEqual(
+      p.weeks.slice(0, 7).map((w) => w.nominalKm)
     );
+    expect(r.plan.weeks[6]!.fitted).toBe('down');
     expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
     // Plan sa rezultatom: ocena cilja za nedelje od rezultata do trke.
     const pr = plan('d4-r-14w');
@@ -917,7 +939,7 @@ describe('odluke A1–A15', () => {
   });
 
   it('A12: datum trke, taper i trkačka nedelja se ne pomeraju; rePeriodize poštuje D5 (i faza od 1 nedelje); 4 nedelje izgradnje → null (faze ostaju)', () => {
-    const base = periodize('2026-11-02', 18)!;
+    const base = periodize('2026-11-02', 18, null)!;
     for (let from = 2; from <= 16; from++) {
       const f = rePeriodize(base, from);
       if (16 - from + 1 === 4) {

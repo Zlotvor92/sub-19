@@ -4,19 +4,21 @@
 import { describe, expect, it } from 'vitest';
 import {
   BEGINNER_DAYS_COUNTS,
+  capPct,
+  capShare,
   dayRule,
   planRule,
   RUN_DAYS_COUNTS,
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.10.0', () => {
+describe('policy 10k-v2.16.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.10.0');
+    expect(P.version).toBe('10k-v2.16.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07) i A24 (10K-08), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07), A24 (10K-08), D33, D34 i A25 (P3), D35–D38 (P5), D39–D51 (P8), D52 (P9b), K3-A, K3-B i K3-C (K3), K4-B (K4), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +31,31 @@ describe('policy 10k-v2.10.0', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 24 }, (_, i) => `A${i + 1}`)
+      'D33',
+      'D34',
+      'D35',
+      'D36',
+      'D37',
+      'D38',
+      'D39',
+      'D40',
+      'D41',
+      'D42',
+      'D43',
+      'D44',
+      'D45',
+      'D46',
+      'D47',
+      'D48',
+      'D49',
+      'D50',
+      'D51',
+      'D52',
+      'K3-A',
+      'K3-B',
+      'K3-C',
+      'K4-B',
+      ...Array.from({ length: 25 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -186,7 +212,7 @@ describe('policy 10k-v2.10.0', () => {
         R: { min: 8, max: 8, cue: 'brzo, opušteno' }
       }
     });
-    expect(P.test).toEqual({ km: 5 });
+    expect(P.test).toEqual({ km: 5, controlMinWeeks: 12, minWeek: 4 });
   });
 
   it('D28: jedna tabela početnika; planRule — redovan = red D17 + D6/D13, početnik = red D17 izmenjen tabelom', () => {
@@ -200,7 +226,12 @@ describe('policy 10k-v2.10.0', () => {
       peakFactor: 1.3,
       peakAddKm: 10,
       longMaxSec: 90 * 60,
-      tFirstKm: 1.5
+      longToRaceKm: 10,
+      longToRaceShare: 0.5,
+      longToRaceWeeks: 3,
+      tFirstKm: 1.5,
+      easyMaxLongShare: 0.8,
+      tCapMinKm: 3
     });
     expect(BEGINNER_DAYS_COUNTS).toEqual([3, 4]);
     for (const n of RUN_DAYS_COUNTS)
@@ -225,6 +256,7 @@ describe('policy 10k-v2.10.0', () => {
       kmMax: 35,
       peakMaxKm: 60,
       longMaxShare: 0.33,
+      easyMaxLongShare: 0.8,
       weekMinKm: 12,
       beginner: true,
       longMaxSec: 90 * 60,
@@ -251,6 +283,7 @@ describe('policy 10k-v2.10.0', () => {
         kmMax: 40,
         peakMaxKm: 45,
         longMaxShare: 0.45,
+        easyMaxLongShare: 0.8,
         weekMinKm: 9
       },
       4: {
@@ -260,6 +293,8 @@ describe('policy 10k-v2.10.0', () => {
         kmMax: 55,
         peakMaxKm: 60,
         longMaxShare: 0.33,
+        // K3-B (10k-v2.15.0): tačno 4 dana 0,75.
+        easyMaxLongShare: 0.75,
         weekMinKm: 12
       },
       5: {
@@ -269,6 +304,7 @@ describe('policy 10k-v2.10.0', () => {
         kmMax: 65,
         peakMaxKm: 75,
         longMaxShare: 0.3,
+        easyMaxLongShare: 0.7,
         weekMinKm: 15
       },
       6: {
@@ -278,6 +314,7 @@ describe('policy 10k-v2.10.0', () => {
         kmMax: 80,
         peakMaxKm: 90,
         longMaxShare: 0.27,
+        easyMaxLongShare: 0.7,
         weekMinKm: 18
       }
     });
@@ -289,7 +326,8 @@ describe('policy 10k-v2.10.0', () => {
       longMaxSec: 105 * 60,
       easyMinKm: 3,
       easyMinSec: 1200,
-      easyMaxLongShare: 0.8
+      shortEasyWarnSec: 1800,
+      optWeeks: 2
     });
     expect('peakMaxKm' in P.volume).toBe(false);
     expect('week' in P).toBe(false);
@@ -311,7 +349,20 @@ describe('policy 10k-v2.10.0', () => {
       growthMinKm: 1,
       growthMaxKm: 3,
       peakFactor: 1.4,
-      peakAddKm: 15
+      peakAddKm: 15,
+      peakG1a: {
+        factorByWeeks: [
+          { maxWeeks: 12, factor: 1.3 },
+          { maxWeeks: 15, factor: 1.35 },
+          { maxWeeks: Infinity, factor: 1.4 }
+        ],
+        hoursByVdot: [
+          { belowVdot: 40, hours: 6 },
+          { belowVdot: 50, hours: 7 },
+          { belowVdot: Infinity, hours: 8 }
+        ]
+      },
+      minStepShare: 0.03
     });
     expect(P.taper).toMatchObject({ factor: 0.75, doseShare: 0.6, tMinKm: 2, longFactor: 0.75 });
     expect(P.taper.rpMin).toEqual({ reps: 2, repM: 1000 });
@@ -331,6 +382,9 @@ describe('policy 10k-v2.10.0', () => {
       maxRunDays: 5,
       sharpener: { reps: 3, repM: 1000, recoverySec: 90 },
       sharpenerSmallReps: 2,
+      sharpenerMaxWorkSec: 720,
+      sharpenerRepMinM: 400,
+      sharpenerRepMaxM: 1500,
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },
@@ -349,7 +403,8 @@ describe('policy 10k-v2.10.0', () => {
     expect(P.ladders.T_continuous).toEqual([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]);
     expect(km(P.ladders.T_cruise)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0, 6.4, 8.0]);
     expect(km(P.ladders.I)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0]);
-    expect(km(P.ladders.RP)).toEqual([2.4, 3.0, 4.0, 4.5, 5.0, 6.0]);
+    // D33 (10k-v2.11.0): do 8,0 km (4 × 1600, 5 × 1600 m; 4 × 2000 m samo druga struktura).
+    expect(km(P.ladders.RP)).toEqual([2.4, 3.0, 4.0, 4.5, 5.0, 6.0, 6.4, 8.0]);
     expect(P.alternatives).toEqual({
       repsMin: 2,
       repsMax: 5,
@@ -366,7 +421,19 @@ describe('policy 10k-v2.10.0', () => {
   });
 
   it('D11 jedan plafon po zoni', () => {
-    expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.1 });
+    // D33 (10k-v2.11.0): RP po cilju nedelje — < 40 km 10 %, ≥ 40 km 15 % (jedini pristup capShare).
+    expect(P.caps).toEqual({
+      R: 0.05,
+      I: 0.08,
+      T: 0.1,
+      RP: [
+        { fromKm: 0, share: 0.1 },
+        { fromKm: 40, share: 0.15 }
+      ]
+    });
+    expect([39.9, 40, 55].map((t) => capShare('RP', t))).toEqual([0.1, 0.15, 0.15]);
+    expect(capShare('T', 55)).toBe(0.1);
+    expect(capPct('RP', 40)).toBe(15);
   });
 
   it('D14, D16', () => {
@@ -385,6 +452,11 @@ describe('policy 10k-v2.10.0', () => {
       { maxRepM: 2000, sec: 90 },
       { maxRepM: 3000, sec: 120 }
     ]);
-    expect(P.startLevel).toEqual({ capShare: 0.6 });
+    // D37 (P5 F4): T i I 80 %, R i RP 60 %.
+    expect(P.startLevel).toEqual({
+      capShare: { T: 0.8, I: 0.8, R: 0.6, RP: 0.6 },
+      p35FloorShare: 0.6
+    });
+    expect(P.strides).toEqual({ baseReps: 4, reps: 6, sec: 20 });
   });
 });

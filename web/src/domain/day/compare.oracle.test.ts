@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan } from '@/test/generators';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { normalize, parseValue, unesc } from '@/test/legacyHtml';

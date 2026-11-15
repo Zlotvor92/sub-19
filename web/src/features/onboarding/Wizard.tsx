@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { confirmAction } from '../../app/confirm';
 import { hasGenPlanData } from '../../domain/plan';
 import {
@@ -7,7 +7,7 @@ import {
   generateHmV2Plan,
   generateMarathonV2Plan,
   generateTenKV2Plan,
-  generatorForDistance
+  generatorIdFor
 } from '../../domain/generators/select';
 import type { GenPlanState } from '../../domain/state';
 import type { PlanRejectionReason } from '../../domain/generators/contract';
@@ -35,25 +35,9 @@ import {
   toMarathonV2Input,
   type MarathonV2Wizard
 } from '../../domain/onboarding/marathonV2';
-import {
-  TOTAL_STEPS,
-  availableDays,
-  formPreview,
-  goalVerdict,
-  initialWizard,
-  outlook,
-  pbSanityMessage,
-  resultDateMessage,
-  stepValid,
-  syncRunDays,
-  toGenerationInput,
-  weeksHint,
-  wizardWarnings,
-  type WizardState
-} from '../../domain/onboarding';
-import { useActiveGenPlan, useTrainingStore } from '../../stores';
+import { TOTAL_STEPS, initialWizard, type WizardState } from '../../domain/onboarding';
+import { useActiveGenPlan, useHasPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
-import { useGeneratorFlags } from '../../stores/generatorFlags';
 import { useUIStore } from '../../stores/uiStore';
 import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
 import { TenKV2Days, TenKV2Experience, TenKV2RaceHint, TenKV2Result } from './TenKV2Steps';
@@ -65,36 +49,36 @@ import {
   MarathonV2Result
 } from './MarathonV2Steps';
 import { Step1Race } from './Step1Race';
-import { Step2Result } from './Step2Result';
-import { Step3Volume } from './Step3Volume';
-import { Step4Intensity } from './Step4Intensity';
+import { getApp } from '../../app/appContext';
+import { Disclosure } from '../../components/ui/Disclosure';
+import { DAY_DROPPED, makePlan, warningText, type WizardAnswers } from '../../integrations/v4';
+import { useRecoveryStore } from '../../stores/recoveryStore';
+import { personalProtected, useV4Store } from '../../stores/v4Store';
 
-/* ČAROBNJAK ZA PLAN: četiri koraka (trka → rezultat → obim → intenzitet). Sva logika je u `domain/onboarding`; ovde se samo
-   crta. Dok korisnik nema plan, čarobnjak je jedini ekran i nema „✕"; kad ima, može da se otkaže. */
+/* ČAROBNJAK ZA PLAN: četiri koraka (trka → rezultat → iskustvo → dani). V1b: nov plan pravi SAMO generator v2 ciljne
+   distance (5K, 10K, polumaraton, maraton; `FiveKV2Steps`, `TenKV2Steps`, `HmV2Steps`, `MarathonV2Steps`); pravila ulaza
+   i odbijanja su v2, ovde se samo crta. Dok korisnik nema plan, čarobnjak je jedini ekran i nema „✕"; kad ima, može da
+   se otkaže. */
 
-const STEP_NAMES = ['Trka', 'Rezultat', 'Obim', 'Intenzitet'] as const;
-/** 5K v2 / 10K v2 / HM v2 / maraton v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`,
- *  `TenKV2Steps`, `HmV2Steps`, `MarathonV2Steps`). */
 const STEP_NAMES_V2 = ['Trka', 'Rezultat', 'Iskustvo', 'Dani'] as const;
 
 export function Wizard({ today }: { today: string }) {
   const [w, setW] = useState<WizardState>(initialWizard);
   const [step, setStep] = useState(1);
   const [err, setErr] = useState('');
-  const hasPlan = !!useActiveGenPlan();
+  const hasPlan = useHasPlan();
   const closeWizard = useUIStore((s) => s.setWizard);
   const set = (patch: Partial<WizardState>): void => setW((cur) => ({ ...cur, ...patch }));
-  /* 5K v2: SAMO nov 5K plan uz uključen prekidač; isključen prekidač ili druga distanca → čarobnjak kao do sada. */
-  const flags = useGeneratorFlags();
-  const isV2 = flags.fiveKV2 && w.raceDist === 5000;
+  /* V1b: generator v2 distance iz prvog koraka (jedina putanja). */
+  const distance = generatorIdFor(w.raceDist);
+  const isV2 = distance === '5k';
   const [v2w, setV2w] = useState<FiveKV2Wizard>(initialFiveKV2Wizard);
   const [rejection, setRejection] = useState<PlanRejectionReason[] | null>(null);
   const setV2 = (patch: Partial<FiveKV2Wizard>): void => {
     setRejection(null);
     setV2w((cur) => ({ ...cur, ...patch }));
   };
-  /* 10K v2 (segment 05): SAMO nov 10K plan uz uključen prekidač 10K v2; inače čarobnjak kao do sada. */
-  const isTenKV2 = flags.tenKV2 === true && w.raceDist === 10000;
+  const isTenKV2 = distance === '10k';
   const [t2w, setT2w] = useState<TenKV2Wizard>(initialTenKV2Wizard);
   const setT2 = (patch: Partial<TenKV2Wizard>): void => {
     setRejection(null);
@@ -107,8 +91,7 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateTenKV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isTenKV2, t2w, w.raceDate, today]);
-  /* HM v2 (segment HM-05): SAMO nov plan polumaratona uz uključen prekidač HM v2; inače čarobnjak kao do sada. */
-  const isHmV2 = flags.hmV2 === true && w.raceDist === 21097.5;
+  const isHmV2 = distance === 'hm';
   const [hmw, setHmw] = useState<HmV2Wizard>(initialHmV2Wizard);
   const setHm = (patch: Partial<HmV2Wizard>): void => {
     setRejection(null);
@@ -121,8 +104,7 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateHmV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isHmV2, hmw, w.raceDate, today]);
-  /* Maraton v2 (segment MAR-05): SAMO nov plan maratona uz uključen prekidač maratona v2; inače čarobnjak kao do sada. */
-  const isMarathonV2 = flags.marathonV2 === true && w.raceDist === 42195;
+  const isMarathonV2 = distance === 'marathon';
   const [mw, setMw] = useState<MarathonV2Wizard>(initialMarathonV2Wizard);
   const setMar = (patch: Partial<MarathonV2Wizard>): void => {
     setRejection(null);
@@ -135,33 +117,135 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateMarathonV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isMarathonV2, mw, w.raceDate, today]);
-  /** Čarobnjak v2 bilo koje distance (isti koraci, druga polja). */
-  const anyV2 = isV2 || isTenKV2 || isHmV2 || isMarathonV2;
-  const setDays = (patch: Partial<WizardState>): void =>
-    setW((cur) => syncRunDays({ ...cur, ...patch }));
+  /* F9 korak 7 (A4): pod zastavicom V4 korak 3 traži samo ispravan unos (obim, odgovor na pitanja) — izbor trkača
+     (trčanje/hodanje, početnik, mali obim) se ne odbija; plan se pravi uz upozorenje (AGENTS § V4 t. 6). */
+  /* A5: dok je lični plan vlasnika zaštićen (do 13. 12. 2026), nov plan ide starim putem — V4 se ne nudi. */
+  const activePlan = useActiveGenPlan();
+  const v4Today0 = useV4Store((s) => s.today);
+  const v4Flag = useV4Store((s) => s.enabled) && !personalProtected(activePlan, v4Today0 ?? today);
+  const step3V4 = (v: {
+    weeklyKm: string;
+    experience: string | null;
+    canRun30: boolean | null;
+  }): boolean =>
+    (!isV2 && v.canRun30 === false) ||
+    (v.weeklyKm !== '' &&
+      Number.isFinite(+v.weeklyKm) &&
+      +v.weeklyKm >= 0 &&
+      (isV2
+        ? v.experience !== null && (v.experience === 'regular' || v.canRun30 !== null)
+        : v.canRun30 === true && v.experience !== null));
+  const v4Step3 =
+    v4Flag && step === 3
+      ? isV2
+        ? step3V4(v2w)
+        : isTenKV2
+          ? step3V4(t2w)
+          : isHmV2
+            ? step3V4(hmw)
+            : isMarathonV2
+              ? step3V4(mw)
+              : null
+      : null;
+  const valid =
+    v4Step3 !== null
+      ? v4Step3
+      : isV2
+        ? v2StepValid(v2w, step, w.raceDate, today)
+        : isTenKV2
+          ? tenKV2StepValid(t2w, step, w.raceDate, today)
+          : isHmV2
+            ? hmV2StepValid(hmw, step, w.raceDate, today)
+            : isMarathonV2
+              ? marathonV2StepValid(mw, step, w.raceDate, today)
+              : false;
 
-  /* Upozorenja generatora pravi PUN probni plan (do 6 rekurzivnih generisanja): računanje čeka 250 ms tišine. */
-  const [warnings, setWarnings] = useState<string[] | null>(null);
-  useEffect(() => {
-    const t = setTimeout(() => setWarnings(wizardWarnings(w, today)), 250);
-    return () => clearTimeout(t);
-  }, [w, today]);
+  /* F9 korak 7: pod zastavicom V4 plan pravi V4 motor iz istih odgovora (ulaz v2 kao oblik razmene). Sa ugašenom
+     zastavicom ništa od ovoga se ne računa ni ne prikazuje. */
+  const v4On = v4Flag && distance !== null;
+  const v4Today = useV4Store((s) => s.today) ?? today;
+  const knee = useRecoveryStore((s) => s.knee);
+  /* korak 8: forma iz trčanja (`aktivnost`) ulazi u nov plan */
+  const v4Runs = useV4Store((s) => s.runs);
+  const [confirmedDays, setConfirmedDays] = useState(false);
+  const answersV4 = (): WizardAnswers | null => {
+    const a = answersOf();
+    /* trčanje/hodanje (v2 ga odbija): V4 pravi plan kao za početnika, uz upozorenje motora */
+    return a !== null && 'runWalk' in a && a.runWalk === true
+      ? { ...a, experience: 'beginner' }
+      : a;
+  };
+  const answersOf = () =>
+    isV2
+      ? toFiveKV2Input(v2w, w.raceDate, today)
+      : isTenKV2
+        ? toTenKV2Input(t2w, w.raceDate, today)
+        : isHmV2
+          ? toHmV2Input(hmw, w.raceDate, today)
+          : isMarathonV2
+            ? toMarathonV2Input(mw, w.raceDate, today)
+            : null;
+  const v4Preview = useMemo(() => {
+    if (!v4On || step !== TOTAL_STEPS || !valid || distance === null) return null;
+    const answers = answersV4();
+    if (answers === null) return null;
+    try {
+      return makePlan({
+        distance,
+        answers,
+        today: v4Today,
+        knee,
+        activities: v4Runs,
+        confirmedRunDays: confirmedDays
+      });
+    } catch {
+      return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- odgovori su u v2w/t2w/hmw/mw
+  }, [
+    v4On,
+    step,
+    valid,
+    distance,
+    v2w,
+    t2w,
+    hmw,
+    mw,
+    w.raceDate,
+    today,
+    v4Today,
+    knee,
+    v4Runs,
+    confirmedDays
+  ]);
+  const runDayCount = v4Preview?.ok ? v4Preview.facts.availability.runDays.length : 0;
 
-  const hint = useMemo(() => weeksHint(w, today), [w, today]);
-  const out = useMemo(() => outlook(w, today), [w, today]);
-  const form = useMemo(() => formPreview(w), [w]);
-  const pbMsg = pbSanityMessage(w) || resultDateMessage(w, today);
-  const avail = availableDays(w);
-  const valid = isV2
-    ? v2StepValid(v2w, step, w.raceDate, today)
-    : isTenKV2
-      ? tenKV2StepValid(t2w, step, w.raceDate, today)
-      : isHmV2
-        ? hmV2StepValid(hmw, step, w.raceDate, today)
-        : isMarathonV2
-          ? marathonV2StepValid(mw, step, w.raceDate, today)
-          : stepValid(w, step, today);
-  const verdict = out && !out.short ? goalVerdict(out, w.intensity) : null;
+  /** V4: upis plana kroz `commitAction`; stari plan (genPlan, prethodni red → `plan_v4_verzija`) ostaje kao arhiva,
+   *  a trčanja (`log`) i forma se ne diraju (odluka vlasnika 4). */
+  async function finishV4(): Promise<void> {
+    const made = v4Preview;
+    const v4 = getApp().v4;
+    if (made === null || v4 === null) return;
+    if (!made.ok) {
+      setErr(made.errors.map((e) => e.message).join('\n'));
+      setStep(1);
+      return;
+    }
+    if (
+      hasPlan &&
+      !(await confirmAction(
+        'Postojeći plan se arhivira, a trčanja i forma ostaju.\n\nNapraviti nov plan?'
+      ))
+    )
+      return;
+    const ok = await v4.commit(() => ({ doc: made.doc, otisak: made.otisak }));
+    if (!ok) {
+      setErr('Plan nije sačuvan — nema veze sa serverom. Pokušaj ponovo.');
+      setStep(1);
+      return;
+    }
+    closeWizard(false);
+  }
 
   /** Upis novog plana (posle potvrde kad postoji stari plan sa unosima). */
   async function activate(plan: GenPlanState): Promise<void> {
@@ -232,34 +316,13 @@ export function Wizard({ today }: { today: string }) {
   }
 
   async function finish(): Promise<void> {
+    if (v4On) return finishV4();
     if (isV2) return finishV2();
     if (isTenKV2) return finishTenKV2();
     if (isHmV2) return finishHmV2();
     if (isMarathonV2) return finishMarathonV2();
-    const input = toGenerationInput(w, today);
-    if (!input) return;
-    const generator = generatorForDistance(input.raceDistM);
-    if (!generator) {
-      setErr(UNSUPPORTED_DISTANCE);
-      setStep(1);
-      return;
-    }
-    const gen = generator.generatePlan(input);
-    if ('error' in gen) {
-      setErr(gen.error);
-      setStep(1);
-      return;
-    }
-    const adapted = generator.adaptGeneratedPlan(gen);
-    if (!adapted) {
-      setErr('Neočekivana greška pri generisanju plana.');
-      setStep(1);
-      return;
-    }
-    /* ULAZ SE PAMTI: `meta` koju generator vrati NE sadrži `pb`, `weeklyKm` ni `trainedRecently`; bez njih se plan ne može
-       ponovo napraviti, pa bi svaka promena cilja usred priprema morala kroz čarobnjak, koji briše ceo dnevnik. */
-    adapted.ulaz = JSON.parse(JSON.stringify(input)) as unknown;
-    await activate(adapted);
+    setErr(UNSUPPORTED_DISTANCE);
+    setStep(1);
   }
 
   const next = (): void => {
@@ -295,7 +358,7 @@ export function Wizard({ today }: { today: string }) {
             id="ob-progress"
             aria-label={`Korak ${step} od ${TOTAL_STEPS}`}
           >
-            {(anyV2 ? STEP_NAMES_V2 : STEP_NAMES).map((n, i) => (
+            {STEP_NAMES_V2.map((n, i) => (
               <div
                 key={n}
                 className={`ob-seg${i + 1 < step ? ' done' : i + 1 === step ? ' on' : ''}`}
@@ -312,7 +375,6 @@ export function Wizard({ today }: { today: string }) {
               w={w}
               set={set}
               today={today}
-              hint={anyV2 ? { kind: 'none' } : hint}
               err={err}
               extra={
                 isV2 ? (
@@ -338,7 +400,11 @@ export function Wizard({ today }: { today: string }) {
             <TenKV2Result v={t2w} set={setT2} raceDate={w.raceDate} today={today} />
           ) : null}
           {isTenKV2 && step === 3 ? (
-            <TenKV2Experience v={t2w} set={setT2} runWalkRejection={runWalkRejection} />
+            <TenKV2Experience
+              v={t2w}
+              set={setT2}
+              runWalkRejection={v4Flag ? null : runWalkRejection}
+            />
           ) : null}
           {isTenKV2 && step === 4 ? <TenKV2Days v={t2w} set={setT2} rejection={rejection} /> : null}
 
@@ -346,7 +412,11 @@ export function Wizard({ today }: { today: string }) {
             <HmV2Result v={hmw} set={setHm} raceDate={w.raceDate} today={today} />
           ) : null}
           {isHmV2 && step === 3 ? (
-            <HmV2Experience v={hmw} set={setHm} runWalkRejection={hmRunWalkRejection} />
+            <HmV2Experience
+              v={hmw}
+              set={setHm}
+              runWalkRejection={v4Flag ? null : hmRunWalkRejection}
+            />
           ) : null}
           {isHmV2 && step === 4 ? <HmV2Days v={hmw} set={setHm} rejection={rejection} /> : null}
 
@@ -354,28 +424,38 @@ export function Wizard({ today }: { today: string }) {
             <MarathonV2Result v={mw} set={setMar} raceDate={w.raceDate} today={today} />
           ) : null}
           {isMarathonV2 && step === 3 ? (
-            <MarathonV2Experience v={mw} set={setMar} runWalkRejection={marRunWalkRejection} />
+            <MarathonV2Experience
+              v={mw}
+              set={setMar}
+              runWalkRejection={v4Flag ? null : marRunWalkRejection}
+            />
           ) : null}
           {isMarathonV2 && step === 4 ? (
             <MarathonV2Days v={mw} set={setMar} rejection={rejection} />
           ) : null}
-
-          {!anyV2 && step === 2 ? <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} /> : null}
-
-          {!anyV2 && step === 3 ? (
-            <Step3Volume w={w} set={set} setDays={setDays} avail={avail} />
-          ) : null}
-
-          {!anyV2 && step === 4 ? (
-            <Step4Intensity
-              w={w}
-              set={set}
-              setW={setW}
-              avail={avail}
-              out={out}
-              verdict={verdict}
-              warnings={warnings}
-            />
+          {v4Preview?.ok && v4Preview.warnings.length > 0 ? (
+            <div className="plan-warn" id="v4-warnings">
+              <Disclosure
+                title="Na šta da paziš u ovom planu"
+                meta={String(v4Preview.warnings.length)}
+                open
+              >
+                {v4Preview.warnings.map((x) => (
+                  <p className="note-src" key={x.code + x.problem}>
+                    {warningText(x)}
+                  </p>
+                ))}
+                {!confirmedDays && v4Preview.warnings.some((x) => x.code === DAY_DROPPED) ? (
+                  <button
+                    type="button"
+                    className="btn ghost block"
+                    onClick={() => setConfirmedDays(true)}
+                  >
+                    Ipak hoću {runDayCount} dana
+                  </button>
+                ) : null}
+              </Disclosure>
+            </div>
           ) : null}
         </div>
         <div className="ob-btnrow">

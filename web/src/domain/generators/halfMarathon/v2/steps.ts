@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import type { PaceInput } from './input.ts';
 import { feelPaces, pacesFromVdot } from './paces.ts';
-import { isBuildPhase, periodize, rePeriodize } from './periodize.ts';
+import { isBuildPhase, periodize, rePeriodize, type TestKind } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, deloadSlot, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type {
@@ -15,6 +15,7 @@ import type {
   Paces,
   Pattern,
   HmV2AdaptStep,
+  PlanLayoutFact,
   WeekFrame,
   WeekLimits,
   Weekday
@@ -53,6 +54,10 @@ export function pacesAt(pace: PaceInput, steps: readonly HmV2AdaptStep[], w: num
   const v = stepVdotAt(steps, w);
   return v === null ? basePaces(pace) : pacesFromVdot(v);
 }
+
+/** P5-F2: nedelja w je bez rasta doze (korak „kvalitet preteški ili preskočeni"). Konstruktor i validator. */
+export const holdAt = (steps: readonly HmV2AdaptStep[], w: number): boolean =>
+  steps.some((s) => s.qualityHold === w);
 
 /** A1: osnova tempa nedelje w (plan po osećaju prelazi na rezultat od nedelje rezultata). */
 export function basisAt(pace: PaceInput, steps: readonly HmV2AdaptStep[], w: number): PaceBasis {
@@ -232,6 +237,9 @@ export function framesFor(
     !isBuildPhase(f.phase) || f.limits?.quality !== undefined || (f.deload && !base[k]!.deload);
   if (t && blocked(t, i) && mustDay(testDateOf(t, pattern)) > mustDay(last)) {
     frames[i] = withoutTest(t);
+    // P5-F1 (odluka organizatora 10. 11. 01:07): kontrolni test plana sa rezultatom u nedelji sa ograničenjem otpada
+    // (ne premešta se; napomena: adapt.ts TEST_MOVED).
+    if (pace.kind === 'result') return frames;
     const j = frames.findIndex(
       (f, k) =>
         k > i &&
@@ -290,8 +298,13 @@ export function appliedRestarts(
 }
 
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
-export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
-  periodize(startDate, weeks, test);
+export const baseFrames = (
+  startDate: IsoDate,
+  weeks: number,
+  test: TestKind,
+  beginner = false,
+  fact?: PlanLayoutFact | null
+): WeekFrame[] | null => periodize(startDate, weeks, test, beginner, fact);
 
 /**
  * Pouka 20: traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa

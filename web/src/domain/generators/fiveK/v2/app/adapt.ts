@@ -16,7 +16,7 @@ import { mustDay } from '../dates.ts';
 import { validatePlan } from '../validate.ts';
 import { writtenWeeks } from '../written.ts';
 import type { AdaptChange, AdaptReason, FiveKV2Plan, PlanWeek, RunWalkWeek } from '../types.ts';
-import type { GenPlanState, IsoDate, LogEntry } from '../../exchange.ts';
+import type { GenPlanState, IsoDate, LogEntry } from './exchange.ts';
 import {
   buildFacts,
   coverageText,
@@ -107,6 +107,7 @@ const CONDITION: Readonly<Record<AdaptReason['condition'], string>> = {
   PAUSE: 'pauza',
   PAIN: 'bol',
   FATIGUE: 'umor',
+  HARD_QUALITY: 'preteški ili preskočeni treninzi kvaliteta',
   LEVEL: 'nivo trčanja/hodanja',
   TRANSITION: 'prelaz na kontinuirani plan'
 };
@@ -131,6 +132,7 @@ const BANNER: ReadonlySet<AdaptReason['condition']> = new Set([
   'PAIN',
   'PAUSE',
   'FATIGUE',
+  'HARD_QUALITY',
   'NEW_RESULT',
   'UNDER_EXECUTION',
   'OVER_EXECUTION',

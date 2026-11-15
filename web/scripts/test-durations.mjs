@@ -1,7 +1,7 @@
 /* TABELA TRAJANJA TEST FAJLOVA za `scripts/testSequencer.ts` (docs/testing/TEST-SPEED.md § 11) — vitest reporter.
 
    Osvežavanje (iz web/, pun nivo, svi projekti):
-     TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs
+     TEST_FULL=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs
 
    Na kraju pokretanja upisuje `scripts/test-durations.json`: putanja fajla (relativno na web/) → trajanje u sekundama
    (sakupljanje + testovi + `beforeAll`/`afterAll`). Fajl koji nije pokrenut zadržava staru vrednost; obrisan fajl ispada.
@@ -23,6 +23,14 @@ export default class TestDurationsReporter {
   }
 
   onTestRunEnd() {
+    /* CI (posao „sve"): `TEST_DURATIONS_OUT=<fajl>` upisuje SAMO fajlove ovog pokretanja (jedan deo), bez tabele, da se
+       delovi spoje u novu tabelu (TEST-SPEED.md § 13). */
+    const only = process.env.TEST_DURATIONS_OUT;
+    if (only) {
+      writeFileSync(only, `${JSON.stringify(Object.fromEntries([...this.seen].sort()), null, 2)}\n`);
+      console.log(`${only}: ${this.seen.size} fajlova`);
+      return;
+    }
     const table = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
     for (const [key, s] of this.seen) table[key] = s;
     const kept = Object.keys(table)

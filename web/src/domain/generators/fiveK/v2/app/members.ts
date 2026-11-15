@@ -22,7 +22,7 @@ import type {
   PainRecord,
   T3kRecord,
   VdotRecord
-} from '../../exchange.ts';
+} from './exchange.ts';
 import { adaptPreview, ADAPT_RUN_WALK_NOTE, goalChange, restoreMerge, v2Of } from './adapt.ts';
 import { addDays, diffDays, isIsoDate } from './date.ts';
 import type { FactsSource, ReportedBreak, SyncSource } from './facts.ts';

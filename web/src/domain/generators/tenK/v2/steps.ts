@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import type { PaceInput } from './input.ts';
 import { feelPaces, pacesFromVdot } from './paces.ts';
-import { isBuildPhase, periodize, rePeriodize } from './periodize.ts';
+import { isBuildPhase, periodize, rePeriodize, type TestKind } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import { deloadSlot } from './quality.ts';
 import type {
@@ -337,7 +337,7 @@ export function appliedRestarts(
 }
 
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
-export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
+export const baseFrames = (startDate: IsoDate, weeks: number, test: TestKind): WeekFrame[] | null =>
   periodize(startDate, weeks, test);
 
 /**

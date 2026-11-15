@@ -1,0 +1,842 @@
+{
+ "round": 2,
+ "date": "2026-11-10",
+ "rubric": "P7b",
+ "versions": {
+  "5K": "5k-v2.15.3",
+  "10K": "10k-v2.14.0",
+  "HM": "hm-v2.12.0",
+  "MAR": "marathon-v2.12.0"
+ },
+ "averages": {
+  "5K": 58.0,
+  "10K": 59.2,
+  "HM": 60.9,
+  "MAR": 57.7
+ },
+ "overall": 59.0,
+ "round1_averages": {
+  "5K": 54.7,
+  "10K": 55.0,
+  "HM": 55.3,
+  "MAR": 53.6
+ },
+ "plans": [
+  {
+   "distance": "5K",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 69.0,
+   "round1": 70.0,
+   "delta": -1.0,
+   "main_issue": "dugi 14 km ned 1-10; I 10-13 min nisko za 40 km; ned 1 37 km (ispod 40)"
+  },
+  {
+   "distance": "5K",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 8
+   },
+   "total": 62.0,
+   "round1": 65.0,
+   "delta": -3.0,
+   "main_issue": "I 3x700/5x500 = 8-10 min za VDOT 48,6; I blok 2 nedelje"
+  },
+  {
+   "distance": "5K",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 60.0,
+   "round1": 59.0,
+   "delta": 1.0,
+   "main_issue": "test 22 min uz doze 5-9 min; I 2x500 (5 min)"
+  },
+  {
+   "distance": "5K",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 47.0,
+   "delta": 13.5,
+   "main_issue": "dugi 12 km 16 nedelja; ned 1-3 = ned 5-7; obim 44-48 ravno"
+  },
+  {
+   "distance": "5K",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 59.0,
+   "round1": 56.5,
+   "delta": 2.5,
+   "main_issue": "I jedna nedelja 4x1000 (14 min) pri 65 km za VDOT 60; dugi 18 ravno"
+  },
+  {
+   "distance": "5K",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 51.0,
+   "round1": 53.0,
+   "delta": -2.0,
+   "main_issue": "lagani 4,3-5,2 km; I 6-7 min"
+  },
+  {
+   "distance": "5K",
+   "profile": "p07",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 59.5,
+   "round1": 50.5,
+   "delta": 9.0,
+   "main_issue": "45->54 km za 4 nedelje; taper RP 4x1000 17 min"
+  },
+  {
+   "distance": "5K",
+   "profile": "p08",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 2,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 49.5,
+   "round1": 47.5,
+   "delta": 2.0,
+   "main_issue": "ista nedelja 13 puta; R 4x400 (6 min) x3; lagan 80 % dugog"
+  },
+  {
+   "distance": "5K",
+   "profile": "p09",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 66.5,
+   "round1": 64.5,
+   "delta": 2.0,
+   "main_issue": "test ned 4 pa rasterećenje ned 5: dve lake nedelje zaredom"
+  },
+  {
+   "distance": "5K",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 53.5,
+   "round1": 51.0,
+   "delta": 2.5,
+   "main_issue": "test 23 min uz doze 3-10 min; rasterećenja bez kvaliteta"
+  },
+  {
+   "distance": "5K",
+   "profile": "p11",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 52.0,
+   "round1": 52.0,
+   "delta": 0.0,
+   "main_issue": "rasterećenje 4 od 13 nedelja; RP 5 min; vrh 14 km"
+  },
+  {
+   "distance": "5K",
+   "profile": "p12",
+   "scores": {
+    "fit": 4,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 53.0,
+   "round1": 40.0,
+   "delta": 13.0,
+   "main_issue": "45 -> 33,8 km; dva kvaliteta (25 min) od ned 1 za početnika; dugi 12 ravno"
+  },
+  {
+   "distance": "10K",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 68.5,
+   "round1": 64.0,
+   "delta": 4.5,
+   "main_issue": "ned 14 pred taper najteža (47 min); ned 1 38 km"
+  },
+  {
+   "distance": "10K",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 58.5,
+   "round1": 59.0,
+   "delta": -0.5,
+   "main_issue": "vrh samo 34 km; taper lagan 3,9 km; RP 10-13 min"
+  },
+  {
+   "distance": "10K",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 4,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 57.5,
+   "round1": 56.5,
+   "delta": 1.0,
+   "main_issue": "T 12 min x5; test 28 min"
+  },
+  {
+   "distance": "10K",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 8
+   },
+   "total": 59.0,
+   "round1": 51.5,
+   "delta": 7.5,
+   "main_issue": "50 km i dugi 14 km svih 18 nedelja; ned 16 56 min pred taper"
+  },
+  {
+   "distance": "10K",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 63.5,
+   "round1": 64.5,
+   "delta": -1.0,
+   "main_issue": "RP 21-23 min nisko za 35:22; dugi 21,5 ravno"
+  },
+  {
+   "distance": "10K",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 48.5,
+   "round1": 45.5,
+   "delta": 3.0,
+   "main_issue": "lagani 3,1-5 km; plan samo preporučuje 3-4 dana"
+  },
+  {
+   "distance": "10K",
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 64.0,
+   "round1": 66.0,
+   "delta": -2.0,
+   "main_issue": "RP 14-18 min (bilo 23-27)"
+  },
+  {
+   "distance": "10K",
+   "profile": "p08",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 3,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 52.0,
+   "round1": 45.5,
+   "delta": 6.5,
+   "main_issue": "bez I; T 16-19 min 9 nedelja; dugi 17,1 x13; lagan 80 %"
+  },
+  {
+   "distance": "10K",
+   "profile": "p09",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 68.5,
+   "round1": 66.5,
+   "delta": 2.0,
+   "main_issue": "ned 10 RP+I pred taper"
+  },
+  {
+   "distance": "10K",
+   "profile": "p10",
+   "scores": {
+    "fit": 6,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 54.5,
+   "round1": 53.5,
+   "delta": 1.0,
+   "main_issue": "T 13-15 min 12 nedelja; rasterećenje ista doza (13 min)"
+  },
+  {
+   "distance": "10K",
+   "profile": "p11",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 58.5,
+   "round1": 31.0,
+   "delta": 27.5,
+   "main_issue": "lagani 3-4 km; dugi 9,7 km"
+  },
+  {
+   "distance": "10K",
+   "profile": "p12",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 57.0,
+   "round1": 56.0,
+   "delta": 1.0,
+   "main_issue": "lagani 9,9 x2 uz dugi 12,4 (80 %); bez testa"
+  },
+  {
+   "distance": "HM",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 72.0,
+   "round1": 68.5,
+   "delta": 3.5,
+   "main_issue": "ned 14 najteža (63 min) pred taper; blok u dugom samo 4 km"
+  },
+  {
+   "distance": "HM",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 71.0,
+   "round1": 68.5,
+   "delta": 2.5,
+   "main_issue": "taper lagan 4,1 km; subota 5,9 uz dugi 21,4"
+  },
+  {
+   "distance": "HM",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 56.0,
+   "round1": 52.0,
+   "delta": 4.0,
+   "main_issue": "taper RP 25 min = 80 % doze; dugi 15,7 ned 9-14; 3 upozorenja"
+  },
+  {
+   "distance": "HM",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 37.5,
+   "delta": 23.0,
+   "main_issue": "55 km i dugi 17,6 ned 1-7; T 28 min ravno; taper 41 min"
+  },
+  {
+   "distance": "HM",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "round1": 60.0,
+   "delta": 6.5,
+   "main_issue": "dugi 24 x14; ned 13 RP 33 + T 33"
+  },
+  {
+   "distance": "HM",
+   "profile": "p06",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 56.0,
+   "round1": 58.5,
+   "delta": -2.5,
+   "main_issue": "ned 8 dugi pada na 12,2 km uz RP 31 + T 15, bez bloka; lagani 4,3"
+  },
+  {
+   "distance": "HM",
+   "profile": "p07",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 64.5,
+   "round1": 60.0,
+   "delta": 4.5,
+   "main_issue": "55->71 km za 8 nedelja; ned 8 67 min"
+  },
+  {
+   "distance": "HM",
+   "profile": "p08",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 53.0,
+   "round1": 43.0,
+   "delta": 10.0,
+   "main_issue": "utorak 19,2 + dugi 24; T 19-22 ravno; bez bloka u dugom"
+  },
+  {
+   "distance": "HM",
+   "profile": "p09",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 61.5,
+   "round1": 59.5,
+   "delta": 2.0,
+   "main_issue": "ned 13-14 po 71-72 min rada bez rezultata trke"
+  },
+  {
+   "distance": "HM",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 55.5,
+   "round1": 48.5,
+   "delta": 7.0,
+   "main_issue": "taper RP 26 min; dugi 15,7; 3 upozorenja"
+  },
+  {
+   "distance": "HM",
+   "profile": "p11",
+   "scores": {
+    "fit": 4,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 7,
+    "specificity": 3,
+    "taper": 5,
+    "clarity": 5
+   },
+   "total": 47.5,
+   "round1": 44.0,
+   "delta": 3.5,
+   "main_issue": "dugi 13,2 pa PADA na 11,4-11,6 u specifičnoj; lagani 4,1 km sve vreme; bez oštrenja"
+  },
+  {
+   "distance": "HM",
+   "profile": "p12",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 67.0,
+   "round1": 64.0,
+   "delta": 3.0,
+   "main_issue": "bez RP u dugom; bez testa"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p01",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 65.0,
+   "round1": 64.0,
+   "delta": 1.0,
+   "main_issue": "najduži dugi 22,4 km (bio 24); +40 %"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p02",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 65.0,
+   "round1": 63.0,
+   "delta": 2.0,
+   "main_issue": "najduži dugi 22,4 km"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p03",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 55.0,
+   "round1": 52.5,
+   "delta": 2.5,
+   "main_issue": "dugi 21 km (bio 22,5) = 50 % nedelje; MP 53 min x3 usred nedelje"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p04",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 59.5,
+   "round1": 37.0,
+   "delta": 22.5,
+   "main_issue": "65 km i dugi 22,7 ned 1-9; dugi 24,1 x10; 8,5 h"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 63.5,
+   "round1": 66.5,
+   "delta": -3.0,
+   "main_issue": "MP u dugom 10/14 km (bilo 16/16); MP usred nedelje 46 min; 116 km ravno"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 54.5,
+   "round1": 55.0,
+   "delta": -0.5,
+   "main_issue": "najduži dugi 17,6 km (bio 19,8)"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "round1": 63.0,
+   "delta": 3.5,
+   "main_issue": "65->84 km; ned 9 86 min rada"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p08",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 4,
+    "recovery": 4,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 47.0,
+   "round1": 42.5,
+   "delta": 4.5,
+   "main_issue": "dugi 25-29,3 km svake nedelje (50 %); T 23 min x12; MP samo usred nedelje"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p09",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 4,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 58.0,
+   "round1": 54.5,
+   "delta": 3.5,
+   "main_issue": "subota 19,1 pa dugi 28; ned 15 90 min rada; +40 % bez rezultata"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 51.5,
+   "round1": 44.5,
+   "delta": 7.0,
+   "main_issue": "dugi 21 km; T 19 min x10; MP 57 min x3"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p11",
+   "scores": {
+    "fit": 3,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 3,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 49.0,
+   "round1": 49.0,
+   "delta": 0.0,
+   "main_issue": "najduži dugi 17,9 km; lagani 5-8 km"
+  },
+  {
+   "distance": "MAR",
+   "profile": "p12",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 57.5,
+   "round1": 51.5,
+   "delta": 6.0,
+   "main_issue": "početnik 50->75 km (8,7 h); dugi 24,8 bez MP"
+  }
+ ]
+}

@@ -520,6 +520,45 @@ export function assess(
       }
     }
   }
+  // D38 (P5 F2): kvalitet u adaptaciji — dva poslednja dana kvaliteta plana (Q1/Q2, ne test) do asOf, oba u poslednjih
+  // qualityLookbackDays dana i potpuno pokrivena (A10), svaki neodrađen (zapis completed false ili bez zapisa) ili sa
+  // RPE ≥ qualityRpe → sledeća nedelja izgradnje (n, ne rasterećenje) bez rasta doze. Ispod bola, pauze, umora i manjka
+  // (aktivan → applied false); isti zapisi se ne sude ponovo (vezano za zapise, kao pouka 36).
+  const qDays = planDays
+    .filter(
+      (d) =>
+        (d.role === 'q1' || d.role === 'q2') && d.workout.kind === 'quality' && day(d.date) <= t
+    )
+    .sort((a, b) => day(a.date) - day(b.date))
+    .slice(-2);
+  const hardQ = (d: PlanDay): boolean => {
+    if (!coveredDays(cov, day(d.date), day(d.date))) return false;
+    // Odluka organizatora (P5): neodrađen samo kad tog DATUMA nema nijednog trčanja (ni zapisa dana plana, ni trčanja van
+    // plana); RPE ≥ qualityRpe samo iz zapisa tog dana plana (dayId) — uvoz trčanja bez veze sa danom ne okida D38.
+    const ran = runs.filter((x) => x.date === d.date || x.dayId === d.date);
+    if (ran.length === 0) return true;
+    return ran.some((x) => x.dayId === d.date && (x.rpe ?? 0) >= A.qualityRpe);
+  };
+  if (
+    qDays.length === 2 &&
+    qDays.every((d) => t - day(d.date) < A.qualityLookbackDays && hardQ(d))
+  ) {
+    const judged = prevAt !== null && qDays.every((d) => day(d.date) <= prevAt);
+    const target = wk(n);
+    const fits = target !== null && build(n) && !target.deload;
+    const blocked = volumeRule || step.pain !== null || step.rest !== null;
+    const ok = !judged && fits && !blocked;
+    if (ok) step.holdDose = n;
+    if (!judged)
+      reason(
+        'QUALITY_HOLD',
+        ok,
+        ok
+          ? `${A.qualityMessage} (nedelja ${wl(n)})`
+          : `Poslednja dva zahtevna treninga su bila preteška ili preskočena: ${blocked ? 'nadjačano bolom, pauzom, umorom ili manjkom izvršenja' : 'sledeća nedelja nije nedelja izgradnje (rasterećenje, taper ili trka)'} — doza se ne menja ovim pravilom.`
+      );
+  }
+
   if (
     W.length === 0 &&
     facts.results.length === 0 &&

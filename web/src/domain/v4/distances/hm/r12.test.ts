@@ -1,0 +1,57 @@
+/* KRUG 12 (briefs/R12.md) — motor nad podacima polumaratona. */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument,
+   @typescript-eslint/no-unsafe-return -- scenariji su netipizovani */
+import { describe, expect, it } from 'vitest';
+import { paceCtxOf, summarize } from '../../engine';
+import { pacesAnnounced } from '../../engine/testdata/round12';
+import { SCENARIOS } from './testdata/scenarios';
+
+const ALL = SCENARIOS.map((s) => ({ s, r: s.run() as any }));
+
+describe('krug 12 — polumaraton', () => {
+  it('M1: promena tempa posle rezultata uvek ima rečenicu (s02, s04, s08)', () => {
+    /* E5 (juče trka) je nov plan iz stanja, ne izmena */
+    const replans = ALL.filter(({ s }) => !s.title.startsWith('E5'));
+    expect(replans.flatMap(({ s, r }) => pacesAnnounced(`s${String(s.no)}`, r))).toEqual([]);
+  });
+
+  it('M9: tekst imenuje tačnu vrstu treninga (prag nije „tempo trke") i razlog pauze (put nije bolest)', () => {
+    const bad: string[] = [];
+    for (const { s, r } of ALL)
+      for (const c of r.changes as { reason: string }[]) {
+        if (/ključni trening „prag/.test(c.reason) && /treninga u tempu trke/.test(c.reason))
+          bad.push(`s${String(s.no)}: prag kao tempo trke`);
+        if (/Pauza zbog puta/.test(c.reason) && /posle bolesti/.test(c.reason))
+          bad.push(`s${String(s.no)}: put kao bolest`);
+      }
+    expect(bad).toEqual([]);
+  });
+
+  /* R22 (A1): treći dan posle trke je odmor ili lagano ≤ 30 min (ranije: dugi ≤ poslednji odrađeni, 60 min) */
+  it('M3: s26 — treći dan posle trke 10 km nije dugi: odmor ili lagano ≤ 30 min', () => {
+    const r = ALL.find(({ s }) => s.no === 26)?.r;
+    const ctx = paceCtxOf(r.after.header);
+    const day = (r.after.weeks as any[])
+      .flatMap((w) => w.days)
+      .find((d) => d.date === '2027-01-17');
+    if (day?.workout != null) {
+      expect(day.workout.kind).toBe('easy');
+      expect(summarize(day.workout, ctx).durationSec).toBeLessThanOrEqual(30 * 60 + 30);
+    }
+  });
+
+  it('M2: s06 (bolest 4–6 nedelja pred trku) — najteža nedelja spuštena, ne obrisana (≥ 50 km, dugi ≥ 1 h 40 sa blokom)', () => {
+    const r = ALL.find(({ s }) => s.no === 6)?.r;
+    const ctx = paceCtxOf(r.after.header);
+    const w = (r.after.weeks as any[]).find((x) => x.index === 17);
+    const km = (w.days as any[]).reduce(
+      (t, d) => t + (d.workout === null ? 0 : summarize(d.workout, ctx).km),
+      0
+    );
+    expect(km).toBeGreaterThanOrEqual(50);
+    const long = (w.days as any[]).find((d) => d.workout?.kind === 'long')?.workout;
+    expect(summarize(long, ctx).durationSec).toBeGreaterThanOrEqual(100 * 60);
+    expect(long.workSec).toBeGreaterThan(0);
+  });
+});

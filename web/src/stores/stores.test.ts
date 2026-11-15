@@ -1,4 +1,5 @@
 import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
+import { generatorForPlan } from '../domain/generators/select';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { migrateState, seedState, type GenPlanState, type PersistedState } from '../domain/state';
 import { activateNewPlan } from './actions';
@@ -159,7 +160,9 @@ describe('aktivacija novog plana', () => {
     expect(s.genPlan?.meta).toMatchObject({ start: '2026-02-02' });
   });
 
-  it('lanac forme se preračunava naspram polazne forme NOVOG plana', () => {
+  /* V1b: nov plan je plan v2, a v2 formu uzima iz rezultata (ne gradi lanac iz tempa treninga): aktivacija ga prosleđuje
+     politici forme NOVOG plana, koja zapis lanca ostavlja kakav je (v1 je lanac preračunavao naspram polazne forme). */
+  it('lanac forme ide politici forme NOVOG plana (v2: zapis ostaje kakav je)', () => {
     const s = fullState();
     s.vdotLog = [
       { id: 't3k-2026-01-10-ab', ts: '2026-01-10', vdot: 99, prev: 99, delta: 0, measured: 46 }
@@ -168,9 +171,8 @@ describe('aktivacija novog plana', () => {
     const np = plan('2026-02-02');
     activateNewPlan(np);
     const chain = collectPersisted().vdotLog;
-    const base = (np.meta as unknown as { vdot0: number }).vdot0;
     expect(chain).toHaveLength(1);
-    expect(chain[0]?.prev).toBe(base);
-    expect(chain[0]?.vdot).not.toBe(99);
+    expect(chain[0]).toMatchObject({ id: 't3k-2026-01-10-ab', measured: 46 });
+    expect(chain).toEqual(generatorForPlan(np)!.recomputeVdotChain(s.vdotLog, null, () => 'test'));
   });
 });

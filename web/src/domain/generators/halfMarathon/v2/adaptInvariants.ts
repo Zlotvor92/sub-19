@@ -4,6 +4,7 @@
 
 import { daysBetween, mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
+import { testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P, planRule } from './policy.ts';
 import { baseFrames, pacesAt } from './steps.ts';
 import type { PlanDay, PlanWeek, HmV2Facts, HmV2Plan } from './types.ts';
@@ -67,7 +68,8 @@ export function adaptInvariants(
   hard.sort();
   for (let i = 1; i < hard.length; i++)
     if (daysBetween(hard[i - 1]!, hard[i]!) < 2) bad.push(`teški susedni ${hard[i]}`);
-  const taper = after.weeks.find((w) => w.phase === 'taper')!;
+  // W1-A: plan od 1 nedelje nema taper.
+  const taper = after.weeks.find((w) => w.phase === 'taper');
   const race = after.weeks[n - 1]!;
   let lastBuild: PlanWeek | null = null;
   let maxDose: Record<string, number> = {};
@@ -108,10 +110,13 @@ export function adaptInvariants(
       bad.push(`mešovita nedelja planirano > cilj bez upozorenja ned ${w.index}`);
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
-    // Planirano = cilj.
+    // Planirano = cilj. K4-B: nedelja sa danom „po želji" — planirano ≤ cilj.
+    const optW = w.notes.some(
+      (n) => n.startsWith('Kratak lagan dan') || n.startsWith('Talas dugog')
+    );
     if (
       w.phase !== 'race' &&
-      (limited
+      (limited || optW
         ? w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS
         : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
     )
@@ -155,8 +160,8 @@ export function adaptInvariants(
     if (isBuild(w) && !w.deload) lastBuild = w;
   }
   // Trkačka ≤ taper; D30b.
-  if (!mixed.has(taper.index) && !mixed.has(race.index)) {
-    if (race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
+  if ((!taper || !mixed.has(taper.index)) && !mixed.has(race.index)) {
+    if (taper && race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
     // Izuzetak (pouka 30, uzak): trkačka nedelja skraćena (dani pretvoreni u odmor — manje dana trčanja od H8
     // bez dana odmora koraka — uz napomenu) i plan nosi upozorenje RACE_WEEK_SHORT.
     const runs = race.days.filter((d) => d.role !== 'race').length;
@@ -180,6 +185,7 @@ export function adaptInvariants(
   if (
     steps.some((s) => s.startKm !== null || s.returnFrom) &&
     lastBuild &&
+    taper &&
     !mixed.has(taper.index) &&
     taper.targetKm > lastBuild.targetKm + EPS
   )
@@ -259,7 +265,9 @@ function extra(
       ? (baseFrames(
           chk.input.startDate,
           chk.weeks,
-          chk.pace.kind === 'feel' && chk.rule.feelTest
+          testKindOf(chk.pace.kind, chk.rule, chk.weeks),
+          chk.rule.beginner,
+          p.layout ?? null
         ) ?? [])
       : []
     )

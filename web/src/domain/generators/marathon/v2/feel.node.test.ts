@@ -50,8 +50,12 @@ const codes = (raw: unknown): string[] => {
 
 /** 4 dana, 16 ned: poslednja nedelja baze (4) je rasterećenje → test na danu T slota (Q2). */
 const D4 = plan(feelInput());
-/** 3 dana, 12 ned: poslednja nedelja baze (3) je izgradnja → test na danu Q1 (umesto jedinog kvaliteta). */
+/** 3 dana, 17 ned: poslednja nedelja baze (5) je izgradnja → test na danu Q1 (umesto jedinog kvaliteta). P8-G7: u
+    planu od 12 nedelja poslednja nedelja baze je nedelja 3 (< 4) i baza nema kasniju nedelju — plan bez testa. */
 const D3 = plan(
+  feelInput({ weeks: 17, km: 30, days: SCHEDULES_BY_DAYS[3].A.days, long: 'sun' }, 450)
+);
+const D3_12 = plan(
   feelInput({ weeks: 12, km: 30, days: SCHEDULES_BY_DAYS[3].A.days, long: 'sun' }, 450)
 );
 
@@ -139,7 +143,10 @@ describe('M16 test 5 km', () => {
     expect(D4.weeks.filter((x) => x.test)).toHaveLength(1);
   });
 
-  it('3 dana: test na danu Q1 umesto jedinog kvaliteta nedelje izgradnje', () => {
+  it('3 dana: test na danu Q1 umesto jedinog kvaliteta nedelje izgradnje; P8-G7: 12 nedelja bez testa (bio bi u nedelji 3)', () => {
+    // marathon-v2.12.0 (S4 O2): 12 nedelja — test u prvoj ne-rasteretnoj nedelji razvoja (nedelja 4).
+    expect(tests(D3_12).map((x) => x.week)).toEqual([4]);
+    expect(D3_12.weeks[3]!.phase).toBe('development');
     const t = tests(D3);
     expect(t).toHaveLength(1);
     const wk = D3.weeks[t[0]!.week - 1]!;
@@ -175,12 +182,14 @@ describe('M16 test 5 km', () => {
     expect(after.doseM).toBeGreaterThanOrEqual(before.doseM);
   });
 
-  it('početnik i plan sa rezultatom nemaju test', () => {
+  // P5-F1 (marathon-v2.10.0): plan sa rezultatom ima kontrolni test u poslednjoj ne-rasteretnoj nedelji razvoja.
+  it('početnik nema test; plan sa rezultatom ima tačno jedan, u razvoju', () => {
     const beg = plan({ ...feelInput({ km: 40 }), experience: 'beginner' });
     expect(tests(beg)).toHaveLength(0);
     expect(beg.weeks.some((w) => w.test)).toBe(false);
     const res = plan(inputOf({ weeks: 16, km: 45, vdot: 45, days: SCHEDULES_BY_DAYS[4].A.days }));
-    expect(tests(res)).toHaveLength(0);
+    expect(tests(res)).toHaveLength(1);
+    expect(res.weeks[tests(res)[0]!.week - 1]!.phase).toBe('development');
   });
 
   it('odstupanje (M16 ispred M5): rasterećenje sa testom pri najmanjem obimu — dugi skraćen da lagani ostanu ≥ 5 km, uz napomenu i upozorenje', () => {

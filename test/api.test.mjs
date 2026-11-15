@@ -1092,13 +1092,14 @@ describe('supabase/provera.sql — alat koji hvata razilaženje baze i repozitor
     izvuciFunkcije('rate-limit.sql'),
     izvuciFunkcije('push.sql'),
     izvuciFunkcije('zajednica.sql'),
-    izvuciFunkcije('istorija.sql'));
+    izvuciFunkcije('istorija.sql'),
+    izvuciFunkcije('v4.sql'));
 
   const provera = readRepoFile('supabase/provera.sql');
   const spisak = (naziv) => {
     const m = new RegExp(`${naziv} as \\(([\\s\\S]*?)\\)\\s*,?\\s*\\n`, 'm').exec(provera);
     assert.ok(m, `provera.sql nema spisak ${naziv}`);
-    return (m[1].match(/'([a-z_]+)'/g) || []).map(x => x.replace(/'/g, ''));
+    return (m[1].match(/'([a-z0-9_]+)'/g) || []).map(x => x.replace(/'/g, ''));
   };
 
   test('spisak „mora biti security definer" odgovara SQL fajlovima', () => {
@@ -1439,7 +1440,7 @@ describe('/api/delete-account — brisanje naloga', () => {
       if (u.includes('/auth/v1/admin/users/')) {
         return nalogPada ? jsonRes({ error: 'ne' }, false, 500) : jsonRes({}, true, 200);
       }
-      const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
+      const m = /\/rest\/v1\/([a-z0-9_]+)\?/.exec(u);
       if (m) {
         if (tabelaPada === m[1]) return jsonRes({ error: 'ne' }, false, 500);
         if (tabela404 === m[1])  return jsonRes({ error: 'nema' }, false, 404);
@@ -1508,7 +1509,7 @@ describe('/api/delete-account — brisanje naloga', () => {
     assert.equal(res.code, 200);
     assert.equal(res.body.ok, true);
 
-    const tabele = pozivi.filter(x => x.includes('/rest/v1/')).map(x => /\/rest\/v1\/([a-z_]+)\?/.exec(x)[1]);
+    const tabele = pozivi.filter(x => x.includes('/rest/v1/')).map(x => /\/rest\/v1\/([a-z0-9_]+)\?/.exec(x)[1]);
     for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage', 'bug_report_usage', 'endpoint_usage']) {
       assert.ok(tabele.includes(t), 'tabela nije obrisana: ' + t);
     }
@@ -1565,13 +1566,13 @@ describe('/api/delete-account — brisanje naloga', () => {
   test('spisak tabela pokriva sve iz supabase/*.sql', () => {
     /* Tabela koja se doda u šemu a ne i ovde preživi brisanje naloga i
        ostane siroče sa user_id-jem koji više ne postoji. */
-    const uKodu = new Set((/const TABELE = \[([\s\S]*?)\]/.exec(IZVOR)[1].match(/'([a-z_]+)'/g) || [])
+    const uKodu = new Set((/const TABELE = \[([\s\S]*?)\]/.exec(IZVOR)[1].match(/'([a-z0-9_]+)'/g) || [])
       .map(s => s.replace(/'/g, '')));
     const sql = readdirSync(join(ROOT, 'supabase'))
       .filter(f => f.endsWith('.sql'))
       .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
     const uSemi = new Map();
-    const re = /create table if not exists public\.([a-z_]+)\s*\(([\s\S]*?)\n\);/g;
+    const re = /create table if not exists public\.([a-z0-9_]+)\s*\(([\s\S]*?)\n\);/g;
     let m;
     while ((m = re.exec(sql))) {
       if (/\buser_id\b/.test(m[2])) uSemi.set(m[1], /user_id[\s\S]{0,200}?on delete cascade/.test(m[2]));
@@ -1642,7 +1643,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
         return jsonRes([]);
       }
       if (u.includes('api.resend.com')) return jsonRes({ id: 'mejl' });
-      const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
+      const m = /\/rest\/v1\/([a-z0-9_]+)\?/.exec(u);
       if (m) return obrisiPada === m[1] ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([]);
       throw new Error('neocekivan poziv: ' + u);
     };
@@ -1941,7 +1942,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
         return jsonRes(1);
       }
       if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
-      if (/\/rest\/v1\/[a-z_]+\?user_id=/.test(u)) return jsonRes([]);
+      if (/\/rest\/v1\/[a-z0-9_]+\?user_id=/.test(u)) return jsonRes([]);
       if (u.includes('api.resend.com')) return jsonRes({ id: 'm' });
       throw new Error('neocekivan poziv: ' + u);
     };
@@ -1966,7 +1967,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
       if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
       if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) return jsonRes(1);
       if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
-      if (/\/rest\/v1\/[a-z_]+\?user_id=/.test(u)) return jsonRes([]);
+      if (/\/rest\/v1\/[a-z0-9_]+\?user_id=/.test(u)) return jsonRes([]);
       if (u.includes('api.resend.com')) throw new Error('Resend pao');
       throw new Error('neocekivan poziv: ' + u);
     };
@@ -1992,7 +1993,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
   test('spisak tabela je ISTI kao u delete-account.js', () => {
     /* Dva mesta brisu isti skup podataka. Kad se raziđu, jedna putanja ostavi
        redove koje druga uklanja — i to se ne vidi ni iz jedne od njih. */
-    const izvuci = (src) => (/const TABELE = \[([\s\S]*?)\]/.exec(src)[1].match(/'([a-z_]+)'/g) || [])
+    const izvuci = (src) => (/const TABELE = \[([\s\S]*?)\]/.exec(src)[1].match(/'([a-z0-9_]+)'/g) || [])
       .map(s => s.replace(/'/g, '')).sort();
     assert.deepEqual(izvuci(IZVOR), izvuci(readRepoFile('api/delete-account.js')));
   });
@@ -2459,7 +2460,8 @@ describe('Šema — svaka tabela sa podacima uskraćuje pristup anon ključu', (
        `TRUNCATE` je privilegija nad TABELOM i RLS ga ne dodiruje. */
     const tabele = ['user_state', 'user_state_istorija', 'zajednica_profil',
       'zajednica_izazov', 'push_pretplata', 'ai_posao', 'nalog_za_brisanje',
-      'endpoint_usage', 'api_usage', 'bug_report_usage'];
+      'endpoint_usage', 'api_usage', 'bug_report_usage',
+      'aktivnost', 'plan_v4', 'plan_v4_verzija', 'plan_v4_dogadjaj', 'v4_pristup'];
     const bez = tabele.filter(t =>
       !new RegExp('revoke\\s+all\\s+on\\s+(?:table\\s+)?public\\.' + t + '\\b[^;]*from[^;]*anon', 'i').test(sve));
     assert.deepEqual(bez, [], `nema \`revoke … from anon\`: ${bez.join(', ')}`);
@@ -2467,7 +2469,8 @@ describe('Šema — svaka tabela sa podacima uskraćuje pristup anon ključu', (
 
   test('svaka tabela koju kod čita ima uključen RLS', () => {
     const tabele = ['user_state', 'user_state_istorija', 'zajednica_profil',
-      'zajednica_izazov', 'push_pretplata', 'ai_posao', 'nalog_za_brisanje'];
+      'zajednica_izazov', 'push_pretplata', 'ai_posao', 'nalog_za_brisanje',
+      'aktivnost', 'plan_v4', 'plan_v4_verzija', 'plan_v4_dogadjaj', 'v4_pristup'];
     const bez = tabele.filter(t =>
       !new RegExp('alter\\s+table\\s+public\\.' + t + '\\s+enable\\s+row\\s+level\\s+security', 'i').test(sve));
     assert.deepEqual(bez, [], `RLS nije uključen u SQL-u: ${bez.join(', ')}`);
@@ -2508,21 +2511,21 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
   const izFajlova = (re, i = 1) => [...new Set([...SQL.matchAll(re)].map(m => m[i]))].sort();
 
   test('svaka tabela iz fajlova je na spisku', () => {
-    const t = izFajlova(/create table if not exists public\.([a-z_]+)/g);
+    const t = izFajlova(/create table if not exists public\.([a-z0-9_]+)/g);
     assert.ok(t.length >= 10, `nađeno premalo tabela: ${t}`);
     const nema = t.filter(x => !INV.includes(`'tabela:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje, prijaviće ih kao NEPOZNATO: ${nema}`);
   });
 
   test('svaka funkcija iz fajlova je na spisku', () => {
-    const f = izFajlova(/create (?:or replace )?function public\.([a-z_]+)/g);
+    const f = izFajlova(/create (?:or replace )?function public\.([a-z0-9_]+)/g);
     assert.ok(f.length >= 10, `nađeno premalo funkcija: ${f}`);
     const nema = f.filter(x => !INV.includes(`'funkcija:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
   });
 
   test('svaki okidač iz fajlova je na spisku', () => {
-    const o = izFajlova(/create (?:or replace )?trigger ([a-z_]+)/g);
+    const o = izFajlova(/create (?:or replace )?trigger ([a-z0-9_]+)/g);
     assert.ok(o.length >= 6, `nađeno premalo okidača: ${o}`);
     const nema = o.filter(x => !INV.includes(`'okidač:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
@@ -2532,12 +2535,12 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
     /* Suprotan smer: obrisana tabela ostane na spisku, pa inventar doveka
        traži da se pusti fajl koji je više ne pravi. */
     for (const [vrsta, re] of [
-      ['tabela', /create table if not exists public\.([a-z_]+)/g],
-      ['funkcija', /create (?:or replace )?function public\.([a-z_]+)/g],
-      ['okidač', /create (?:or replace )?trigger ([a-z_]+)/g]
+      ['tabela', /create table if not exists public\.([a-z0-9_]+)/g],
+      ['funkcija', /create (?:or replace )?function public\.([a-z0-9_]+)/g],
+      ['okidač', /create (?:or replace )?trigger ([a-z0-9_]+)/g]
     ]) {
       const stvarni = new Set(izFajlova(re));
-      const naSpisku = [...INV.matchAll(new RegExp(`'${vrsta}:([a-z_]+)'`, 'g'))].map(m => m[1]);
+      const naSpisku = [...INV.matchAll(new RegExp(`'${vrsta}:([a-z0-9_]+)'`, 'g'))].map(m => m[1]);
       const visak = naSpisku.filter(x => !stvarni.has(x));
       assert.deepEqual(visak, [], `${vrsta} je na spisku a nijedan fajl je ne pravi: ${visak}`);
     }
@@ -2616,7 +2619,7 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
 
   /* Funkcija okidača = ona koju neki `create trigger` u folderu poziva. */
   const funkcijeOkidaca = [...new Set(
-    [...SQL.matchAll(/create (?:or replace )?trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
+    [...SQL.matchAll(/create (?:or replace )?trigger[\s\S]{0,200}?execute function public\.([a-z0-9_]+)\(/g)].map(m => m[1])
   )].sort();
 
   test('svaka funkcija okidača iz fajlova je na spisku izuzetaka', () => {
@@ -2632,7 +2635,7 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
        imenom prođe nekažnjeno. */
     const blok = /p\.proname not in \(([\s\S]*?)\)/.exec(US);
     assert.ok(blok, 'nema spiska izuzetaka u user-state.sql');
-    const naSpisku = [...blok[1].matchAll(/'([a-z_]+)'/g)].map(m => m[1]);
+    const naSpisku = [...blok[1].matchAll(/'([a-z0-9_]+)'/g)].map(m => m[1]);
     const visak = naSpisku.filter(f => !funkcijeOkidaca.includes(f));
     assert.deepEqual(visak, [], `na spisku a nijedan fajl ih ne pravi: ${visak}`);
   });

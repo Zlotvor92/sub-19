@@ -27,7 +27,7 @@ import { addDays, isIsoDate } from './date.ts';
 import { confirmedBreakFact } from './facts.ts';
 import { alignedStart, rejection } from './generate.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
-import type { GenPlanState } from '../../exchange.ts';
+import type { GenPlanState } from './exchange.ts';
 import type { IsoDate } from './date.ts';
 
 const WEEKDAYS: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];

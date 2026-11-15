@@ -19,6 +19,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
+import { useV4Store } from '../stores/v4Store';
 import { createAdminApi, type AdminApi } from '../services/api/adminApi';
 import { createCommunity, type Community } from './community';
 import { createCommunityApi } from '../services/community/communityApi';
@@ -54,6 +55,8 @@ import { migrateState, seedState, type PersistedState } from '../domain/state';
 import { adoptServerState } from '../domain/sync/payload';
 import {
   ALL_LOCAL_KEYS,
+  v4ActivityKey,
+  v4PlanKey,
   SB_LOGIN_WINDOW_MS,
   SB_NONCE_OK_KEY,
   SB_STATE_KEY,
@@ -149,6 +152,8 @@ export interface App {
   forgetEverything(): void;
   /** Strava i intervals.icu: povezivanje, otkačivanje. */
   strava: Integrations['strava'];
+  /** F9 korak 7: V4 iza zastavice (`null` bez Supabase-a). */
+  v4: Integrations['v4'];
   icu: Integrations['icu'];
   /** Uvoz treninga iz primarnog izvora (intervals.icu, inače Strava). */
   activities: Integrations['activities'];
@@ -456,7 +461,8 @@ export function createApp(deps: AppDeps): App {
     ...(deps.navigate ? { navigate: deps.navigate } : {}),
     online: () => (deps.online ? deps.online() : true),
     notify,
-    ...(deps.geo ? { geo: deps.geo } : {})
+    ...(deps.geo ? { geo: deps.geo } : {}),
+    ...(session.isConfigured() ? { supabaseUrl, anonKey } : {})
   });
 
   return {
@@ -504,11 +510,15 @@ export function createApp(deps: AppDeps): App {
       saver.flush(collectPersisted);
       if (accountStorage.select(session.state.userId)) {
         accountGeneration++;
+        useV4Store
+          .getState()
+          .set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
         loaded = loadState(accountStorage.kv, deps.today());
         hydratePersisted(loaded.state);
         engine.reset(!!loaded.loadFailure);
         sync.set({ conflict: null, loadFailure: loaded.loadFailure });
       }
+      integrations.v4?.hydrateCached(); // F9: plan iz plan_v4 se vidi odmah (i bez mreže)
       auth.set({ gate: null, ready: true });
       reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
@@ -516,6 +526,7 @@ export function createApp(deps: AppDeps): App {
       void activity.opened();
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
+      void integrations.v4?.load().catch(() => undefined);
       void ai.collectAll();
       void raceAi.collectAll();
       community.publishOnStart();
@@ -534,6 +545,7 @@ export function createApp(deps: AppDeps): App {
     },
     logout() {
       accountGeneration++;
+      useV4Store.getState().set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
       /* Odjava mora da očisti i POZADINU: bez ovoga bi service worker zadržao kopiju tokena i neposlato stanje pa ih gurnuo posle odjave — na tuđem
          telefonu bi to bio tuđ nalog. Obaveštenja se gase iz istog razloga; token se prosleđuje jer se sesija briše u istom potezu. */
       const token = session.state.access ?? undefined;
@@ -624,6 +636,7 @@ export function createApp(deps: AppDeps): App {
       return { ok: true };
     },
     strava: integrations.strava,
+    v4: integrations.v4,
     icu: integrations.icu,
     activities: integrations.activities,
     weather: integrations.weather,
@@ -636,6 +649,7 @@ export function createApp(deps: AppDeps): App {
     isOwner,
     forgetEverything() {
       accountGeneration++;
+      useV4Store.getState().set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
       /* Pretplata se gasi BEZ poziva servera: red u bazi je već obrisan, a token više ne važi (naloga nema). */
       void push
         .forget()
@@ -643,6 +657,11 @@ export function createApp(deps: AppDeps): App {
         .finally(() => void background.forgetAll());
       accountStorage.forget();
       engine.reset();
+      const forgotten = session.state.userId;
+      if (forgotten) {
+        kv.remove(v4ActivityKey(forgotten)); // F9: napredak uvoza aktivnosti za V4
+        kv.remove(v4PlanKey(forgotten)); // F9: keš poslednjeg V4 plana
+      }
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
       hydratePersisted(seedState(deps.today()));

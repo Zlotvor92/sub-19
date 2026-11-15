@@ -1,0 +1,12 @@
+p01 peak 56 | longest 22.4 | specDrop 0 | taperRp 24.17 | taperShare 0.56 | easyLong 0.51 | sameRun 4 | blockKm 4 | blocks 4/4 | topRun 5 | atTop 5 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p02 peak 53.5 | longest 21.4 | specDrop 0 | taperRp 22.27 | taperShare 0.56 | easyLong 0.47 | sameRun 3 | blockKm 4 | blocks 4/4 | topRun 4 | atTop 4 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p03 peak 34.9 | longest 15.7 | specDrop 0 | taperRp 24.73 | taperShare 0.8 | easyLong 0.8 | sameRun 3 | blockKm 0 | blocks  | topRun 5 | atTop 5 | hardFromRace 5 | lastPreShare 1 | shortEasy 0
+p04 peak 63.1 | longest 20 | specDrop 0 | taperRp 23.53 | taperShare 0.67 | easyLong 0.61 | sameRun 7 | blockKm 6 | blocks 4/6 | topRun 5 | atTop 5 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p05 peak 100 | longest 24 | specDrop 0 | taperRp 22.2 | taperShare 0.6 | easyLong 0.62 | sameRun 4 | blockKm 6 | blocks 4/6 | topRun 11 | atTop 11 | hardFromRace 3 | lastPreShare 0.89 | shortEasy 0
+p06 peak 44.2 | longest 14.1 | specDrop 1.1 | taperRp 15.27 | taperShare 0.5 | easyLong 0.46 | sameRun 3 | blockKm 4 | blocks 4 | topRun 2 | atTop 2 | hardFromRace 2 | lastPreShare 1 | shortEasy 6
+p07 peak 71.5 | longest 22.8 | specDrop -1.3 | taperRp 19 | taperShare 0.5 | easyLong 0.54 | sameRun 2 | blockKm 6 | blocks 4/6 | topRun 2 | atTop 2 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p08 peak 54.3 | longest 24 | specDrop 0 | taperRp 23.77 | taperShare 0.56 | easyLong 0.8 | sameRun 5 | blockKm 0 | blocks  | topRun 5 | atTop 5 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p09 peak 63 | longest 24 | specDrop 0 | taperRp 20.6 | taperShare 0.5 | easyLong 0.65 | sameRun 2 | blockKm 6 | blocks 4/6 | topRun 5 | atTop 5 | hardFromRace 2 | lastPreShare 1 | shortEasy 0
+p10 peak 34.9 | longest 15.7 | specDrop 0 | taperRp 26.2 | taperShare 0.8 | easyLong 0.8 | sameRun 4 | blockKm 0 | blocks  | topRun 5 | atTop 5 | hardFromRace 5 | lastPreShare 1 | shortEasy 0
+p11 peak 27.2 | longest 13.2 | specDrop 1.8 | taperRp 0 | taperShare 0 | easyLong 0.5 | sameRun 4 | blockKm 0 | blocks  | topRun 1 | atTop 1 | hardFromRace 6 | lastPreShare 1 | shortEasy 14
+p12 peak 59 | longest 18.6 | specDrop -0.4 | taperRp 24.33 | taperShare 0.67 | easyLong 0.6 | sameRun 2 | blockKm 0 | blocks  | topRun 4 | atTop 4 | hardFromRace 3 | lastPreShare 1 | shortEasy 0

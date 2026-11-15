@@ -10,9 +10,8 @@ import {
 import type { IcuActivity } from '../../../../activities';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState } from '../../../../state';
-import { initialWizard, toGenerationInput } from '../../../../onboarding';
 import type { HmV2PlanInput } from '../../../contract';
-import { HALF_MARATHON_GENERATOR, generateHmV2Plan, stampForStorage } from '../../../select';
+import { generateHmV2Plan, stampForStorage } from '../../../select';
 
 /* SEGMENT HM-05 (pouka 8) — uvoz (Strava, intervals.icu) u plan HM v2 koristi postojeću infrastrukturu 5K 08c (kao 10K
    v2): trčanje na dan plana se upari sa danom (dnevnik), trčanje na dan odmora postaje zapis van plana (`vanPlanaV2`), a
@@ -37,23 +36,13 @@ function v2Plan(): GenPlanState {
   if (!r.ok) throw new Error(JSON.stringify(r.reasons));
   return stampForStorage(r.plan);
 }
+/** V1b: plan starog (v1) generatora — bez oznake politike i bez objekta v2 (stari plan u bazi; generator nema). */
 function v1Plan(): GenPlanState {
-  const input = toGenerationInput(
-    {
-      ...initialWizard(),
-      raceDist: 21097.5,
-      raceDate: '2027-01-31',
-      pbDist: 10000,
-      pbMin: '45',
-      pbSec: '0',
-      weeklyKm: '40',
-      runDays: 4,
-      runDows: [2, 4, 6, 7]
-    },
-    '2026-11-02'
-  )!;
-  const gen = HALF_MARATHON_GENERATOR.generatePlan(input);
-  return stampForStorage(HALF_MARATHON_GENERATOR.adaptGeneratedPlan(gen)!);
+  const p = JSON.parse(JSON.stringify(v2Plan())) as GenPlanState & Record<string, unknown>;
+  delete p['hmV2'];
+  delete p.meta!['policyId'];
+  delete p.meta!['policyVersion'];
+  return p;
 }
 const view = (p: GenPlanState) => resolvePlan(p.weeks, { alts: {}, moves: {} });
 

@@ -1,0 +1,836 @@
+{
+ "round": 3,
+ "date": "2026-11-10",
+ "rubric": "P7b",
+ "versions": {
+  "5K": "5k-v2.16.0",
+  "10K": "10k-v2.15.0",
+  "HM": "hm-v2.13.0",
+  "MAR": "marathon-v2.13.0"
+ },
+ "averages": {
+  "5K": 59.0,
+  "10K": 60.8,
+  "HM": 61.4,
+  "MAR": 58.5
+ },
+ "overall": 59.9,
+ "plans": [
+  {
+   "distance": "5K",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 71.0,
+   "round1": 70.0,
+   "round2": 69.0,
+   "delta_vs_round2": 2.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 8
+   },
+   "total": 66.0,
+   "round1": 65.0,
+   "round2": 62.0,
+   "delta_vs_round2": 4.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 60.0,
+   "round1": 59.0,
+   "round2": 60.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 47.0,
+   "round2": 60.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 63.0,
+   "round1": 56.5,
+   "round2": 59.0,
+   "delta_vs_round2": 4.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 51.0,
+   "round1": 53.0,
+   "round2": 51.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p07",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 61.5,
+   "round1": 50.5,
+   "round2": 59.5,
+   "delta_vs_round2": 2.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p08",
+   "scores": {
+    "fit": 4,
+    "quality": 5,
+    "progression": 2,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 49.5,
+   "round1": 47.5,
+   "round2": 49.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p09",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 66.5,
+   "round1": 64.5,
+   "round2": 66.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 53.5,
+   "round1": 51.0,
+   "round2": 53.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p11",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 52.0,
+   "round1": 52.0,
+   "round2": 52.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "5K",
+   "profile": "p12",
+   "scores": {
+    "fit": 4,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 53.0,
+   "round1": 40.0,
+   "round2": 53.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 70.5,
+   "round1": 64.0,
+   "round2": 68.5,
+   "delta_vs_round2": 2.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 59.0,
+   "round2": 58.5,
+   "delta_vs_round2": 2.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 56.5,
+   "round2": 57.5,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 8
+   },
+   "total": 59.0,
+   "round1": 51.5,
+   "round2": 59.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "round1": 64.5,
+   "round2": 63.5,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 48.5,
+   "round1": 45.5,
+   "round2": 48.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 67.0,
+   "round1": 66.0,
+   "round2": 64.0,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p08",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 3,
+    "recovery": 7,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 55.0,
+   "round1": 45.5,
+   "round2": 52.0,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p09",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 68.5,
+   "round1": 66.5,
+   "round2": 68.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p10",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 57.5,
+   "round1": 53.5,
+   "round2": 54.5,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p11",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 58.5,
+   "round1": 31.0,
+   "round2": 58.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "10K",
+   "profile": "p12",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 57.0,
+   "round1": 56.0,
+   "round2": 57.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p01",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 72.0,
+   "round1": 68.5,
+   "round2": 72.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p02",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 71.0,
+   "round1": 68.5,
+   "round2": 71.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p03",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 5
+   },
+   "total": 57.0,
+   "round1": 52.0,
+   "round2": 56.0,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p04",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 60.5,
+   "round1": 37.5,
+   "round2": 60.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 9,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 67.5,
+   "round1": 60.0,
+   "round2": 66.5,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p06",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 56.0,
+   "round1": 58.5,
+   "round2": 56.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p07",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 64.5,
+   "round1": 60.0,
+   "round2": 64.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p08",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 53.0,
+   "round1": 43.0,
+   "round2": 53.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p09",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 61.5,
+   "round1": 59.5,
+   "round2": 61.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 5
+   },
+   "total": 56.5,
+   "round1": 48.5,
+   "round2": 55.5,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "HM",
+   "profile": "p11",
+   "scores": {
+    "fit": 4,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 4,
+    "taper": 6,
+    "clarity": 4
+   },
+   "total": 50.0,
+   "round1": 44.0,
+   "round2": 47.5,
+   "delta_vs_round2": 2.5
+  },
+  {
+   "distance": "HM",
+   "profile": "p12",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 67.0,
+   "round1": 64.0,
+   "round2": 67.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p01",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 66.0,
+   "round1": 64.0,
+   "round2": 65.0,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p02",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 7
+   },
+   "total": 66.0,
+   "round1": 63.0,
+   "round2": 65.0,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p03",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 55.0,
+   "round1": 52.5,
+   "round2": 55.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p04",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 59.5,
+   "round1": 37.0,
+   "round2": 59.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p05",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "round1": 66.5,
+   "round2": 63.5,
+   "delta_vs_round2": 3.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p06",
+   "scores": {
+    "fit": 4,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 55.5,
+   "round1": 55.0,
+   "round2": 54.5,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "round1": 63.0,
+   "round2": 66.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p08",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 4,
+    "recovery": 4,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 47.0,
+   "round1": 42.5,
+   "round2": 47.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p09",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 4,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 58.0,
+   "round1": 54.5,
+   "round2": 58.0,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p10",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 51.5,
+   "round1": 44.5,
+   "round2": 51.5,
+   "delta_vs_round2": 0.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p11",
+   "scores": {
+    "fit": 3,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 3,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 50.0,
+   "round1": 49.0,
+   "round2": 49.0,
+   "delta_vs_round2": 1.0
+  },
+  {
+   "distance": "MAR",
+   "profile": "p12",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 61.0,
+   "round1": 51.5,
+   "round2": 57.5,
+   "delta_vs_round2": 3.5
+  }
+ ]
+}

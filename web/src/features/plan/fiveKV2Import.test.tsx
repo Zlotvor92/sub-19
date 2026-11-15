@@ -136,10 +136,11 @@ describe('08c: Prilagodi plan (5K v2) posle uvoza sa trčanjima van plana', () =
     expect(
       within(pv).getByText(/Zapis treninga je potpun od 2026-11-02 do 2026-11-15/)
     ).toBeTruthy();
-    expect(within(pv).getByText('Budući deo plana se ne menja.')).toBeTruthy();
+    // 5k-v2.14.0 (P5 F2, Odluka 10): oba dana kvaliteta nedelje 2 su bez zapisa uz potpunu pokrivenost (trčanja su na
+    // danima odmora) → „preskočena" — sledeća nedelja zadržava dozu; obim se ne smanjuje (nema pauze ni manjka).
+    expect(pv.textContent).toMatch(/preteški ili preskočeni treninzi kvaliteta/);
     expect(pv.textContent).not.toMatch(/Pauza \d+ dana/);
     expect(pv.textContent).not.toMatch(/Izvršeno .* \(< 60%\)/);
-    expect(within(pv).queryByRole('table', { name: 'Promenjene nedelje' })).toBeNull();
     expect(collectPersisted().genPlan).toEqual(p); // pregled ne upisuje
   });
 });

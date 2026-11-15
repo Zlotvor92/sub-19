@@ -1,0 +1,288 @@
+{
+ "round": "V4-5K-06",
+ "commit": "51e1bc57",
+ "datum": "2026-11-15 (Europe/Belgrade)",
+ "plans": {
+  "p01": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 8,
+    "q4_ide_nekud": 8,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 78.0,
+   "dao_bih": "da"
+  },
+  "p02": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 8,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 77.5,
+   "dao_bih": "da"
+  },
+  "p03": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 6.5,
+    "q5_trka": 7,
+    "q6_istina": 7.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Dugi stoji na 45 min četiri nedelje zaredom (ned. 2–5), obim 14→16 km: nedelje 3 i 4 su praktično iste",
+    "Najviše 2,4 km u tempu trke u jednom treningu (ned. 7: 2 × 1 km, ned. 8: 4 × 600 m) — trkač ne sazna koliko dugo drži tempo",
+    "Prognoza 27:50 traži 5:34/km, a dan trke zadaje 5:40/km bez uslovne napomene (p04 i p11 je imaju)"
+   ]
+  },
+  "p04": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 7,
+    "q5_trka": 8,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Sub 70 + ned 90–100 + pon 70–79 min + uto brze deonice: brz trening je četvrti dan zaredom, posle 4 h trčanja u tri dana",
+    "Ned. 4 i 8 identične, ned. 2 i 7 skoro identične; baza 8 nedelja bez razlike u sadržaju",
+    "Za 50 km/ned doza je tanka: intervali najviše 3,6 km, tempo trke najviše 4 km; vršna 13. nedelja ima jedan brz trening"
+   ]
+  },
+  "p05": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 8.5,
+    "q4_ide_nekud": 8,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 79.5,
+   "dao_bih": "da"
+  },
+  "p06": {
+   "ulaz_dozvoljava_dobar_plan": "ne (delimično: 6 nedelja i 26 km/ned za 17:33 daju samo izoštravanje)",
+   "ocene": {
+    "q1_dao_bih": 6.5,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 6,
+    "q4_ide_nekud": 6.5,
+    "q5_trka": 7,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 70.0,
+   "dao_bih": "da uz izmenu",
+   "bolji_plan_sa_istim_ulazom_0_10": 7,
+   "tri_zamerke": [
+    "Tražio 5 dana, dobio 4 (objašnjeno i uz mogućnost potvrde, ali je to izmena izbora trkača)",
+    "Tempo trke najviše 3,2 km (8 × 400) i dva puta isto 3 × 800 m (ned. 4 i 5) — bez napretka u specifičnom radu",
+    "Prag 8 i 11 min i lagani dani od 22 min su premalo za trkača od 17:33"
+   ]
+  },
+  "p07": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 8,
+    "q4_ide_nekud": 7.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 77.0,
+   "dao_bih": "da"
+  },
+  "p08": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7,
+    "q6_istina": 7,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Dugi 43–46 % nedelje svake nedelje (17 km/99 min od 40 km u ned. 13) — previše u jednom trčanju za 5 km",
+    "Obim 11 nedelja stoji na 34–36 km; baza od 8 nedelja sa jednim kvalitetom nedeljno se ponavlja",
+    "Prognoza traži 4:16/km, dan trke zadaje 4:22/km bez uslovne napomene"
+   ]
+  },
+  "p09": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav_svez": 7,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 7.5,
+    "q5_trka": 6.5,
+    "q6_istina": 8,
+    "q7_uredan": 7
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Usponi 8 × 45 s prvi put u planu u ned. 8, dve nedelje pred trku (nov podražaj u sužavanju)",
+    "Ned. 2: prag 24 min u komadu po osećaju posle 2 × 7 min; ned. 5 tri teška elementa (20 % brzog rada) za trkača nepoznate forme",
+    "Lagani dani 4–7 km naspram dva brza od ~9 km: brzi dani nose 55 % obima; napomena na dan trke upućuje na test od 12. 12. („do tada trči po osećaju\")"
+   ]
+  },
+  "p10": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Ned. 3: usponi 10 × 45 s snažno + 6 × 12 s uzbrdo iste nedelje za sporog trkača sa 13 km/ned",
+    "Dugi stoji na 55 min sedam nedelja (5–11), ned. 9–11 skoro iste",
+    "Tempo trke najviše 3 km u treningu; napomena na dan trke zbunjuje („do tada trči po osećaju\")"
+   ]
+  },
+  "p11": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav_svez": 8.5,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 7,
+    "q5_trka": 8,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 76.5,
+   "dao_bih": "da"
+  },
+  "p12": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 6.5,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 6,
+    "q4_ide_nekud": 5.5,
+    "q5_trka": 7,
+    "q6_istina": 6,
+    "q7_uredan": 7
+   },
+   "ukupno": 65.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Zaglavlje tvrdi da se sadržaj dugog menja (progresivan, sa delom u tempu trke), a svih 5 dugih je „1 h 40 min lagano\"",
+    "Ned. 3, 4, 5 i 7 su iste: 75/75/75/100 min — monotonija, popunjavanje kalendara",
+    "Brz rad 0–6 % uz 5,5 h trčanja nedeljno: jedan mali trening nedeljno, bez progresije praga i bez intervala"
+   ]
+  },
+  "p13": {
+   "ulaz_dozvoljava_dobar_plan": "da (za cilj: istrčati 5 km bez hodanja)",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 8,
+    "q5_trka": 8,
+    "q6_istina": 8.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 79.0,
+   "dao_bih": "da"
+  },
+  "p14": {
+   "ulaz_dozvoljava_dobar_plan": "ne (4 nedelje samo izoštravaju postojeću formu)",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 8,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7.5,
+    "q6_istina": 8.5,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 77.5,
+   "dao_bih": "da",
+   "bolji_plan_sa_istim_ulazom_0_10": 8
+  },
+  "p15": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav_svez": 7,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 7.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "tri_zamerke": [
+    "Nema pravila za bol kod povratnika posle povrede (samo „ako si umoran, zameni\"); brze deonice 5 × 300 m već u ned. 4",
+    "Prognoza 24:57 (raspon do 24:16) ne dopušta povratak ka 23:30 za 14 nedelja — prepisuje opalu formu",
+    "Prag 9 min u komadu dva puta isto (ned. 7 i 8); trening od 7,4 km u ned. 4 jednak dugom"
+   ]
+  },
+  "p16": {
+   "ulaz_dozvoljava_dobar_plan": "da",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav_svez": 7.5,
+    "q3_spreman": 7.5,
+    "q4_ide_nekud": 7.5,
+    "q5_trka": 7.5,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 76.5,
+   "dao_bih": "da"
+  }
+ },
+ "ispod_65": "nema",
+ "ispod_75": [
+  "p03",
+  "p04",
+  "p06",
+  "p08",
+  "p09",
+  "p10",
+  "p12",
+  "p15"
+ ],
+ "najniza": [
+  65.5,
+  "p12"
+ ]
+}

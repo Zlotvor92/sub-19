@@ -11,7 +11,7 @@ import type { IcuActivity } from '../../../../activities';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState } from '../../../../state';
 import type { TenKV2PlanInput } from '../../../contract';
-import { TEN_K_GENERATOR, generateTenKV2Plan, stampForStorage } from '../../../select';
+import { generateTenKV2Plan, stampForStorage } from '../../../select';
 
 /* SEGMENT 05 (P8) — uvoz (Strava, intervals.icu) u plan 10K v2 koristi postojeću infrastrukturu 5K 08c: trčanje na dan
    plana se upari sa danom (dnevnik), trčanje na dan odmora postaje zapis van plana (`vanPlanaV2`), a potpuna
@@ -36,19 +36,13 @@ function v2Plan(): GenPlanState {
   if (!r.ok) throw new Error(JSON.stringify(r.reasons));
   return stampForStorage(r.plan);
 }
+/** V1b: plan starog (v1) generatora — bez oznake politike i bez objekta v2 (stari plan u bazi; generator nema). */
 function v1Plan(): GenPlanState {
-  const gen = TEN_K_GENERATOR.generatePlan({
-    startDate: '2026-11-02',
-    raceDate: '2027-01-31',
-    raceDistM: 10000,
-    pb: { distM: 10000, sec: 2700 },
-    weeklyKm: 40,
-    runDays: 4,
-    quality: 2,
-    runDows: [2, 4, 6, 7],
-    intensity: 'std'
-  });
-  return stampForStorage(TEN_K_GENERATOR.adaptGeneratedPlan(gen)!);
+  const p = JSON.parse(JSON.stringify(v2Plan())) as GenPlanState & Record<string, unknown>;
+  delete p['tenKV2'];
+  delete p.meta!['policyId'];
+  delete p.meta!['policyVersion'];
+  return p;
 }
 const view = (p: GenPlanState) => resolvePlan(p.weeks, { alts: {}, moves: {} });
 

@@ -17,6 +17,10 @@ export interface LongRule {
   readonly longMaxSec: number;
   /** T1 izuzetak (nedelja na minimumu, buildLengths); pravilo plana ga nosi (H15). */
   readonly weekMinKm?: number;
+  /** T1/G6: lagan ≤ ovaj udeo dugog u nedelji izgradnje (pravilo plana; bez polja 0,8). */
+  readonly easyLongMaxShare?: number;
+  /** G8: početnik — dugi sme do `share` cilja nedelje da bi dostigao `km`. */
+  readonly longReach?: { readonly share: number; readonly km: number };
 }
 
 export interface Lengths {
@@ -77,8 +81,16 @@ export function week1LongCap10(
 }
 
 /** H13/H15: plafon dugog kao udeo cilja nedelje [0,1 km]. */
-export function longShareCap10(target10: number, rule: { longMaxShare: number }): number {
-  return Math.floor(rule.longMaxShare * target10 + EPS);
+export function longShareCap10(
+  target10: number,
+  rule: { longMaxShare: number; longReach?: { share: number; km: number } }
+): number {
+  const base = Math.floor(rule.longMaxShare * target10 + EPS);
+  // G8 (P8, STOP S2 → O2): početnik — max(udeo reda; min(50 % cilja, 16 km)); jedno mesto, validator čita isto.
+  const r = rule.longReach;
+  return r
+    ? Math.max(base, Math.min(Math.floor(r.share * target10 + EPS), Math.round(r.km * 10)))
+    : base;
 }
 
 /** H13: najduži dozvoljen dugi [0,1 km] za cilj nedelje (udeo H15, trajanje, 24 km; `roll10` — kotrljajuća
@@ -135,8 +147,8 @@ export function buildEasyMin10(p: Paces): number {
 }
 
 /** T1 (krug T): najduži lagan nedelje izgradnje uz dugi `long10` [0,1 km] — 0,8 × dugi (naniže). */
-export const buildEasyCap10 = (long10: number): number =>
-  Math.floor(P.lengths.easyLongMaxShare * long10 + EPS);
+export const buildEasyCap10 = (long10: number, rule?: { easyLongMaxShare?: number }): number =>
+  Math.floor((rule?.easyLongMaxShare ?? P.lengths.easyLongMaxShare) * long10 + EPS);
 
 /** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. T1 (krug T, JEDNO mesto): dugi
     kao i do sada (najduži dozvoljen, laganima ostaje ≥ najkraći lagan buildEasyMin10); svaki lagan ≤ 0,8 × dugi
@@ -162,7 +174,7 @@ export function buildLengthsT1(
     const long10 = Math.min(cap10, Math.floor((rest100 - k * min10 * 10) / 10));
     if (long10 < EASY_MIN10) continue;
     const easy10 = splitEasy(Math.round((rest100 - long10 * 10) / 10), k);
-    const hi10 = buildEasyCap10(long10);
+    const hi10 = buildEasyCap10(long10, rule);
     if (easy10.every((e) => e >= min10 && e <= hi10)) return { long10, easy10 };
   }
   if (easyDays === 0) {
@@ -364,4 +376,136 @@ export function remainderEasy10(rest100: number, caps10: readonly number[]): num
     Math.min(e, caps10[i]!)
   );
   return easy10.every((e) => e >= EASY_MIN10) ? easy10 : null;
+}
+
+/** K4-A2: talas dugog — nedelje (1-indeks) čiji je dugi ≤ `cap10` (0,85 × plafon) i plafon [0,1 km]. */
+export interface LongWave {
+  cap10: number;
+  weeks: ReadonlySet<number>;
+}
+
+/** K4-A2: napomena nedelje talasa (validator je čita kao oznaku). */
+export const WAVE_NOTE =
+  'Talas dugog: dugi ove nedelje je kraći (≈ 85 % najdužeg), pa je nedelja nešto manja od cilja — najduži dugi se čuva za poslednje nedelje pred taper.';
+
+/** K4-A2: granica dugog nedelje talasa — ⌊0,85 × plafon⌋ [0,1 km]. JEDNA funkcija (konstruktor, validator). */
+export const waveCap10 = (ceiling10: number): number =>
+  Math.floor(P.specific.wave.share * ceiling10 + EPS);
+
+/**
+ * K4-A2 (JEDNO mesto odluke): talas dugog redovnog plana 3 dana iz dugih plana bez talasa. Plafon = najduži dugi plana;
+ * kad dugi stoji na plafonu u više od 3 ne-rasteretne nedelje izgradnje zaredom, plafon se troši OD KRAJA unazad:
+ * nedelja po rasporedu B ostaje na plafonu, ostale se smenjuju (plafon, 0,85 ×, …), plafon najviše 3 puta; ostale
+ * nedelje plafona dobijaju 0,85 × plafon. null = bez talasa.
+ */
+export function longWave(
+  weeks: readonly {
+    index: number;
+    phase: string;
+    deload: boolean;
+    long10: number | null;
+    b: boolean;
+  }[],
+  rule: { readonly quality: number; readonly beginner: boolean }
+): LongWave | null {
+  const q = P.specific.wave;
+  if (rule.beginner || rule.quality !== 1) return null;
+  const nd = weeks.filter(
+    (w) => !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
+  );
+  const c10 = Math.max(0, ...weeks.map((w) => w.long10 ?? 0));
+  let run = 0;
+  let maxRun = 0;
+  for (const w of nd) {
+    run = w.long10 === c10 ? run + 1 : 0;
+    maxRun = Math.max(maxRun, run);
+  }
+  if (c10 === 0 || maxRun <= q.run) return null;
+  const at = nd.filter((w) => w.long10 === c10).reverse();
+  const wave = new Set<number>();
+  let keeps = 0;
+  let lastKept = false;
+  for (const w of at) {
+    if (w.b || (!lastKept && keeps < q.maxAtCap)) {
+      keeps++;
+      lastKept = true;
+    } else {
+      wave.add(w.index);
+      lastKept = false;
+    }
+  }
+  return wave.size > 0 ? { cap10: waveCap10(c10), weeks: wave } : null;
+}
+
+/** K4-B: napomena nedelje sa danom „po želji" (validator je čita kao oznaku). */
+export const OPT_NOTE = 'Kratak lagan dan';
+
+/**
+ * K4-B (JEDNO mesto odluke): nedelja izgradnje plana sa kratkim laganim danima — najkraći lagan (< 30 min, `easySec`)
+ * je „odmor ili 20 min lagano po želji": izlazi iz obaveznog obima, njegovi km prelaze u ostale lagane do granice
+ * (≤ udeo × dugi, buildEasyCap10), ostatak je planirano < cilj. `opt` = indeks tog dana u `len.easy10` (među jednakima
+ * kasniji); null = nijedan lagan nije kraći od 30 min.
+ */
+export function optEasy(
+  len: Lengths,
+  rule: { easyLongMaxShare?: number },
+  easySec: (easy10: number) => number,
+  /** Najveći dozvoljen manjak nedelje [0,1 km] (cilj − minimum nedelje, H15): nedelja ne pada ispod minimuma. */
+  maxShort10 = Infinity
+): { len: Lengths; opt: number } | null {
+  const e = len.easy10;
+  if (e.length === 0) return null;
+  const secs = e.map(easySec);
+  const min = Math.min(...secs);
+  if (min >= P.lengths.optEasySec) return null;
+  const opt = secs.lastIndexOf(min);
+  const rest = e.filter((_, i) => i !== opt);
+  if (rest.length === 0)
+    return e[opt]! > maxShort10 ? null : { len: { long10: len.long10, easy10: [] }, opt };
+  const total = Math.min(
+    rest.reduce((a, x) => a + x, 0) + e[opt]!,
+    rest.length * buildEasyCap10(len.long10, rule)
+  );
+  if (rest.reduce((a, x) => a + x, 0) + e[opt]! - total > maxShort10) return null;
+  return { len: { long10: len.long10, easy10: splitEasy(total, rest.length) }, opt };
+}
+
+/** K4-B: plan ima kratke lagane dane — najkraći lagan < 30 min u više od 2 ne-rasteretne nedelje izgradnje. */
+export function shortEasyPlan(
+  weeks: readonly {
+    phase: string;
+    deload: boolean;
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
+  }[]
+): boolean {
+  const n = weeks.filter(
+    (w) =>
+      !w.deload &&
+      (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific') &&
+      w.days.some(
+        (d) => d.role === 'easy' && d.workout.km > 0 && d.workout.sec < P.lengths.optEasySec
+      )
+  ).length;
+  return n > P.lengths.optWeeks;
+}
+
+/** K4-A2: dužine nedelje talasa (jedno mesto) — kad dužine po pravilu nisu izvodljive sa kraćim dugim (`roll10` nosi
+    granicu talasa), dugi = granica, svaki lagan = granica laganog (≤ udeo × dugi, ≥ najkraći); ostatak cilja je
+    planirano < cilj (cilj nedelje ostaje po pravilu, doza i rast obima se ne menjaju). */
+export function waveLengths(
+  target10: number,
+  quality100: number,
+  easyDays: number,
+  rule: LongRule,
+  p: Paces,
+  roll10: number
+): Lengths | null {
+  const len = buildLengths(target10, quality100, easyDays, rule, p, roll10);
+  if (len) return len;
+  const long10 = longCap10(target10, rule, p, roll10);
+  const hi10 = buildEasyCap10(long10, rule);
+  if (easyDays === 0 || hi10 < buildEasyMin10(p)) return null;
+  const rest10 = Math.floor((target10 * 10 - quality100) / 10) - long10;
+  if (rest10 <= easyDays * hi10) return null;
+  return { long10, easy10: Array.from({ length: easyDays }, () => hi10) };
 }

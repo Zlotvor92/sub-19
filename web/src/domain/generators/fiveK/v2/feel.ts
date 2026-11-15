@@ -6,6 +6,7 @@
    strukture (Odluka 3); tek tada, uz drugi kvalitet koji se menja, zadržana doza. */
 
 import { weekLabel } from './input.ts';
+import { vdotOrEstimate } from './paces.ts';
 import { easyCount, weekLengths } from './lengths.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import type {
@@ -23,10 +24,13 @@ import {
   baseDoseKey,
   buildWorkout,
   easyPaceOf,
+  firstIBudget,
   intervalSession,
   qualityBudgets,
   roundRecoverySec,
   tFormOf,
+  HOLD_NOTE,
+  testRun,
   tMaxSec,
   warmupBand,
   type FeelDose,
@@ -76,6 +80,8 @@ function timed(
 interface KindSpec {
   label: string;
   budget: keyof QualityBudgets;
+  /** 5k-v2.15.0 (P8 G2): qualityType treninga koji vrsta gradi (validator: prvi nivo po vrsti). */
+  qualityType: QualityType;
   /** Ponuda doza (faza određuje plafon T bloka). */
   cands: (phase: Phase) => FeelDose[];
   est: (d: FeelDose, p: PaceModel) => number;
@@ -93,6 +99,7 @@ function fartlekSpec(
   return {
     label,
     budget,
+    qualityType: type,
     cands: () => repCands(o.boutsSec, o.minReps, o.maxReps),
     est: secEst,
     build: (d, t, p) => {
@@ -115,6 +122,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
   HILLS: {
     label: 'Kratki usponi',
     budget: 'R',
+    qualityType: 'HILLS',
     cands: () => repCands(F.hills.boutsSec, F.hills.minReps, F.hills.maxReps),
     est: secEst,
     build: (d, t, p) => {
@@ -133,6 +141,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
     }
   },
   TEMPO: {
+    qualityType: 'TEMPO_FEEL',
     label: 'Tempo po osećaju',
     budget: 'T',
     cands: (phase) => {
@@ -175,6 +184,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
     F.effort.fartlekRP
   ),
   RP_SHORT: {
+    qualityType: 'RP',
     label: 'RP kratko',
     budget: 'I',
     cands: () => {
@@ -228,7 +238,7 @@ function choose(
   return smallest((w) => w >= most * P.quality.repFillShare - 1e-9);
 }
 
-type Pick = { kind: FeelKind; d: FeelDose; how: Mode | 'hold' };
+type Pick = { kind: FeelKind; d: FeelDose; how: Mode | 'hold' | 'held' };
 
 /** Doza vrste `kind` u nedelji: prva u fazi → 'first'; inače veći rad → druga struktura → (hold). */
 function progress(
@@ -242,7 +252,11 @@ function progress(
   const s = SPEC[kind];
   const cands = s.cands(phase);
   const est = (d: FeelDose): number => s.est(d, p);
-  const budget = b[s.budget];
+  // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × cilj, prvi nivo ponude vrste) — najniži nivo uvek staje.
+  const budget = Math.min(
+    Math.max(b[s.budget], feelFirstLevel(kind, phase, p)),
+    feelMinuteCap(kind, p)
+  );
   for (const mode of prev ? (['up', 'alt'] as const) : (['first'] as const)) {
     const d = choose(cands, est, budget, prev ?? null, mode);
     if (d) return { kind, d, how: mode };
@@ -257,27 +271,11 @@ function progress(
   return null;
 }
 
-/** Kontrolno trčanje (Odluka 5): WU, 3 km maksimalno ravnomerno, CD. Ne ulazi u udele I/T/R. */
-export function testRun(targetKm: number, p: PaceModel): Workout {
-  const band = warmupBand(targetKm);
-  const e = F.effort.test;
-  return buildWorkout(
-    'quality',
-    'TEST_3K',
-    `Kontrolno trčanje: ${F.test.km} km ${e.cue} (${rpe(e)})`,
-    [
-      { kind: 'warmup', km: band.warmupKm },
-      { kind: 'test', km: F.test.km, effort: e },
-      { kind: 'cooldown', km: band.cooldownKm }
-    ],
-    p
-  );
-}
-
 /** Oštrenje trkačke nedelje po osećaju: RP po osećaju, raceWeekSharpener ponavljanja, prvi izbor. */
 export function feelRaceSharpener(budgetKm: number, boundKm: number, p: PaceModel): SessionResult {
   const s = SPEC.FARTLEK_RP;
-  const o = P.quality.raceWeekSharpener;
+  // 5k-v2.15.0 (P8 dopuna G5): 2 jednake deonice (≤ 12 min rada).
+  const o = { minReps: P.quality.raceSharpener.reps, maxReps: P.quality.raceSharpener.reps };
   const d = choose(
     repCands(F.fartlekRP.boutsSec, o.minReps, o.maxReps),
     (x) => s.est(x, p),
@@ -322,6 +320,71 @@ function kindsOf(
 
 const fail = (message: string): WeekQuality => ({ ok: false, message });
 
+/** 5k-v2.15.0 (P8 dopuna G4): plafon jednog treninga po osećaju [km procene] = minuti rada (quality.minuteCap) /
+    lagan tempo (procena km); RP_SHORT (početnik sa rezultatom, km na RP tempu) / RP tempo. I: VDOT procena. */
+export function feelMinuteCap(kind: FeelKind, p: PaceModel): number {
+  const m = P.quality.minuteCap;
+  const z = CAP_ZONE[kind];
+  const min =
+    z === 'I'
+      ? vdotOrEstimate(p) < m.iSlowVdot
+        ? m.iSlowMin
+        : m.iMin
+      : z === 'RP'
+        ? m.rpMin
+        : z === 'T'
+          ? m.tMin
+          : null;
+  if (min === null) return Infinity;
+  const pace = kind === 'RP_SHORT' && p.vdot !== null ? p.RP : easyPaceOf(p);
+  return Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
+}
+
+/** 5k-v2.15.0 (P8 G2): prvi nivo lestvice vrste po osećaju [km procene] — najmanja procena ponude faze. */
+export function feelFirstLevel(kind: FeelKind, phase: Phase, p: PaceModel): number {
+  const s = SPEC[kind];
+  const c = s.cands(phase);
+  return c.length ? Math.min(...c.map((x) => s.est(x, p))) : Infinity;
+}
+
+/** 5k-v2.15.0 (P8 G2, validator): prvi nivo za trening vrste `qt` u budžetu `bucket` (najveći među vrstama po osećaju
+    koje grade taj qualityType iz tog budžeta); 0 = nijedna. */
+export function feelFirstLevelOf(
+  qt: string,
+  bucket: 'I' | 'T' | 'R',
+  phase: Phase,
+  p: PaceModel
+): number {
+  let x = 0;
+  for (const kind of Object.keys(SPEC) as FeelKind[]) {
+    const s = SPEC[kind];
+    if (s.budget !== bucket || s.qualityType !== qt) continue;
+    const v = feelFirstLevel(kind, phase, p);
+    if (Number.isFinite(v)) x = Math.max(x, v);
+  }
+  return x;
+}
+
+/** 5k-v2.15.0 (P8 b): zona rada vrste po osećaju (granica rasterećenja/tapera po zoni). */
+const CAP_ZONE: Record<FeelKind, 'I' | 'RP' | 'T' | 'R'> = {
+  HILLS: 'R',
+  TEMPO: 'T',
+  FARTLEK_T: 'T',
+  FARTLEK_I: 'I',
+  FARTLEK_RP: 'RP',
+  RP_SHORT: 'RP'
+};
+
+/** 5k-v2.15.0 (P8 b, G2): budžet vrste pod granicom zone (f.qcap) — min(budžet, max(granica, najniži nivo ponude
+    faze)); bez granice budžet. Isto pravilo kao workouts.cappedBudget (sa rezultatom). */
+function cappedFeel(kind: FeelKind, budgetKm: number, f: WeekFrame, p: PaceModel): number {
+  const cap = f.qcap?.[CAP_ZONE[kind]];
+  if (cap === undefined) return budgetKm;
+  const s = SPEC[kind];
+  const first = Math.min(...s.cands(f.phase).map((c) => s.est(c, p)));
+  return Math.min(budgetKm, Math.max(Math.floor(cap * 100 + 1e-9) / 100, first));
+}
+
 /**
  * Kvalitet nedelje po osećaju i/ili početnika (poziva ga samo weekQuality, quality.ts).
  * - početnik: jedan kvalitet; nedelje 1–2 samo lagano + ubrzanja; bez I (vrhunac fartlek „brzo ali
@@ -338,7 +401,9 @@ export function simpleWeekQuality(
   prev: WeekDose | null,
   a: Athlete
 ): WeekQuality {
-  const b = qualityBudgets(targetKm);
+  let b = qualityBudgets(targetKm);
+  // 5k-v2.15.0 (P8 c): prvi I posle R faze (fartlek I) — budžet I × firstIShareOfBudget.
+  if (f.firstI) b = { ...b, I: firstIBudget(b.I) };
   const two = rulesOf(a).qualityDays === 2;
   const so = P.quality.deloadSubstitute.stridesOnly;
   if (a.beginner && f.index <= P.beginner.introWeeks && isBuild(f.phase))
@@ -356,6 +421,12 @@ export function simpleWeekQuality(
   const k = kindsOf(f, a, two, prev);
   // Taper: bez progresije (svaka nedelja prvi izbor, kao sa rezultatom).
   const taper = f.phase === 'taper';
+  // 5k-v2.15.0 (P8 b): taper — budžet glavnog (RP) i drugog (T) pod granicom tapera (f.qcap).
+  if (taper && f.qcap) {
+    b = { ...b, [SPEC[k.main].budget]: cappedFeel(k.main, b[SPEC[k.main].budget], f, p) };
+    if (k.second)
+      b = { ...b, [SPEC[k.second].budget]: cappedFeel(k.second, b[SPEC[k.second].budget], f, p) };
+  }
   const pf = taper ? {} : (prev?.feel ?? {});
   // Zadržana doza je dozvoljena samo uz drugi kvalitet ili kad prethodna nedelja nije bila ista vrsta.
   const holdOk = (kind: FeelKind): boolean => two || prev?.kind !== kind;
@@ -365,15 +436,30 @@ export function simpleWeekQuality(
     // Kvalitet staje u nedelju samo ako dužine (weekLengths, iste kao week.ts) daju lagan ≥ minimum i
     // lagan ≤ dugi; inače rasterećenje samo sa ubrzanjima (npr. početnik, 4 dana, 15 km → 12 km).
     const room = (w: Workout): boolean => {
-      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a, f.deload);
-      return !L.capped && L.shares.every((x) => x + 1e-9 >= L.easyMin);
+      const L = weekLengths(
+        targetKm,
+        w.km,
+        easyCount(a, true, false),
+        f.phase,
+        p,
+        a,
+        f.deload,
+        f.qcap?.longKm
+      );
+      // 5k-v2.15.0 (P8 b): dugi na granici rasterećenja (qcap.longKm) — lagan = dugi, planirano < cilj (kao sa
+      // rezultatom, workouts.deloadWeek); kvalitet ostaje.
+      const atCap = f.qcap?.longKm !== undefined && L.longKm + 1e-9 >= f.qcap.longKm;
+      return (!L.capped || atCap) && L.shares.every((x) => x + 1e-9 >= L.easyMin);
     };
     for (const kind of chain) {
       const s = SPEC[kind];
       const d = choose(
         s.cands(f.phase),
         (x) => s.est(x, p),
-        r2(b[s.budget] * P.quality.deloadBudgetScale),
+        Math.max(
+          cappedFeel(kind, r2(b[s.budget] * P.quality.deloadBudgetScale), f, p),
+          f.qcap ? 0 : feelFirstLevel(kind, f.phase, p)
+        ),
         null,
         'first'
       );
@@ -411,6 +497,21 @@ export function simpleWeekQuality(
   }
 
   const notes: string[] = [];
+  // 5k-v2.14.0 (P5 F2, Odluka 10): nedelja zadržane doze (steps.holdWeek) — svaka vrsta sa poslednjom dozom te vrste u
+  // fazi, ako staje u budžet nedelje i ponudu faze; inače postojeći izbor (prva doza vrste nije rast).
+  const holdW = f.hold === true;
+  const pick = (kind: FeelKind, holdAllowed: boolean): Pick | null => {
+    const s = SPEC[kind];
+    const d = pf[kind];
+    if (
+      holdW &&
+      d &&
+      s.est(d, p) <= b[s.budget] + 1e-9 &&
+      s.cands(f.phase).some((c) => c.reps === d.reps && Math.abs(c.len - d.len) < 1e-9)
+    )
+      return { kind, d, how: 'held' };
+    return progress(kind, f.phase, b, p, d, holdAllowed);
+  };
   // Glavni kvalitet (ili kontrolno trčanje); jedan kvalitet bez smene ne sme da se drži (isti trening
   // dve nedelje zaredom), uz smenu ili drugi kvalitet sme.
   let main: Pick | null = null;
@@ -418,12 +519,12 @@ export function simpleWeekQuality(
   if (f.test) {
     q1 = testRun(targetKm, p);
     notes.push(
-      `Kontrolno trčanje ${F.test.km} km umesto glavnog kvaliteta; plan ostaje po osećaju (tempo iz testa ulazi tek kroz adaptaciju).`
+      `Kontrolno trčanje ${F.test.km} km umesto glavnog kvaliteta. Unesi rezultat — od sledeće nedelje plan dobija tempo iz testa.`
     );
   } else {
-    main = progress(k.main, f.phase, b, p, pf[k.main], holdOk(k.main));
+    main = pick(k.main, holdOk(k.main));
     if (!main && k.other) {
-      main = progress(k.other, f.phase, b, p, pf[k.other], holdOk(k.other));
+      main = pick(k.other, holdOk(k.other));
       if (main)
         notes.push(
           `${SPEC[k.main].label} nema mesta u obimu nedelje — umesto toga ${SPEC[k.other].label.toLowerCase()}.`
@@ -438,10 +539,9 @@ export function simpleWeekQuality(
 
   // Drugi kvalitet (2 kvaliteta); tempo koji ne staje → fartlek u T budžetu.
   let second: Pick | null = null;
-  if (k.second) {
-    second =
-      progress(k.second, f.phase, b, p, pf[k.second], true) ??
-      (k.second === 'TEMPO' ? progress('FARTLEK_T', f.phase, b, p, pf.FARTLEK_T, true) : null);
+  // 5k-v2.15.0 (P8 dopuna G7): u nedelji testa test je jedini kvalitet (drugi dan lagan, stanje slota se ne menja).
+  if (k.second && !f.test) {
+    second = pick(k.second, true) ?? (k.second === 'TEMPO' ? pick('FARTLEK_T', true) : null);
     if (!second)
       return fail(`${SPEC[k.second].label}: budžet ${b[SPEC[k.second].budget]} km nije dovoljan.`);
     if (main?.how === 'hold' && second.how === 'hold')
@@ -464,7 +564,7 @@ export function simpleWeekQuality(
   };
   let key = keyOf(q2);
   let same = prev?.key === key ? prev.same + 1 : 1;
-  if (f.phase === 'base' && second && same > P.quality.baseSameDoseMaxWeeks) {
+  if (f.phase === 'base' && second && !holdW && same > P.quality.baseSameDoseMaxWeeks) {
     const s = SPEC[second.kind];
     const alt = choose(s.cands(f.phase), (x) => s.est(x, p), b[s.budget], second.d, 'alt');
     if (alt) {
@@ -474,10 +574,11 @@ export function simpleWeekQuality(
       same = prev?.key === key ? prev.same + 1 : 1;
     }
   }
+  if ([main, second].some((x) => x?.how === 'held')) notes.push(HOLD_NOTE);
   for (const x of [main, second])
     if (x?.how === 'alt')
       notes.push(
-        `${SPEC[x.kind].label}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), drugačija podela.`
+        `${SPEC[x.kind].label}: ista količina kao prošle nedelje (${feelDoseHeld(x.kind, f.phase, b[SPEC[x.kind].budget], p, x.d) === 'offer' ? 'to je najveća doza ovog treninga u planu' : 'obim nedelje ne dozvoljava više'}), drugačija podela.`
       );
     else if (x?.how === 'hold')
       notes.push(
@@ -505,4 +606,25 @@ export function simpleWeekQuality(
           feel
         }
   };
+}
+
+/**
+ * P4 (S3, samo merenje — ne bira ništa): zašto doza `d` vrste `kind` nije veća. Ista ponuda i procena kao `choose`
+ * ('up': veći procenjeni rad I duže ukupno trajanje). 'step' = veća doza staje u budžet (≤ 1 korak nedeljno / kraj
+ * faze); 'budget' = veća postoji samo uz veći budžet (plafon udela zone); 'offer' = veće nema u ponudi (kraj ponude:
+ * maxReps / bouts / plafon T bloka faze).
+ */
+export function feelDoseHeld(
+  kind: FeelKind,
+  phase: Phase,
+  budgetKm: number,
+  p: PaceModel,
+  d: FeelDose
+): 'step' | 'budget' | 'offer' {
+  const s = SPEC[kind];
+  const w = s.est(d, p);
+  const t = d.reps * d.len;
+  const up = s.cands(phase).filter((c) => s.est(c, p) > w + 1e-9 && c.reps * c.len > t + 1e-9);
+  if (up.some((c) => s.est(c, p) <= budgetKm + 1e-9)) return 'step';
+  return up.length > 0 ? 'budget' : 'offer';
 }

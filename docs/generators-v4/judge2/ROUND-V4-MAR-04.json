@@ -1,0 +1,568 @@
+{
+ "runda": "V4-MAR-04",
+ "stanje": "21d4b070",
+ "pravilo_citanja_prekrseno": false,
+ "planovi": [
+  {
+   "plan": "p01",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 7.5,
+    "p3": 6,
+    "p4": 7,
+    "p5": 8,
+    "p6": 7,
+    "p7": 7.5
+   },
+   "ukupno": 70.5,
+   "dao_bih": "da uz izmenu (dugi do 29–30 km)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "najduži dugi 26,5 km (N13) = 47 % nedelje od 56,6 km; nijedan ≥ 29 km.",
+    "u bloku trči 5:08, a za trku piše 5:18 (i 5:10 „ako\").",
+    "N6 „gradnja\" a dugi pada 20 → 16,5 i nedelja 47,1 → 42,2.",
+    "intervali 3 × 3 min = 9 min, simbolično.",
+    "prag svakog četvrtka 16 nedelja."
+   ],
+   "dobro": [
+    "cilj 3:27:30 pošteno „van raspona\".",
+    "trka: prvih 10 km, zid, gelovi."
+   ]
+  },
+  {
+   "plan": "p02",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7.5,
+    "p2": 7.5,
+    "p3": 7,
+    "p4": 7.5,
+    "p5": 8,
+    "p6": 8,
+    "p7": 8
+   },
+   "ukupno": 75.5,
+   "dao_bih": "da",
+   "posebna_ocena": null,
+   "zamerke": [
+    "dugi najviše 28,5 km za 3:15.",
+    "N10: 53,5 km i dugi 24 km sedam dana posle polumaratona punim naporom.",
+    "0 intervala u 18 nedelja (prihvatljivo, ali jednolično: prag svake nedelje)."
+   ],
+   "dobro": [
+    "prognoza računa napredak (−4:19) i kaže zašto.",
+    "uredan."
+   ]
+  },
+  {
+   "plan": "p03",
+   "grupa": "ulaz ne dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 6.5,
+    "p3": 6,
+    "p4": 7,
+    "p5": 7,
+    "p6": 7.5,
+    "p7": 7
+   },
+   "ukupno": 66.5,
+   "dao_bih": "da uz izmenu (hod-trk u duge, sporiji blok)",
+   "posebna_ocena": 7,
+   "zamerke": [
+    "za trku piše 6:52 i hod-trk 10/1, a u dugima nema hod-trka i blok od 51 min je na 6:28 (N15).",
+    "dugi 25,8 km = 55 % nedelje (47,2).",
+    "„vršna nedelja\" je N13, a najduži dugi je N15.",
+    "nejasno da li 6:52 uključuje hod."
+   ],
+   "dobro": [
+    "minute umesto km.",
+    "upozorenje kaže tačno: 4. dan od 70 min → 54,4 km."
+   ]
+  },
+  {
+   "plan": "p04",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 6.5,
+    "p3": 7.5,
+    "p4": 7.5,
+    "p5": 8,
+    "p6": 7.5,
+    "p7": 7
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu (dan posle trke, 4 dana zaredom)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "dan posle polumaratona (pon 15. 2.) 90 min, a ta nedelja 72,5 km sa dugim 2 h 40.",
+    "sub–uto četiri dana zaredom: N21 1 h 50 pa 3 h 10 pa (N22) 65 min; N19: 1 h 50 pa 3 h 04 pa 80 min.",
+    "svi lagani dani iste dužine (1 h 50 × 3).",
+    "upozorenje „oko 30 min umesto 35\" nerazumljivo (lagani su 75 min)."
+   ],
+   "dobro": [
+    "blok 39 → 55 min u tempu trke.",
+    "sužavanje 83 → 50 → 40."
+   ]
+  },
+  {
+   "plan": "p05",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 7,
+    "p3": 6.5,
+    "p4": 7,
+    "p5": 8,
+    "p6": 8,
+    "p7": 8
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu (srednje dugi, više rada u tempu trke)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "tri lagana dana po 19–21 km, bez srednje dugog i bez kratkog oporavka.",
+    "najveći rad u tempu trke 14 km (N15) i 3 × 4,5 km; za 2:41 tanko.",
+    "N9–N11 bez ijednog pravog brzog treninga osim trke i jednog praga.",
+    "pon 4. 1. 18,5 km dan posle polumaratona, nedelja 125,2 km.",
+    "intervali samo jednom (4 × 1 km)."
+   ],
+   "dobro": [
+    "dugi 29 → 35 km razumno.",
+    "trka i sužavanje."
+   ]
+  },
+  {
+   "plan": "p06",
+   "grupa": "ulaz ne dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 7,
+    "p3": 5.5,
+    "p4": 6.5,
+    "p5": 7,
+    "p6": 6.5,
+    "p7": 6.5
+   },
+   "ukupno": 64.5,
+   "dao_bih": "da uz izmenu (dugi po vremenu do 30 km)",
+   "posebna_ocena": 6,
+   "zamerke": [
+    "dugi 26,5 km traje samo 2 h 01; po vremenu je moglo 30–32 km.",
+    "tri dana po 6–7 km (29–34 min) uz dugi od 47 % nedelje.",
+    "upozorenje nudi „16 nedelja → dugi 27 km / 57,2 km\", a plan već ima 26,5 km / 56,7 km: predlog ne donosi ništa.",
+    "blok na 4:05, trka na 4:19.",
+    "četiri upozorenja, dva o istom."
+   ],
+   "dobro": [
+    "pošteno: 2:57:43, sporije od forme.",
+    "provera forme na 5 km u N4."
+   ]
+  },
+  {
+   "plan": "p07",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 7,
+    "p3": 7.5,
+    "p4": 7.5,
+    "p5": 7,
+    "p6": 6,
+    "p7": 7
+   },
+   "ukupno": 70.5,
+   "dao_bih": "da uz izmenu (tempo trke i prognoza)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "prognoza 6:22 sporija od forme iako plan ima 80,4 km i dugi 30 km sa 12,5 km u tempu; a blok se trči 5:02, trka 5:20.",
+    "upozorenje: „sa 16 nedelja dugi stiže do 30 km\" — već stiže.",
+    "ned 29. 11. 15 km dan posle testa na 10 km.",
+    "intervali 3 × 1 km."
+   ],
+   "dobro": [
+    "dugi 23,5 → 30 km u 9 nedelja bez skoka.",
+    "dobar raspored bloka i rasterećenja."
+   ]
+  },
+  {
+   "plan": "p08",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7.5,
+    "p2": 7,
+    "p3": 7.5,
+    "p4": 7.5,
+    "p5": 8,
+    "p6": 8,
+    "p7": 7.5
+   },
+   "ukupno": 75.0,
+   "dao_bih": "da",
+   "posebna_ocena": null,
+   "zamerke": [
+    "test na 10 km u četvrtak 24. 12. („pripremna trka\" radnim danom).",
+    "N17 bez ijednog brzog dela.",
+    "svaki trening 18–30 km: jedan propušten = trećina nedelje (plan to i kaže)."
+   ],
+   "dobro": [
+    "uto 16,5–20,5 km kao drugi dugi je pravo rešenje za 3 dana.",
+    "24 nedelje iskorišćene, dugi 30 km sa 11,5 km u tempu."
+   ]
+  },
+  {
+   "plan": "p09",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 7,
+    "p3": 7.5,
+    "p4": 7,
+    "p5": 7.5,
+    "p6": 7,
+    "p7": 7
+   },
+   "ukupno": 71.5,
+   "dao_bih": "da uz izmenu (dve polazne forme)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "„Polazna forma 3:52:04\", a red ispod „iz laganog tempa: oko 3:34:30\" — dva broja bez objašnjenja.",
+    "N1 odmah usponi i prag 20 min po osećaju.",
+    "N8 sub 17,5 pa ned 23,5 km (41 km za dva dana).",
+    "N4 „gradnja\", a dugi pada 23,5 → 16,5."
+   ],
+   "dobro": [
+    "napor opisan rečima.",
+    "dve provere (5 km, polumaraton) pre nego što zada tempo."
+   ]
+  },
+  {
+   "plan": "p10",
+   "grupa": "ulaz ne dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 7,
+    "p3": 5.5,
+    "p4": 6.5,
+    "p5": 6.5,
+    "p6": 7,
+    "p7": 6.5
+   },
+   "ukupno": 64.5,
+   "dao_bih": "da uz izmenu (manje testova, hod-trk dugi)",
+   "posebna_ocena": 6.5,
+   "zamerke": [
+    "tri provere punim naporom (5 km N4, 10 km N8, polumaraton N15); N4 = 23,8 km, N8 = 24 km sa 2 treninga.",
+    "posle 9 nedelja dugi tek 2 h 25.",
+    "hod-trk samo u napomeni za trku; poslednja dva duga imaju blok u tempu.",
+    "„napor koji možeš da držiš 5 h 5 min\" početnik ne može da zna.",
+    "4:55:22 naspram 4:30:52."
+   ],
+   "dobro": [
+    "minute.",
+    "upozorenje o 4. danu konkretno."
+   ]
+  },
+  {
+   "plan": "p11",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 8,
+    "p2": 8,
+    "p3": 6.5,
+    "p4": 7.5,
+    "p5": 7,
+    "p6": 7.5,
+    "p7": 7.5
+   },
+   "ukupno": 74.5,
+   "dao_bih": "da",
+   "posebna_ocena": null,
+   "zamerke": [
+    "blok 33 min na 6:11, trka 6:34.",
+    "samo dva treninga u tempu trke pre N19.",
+    "nema hod-trka iako je prognoza 4:25–4:37 (s19 ga za isti profil uvodi)."
+   ],
+   "dobro": [
+    "prve 4 nedelje samo lagano, 25,4 → 50,9 km bez skoka.",
+    "dugi 80 min → 3 h 03 postepeno."
+   ]
+  },
+  {
+   "plan": "p12",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7,
+    "p2": 6.5,
+    "p3": 7,
+    "p4": 7,
+    "p5": 7,
+    "p6": 7,
+    "p7": 7
+   },
+   "ukupno": 69.0,
+   "dao_bih": "da uz izmenu (dan posle polumaratona)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "pon 4. 1. 60 min dan posle polumaratona; N10 55,9 km.",
+    "N1–N5 49,9–51,3 km, „gradnja\" bez rasta.",
+    "sub–uto četiri dana zaredom, uključujući 3 h 06.",
+    "4:41:18 naspram 4:12:03.",
+    "„vršna\" N13, najduži dugi N15."
+   ],
+   "dobro": [
+    "blok 27 → 34 → 41 min.",
+    "po osećaju."
+   ]
+  },
+  {
+   "plan": "p13",
+   "grupa": "ulaz ne dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 7.5,
+    "p3": 4,
+    "p4": 6,
+    "p5": 6.5,
+    "p6": 7,
+    "p7": 5.5
+   },
+   "ukupno": 61.0,
+   "dao_bih": "da uz izmenu (uz jasno „ovo je za završiti\")",
+   "posebna_ocena": 6.5,
+   "zamerke": [
+    "najduži dugi 19,9 km (2 h 35); ostaje 22 km nepoznatog.",
+    "drugo upozorenje je jedna rečenica od ≈ 200 reči, isti predlog („dodaj 4. dan od 55 min … 21,2 km\") dva puta, „duža priprema ne pomaže\" dva puta, a prvo upozorenje kaže „izaberi 16 nedelja\".",
+    "„tempo maratona\" 6:41, trka 7:22.",
+    "„16 nedelja → dugi 21,8 km\" (umesto 19,9) zvuči besmisleno."
+   ],
+   "dobro": [
+    "hod-trk od prve nedelje, isti kao na trci.",
+    "nudi polumaraton istog dana."
+   ]
+  },
+  {
+   "plan": "p14",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7.5,
+    "p2": 7.5,
+    "p3": 7.5,
+    "p4": 7.5,
+    "p5": 8,
+    "p6": 8,
+    "p7": 7.5
+   },
+   "ukupno": 76.0,
+   "dao_bih": "da",
+   "posebna_ocena": null,
+   "zamerke": [
+    "napomena „najduže dugo … u patikama za trku\" stoji uz 32 km (N7), a najduži je 33,5 km (N13).",
+    "lagani dani isti.",
+    "ned 27. 12. 16,5 km dan posle testa."
+   ],
+   "dobro": [
+    "14 km u tempu u dugom od 33,5 km.",
+    "N10 dva brza i kraći dugi: dobar raspored."
+   ]
+  },
+  {
+   "plan": "p15",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 6,
+    "p3": 7,
+    "p4": 7,
+    "p5": 8,
+    "p6": 8,
+    "p7": 7
+   },
+   "ukupno": 69.0,
+   "dao_bih": "da uz izmenu (jedan brzi trening, duži lagani)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "pon 18. 1. 50 min dan posle polumaratona.",
+    "N5–N11 lagani dani 30–40 min, a dva brza treninga i dugi 2 h 25 (42 % nedelje).",
+    "prvi brzi trening posle pauze zbog povrede su usponi „snažno\" (17. 11.).",
+    "60 min u tempu na kraju 3 h (N17) za povratnika."
+   ],
+   "dobro": [
+    "forma 3:52:24 → 4:06:25 objašnjena.",
+    "prve dve nedelje samo lagano."
+   ]
+  },
+  {
+   "plan": "p16",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 6.5,
+    "p2": 6,
+    "p3": 7.5,
+    "p4": 7.5,
+    "p5": 8,
+    "p6": 7.5,
+    "p7": 7.5
+   },
+   "ukupno": 70.5,
+   "dao_bih": "da uz izmenu (godine: više oporavka)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "rođen 1961, a raspored isti kao p09: N8 i N12 dva brza treninga, 80–90 min i dugi u 6 dana.",
+    "polumaraton punim naporom u N9, pa dugi 2 h 25 posle 7 dana.",
+    "N1 odmah prag 21 min i dugi 2 h 15 (43 %).",
+    "godine se nigde ne pominju."
+   ],
+   "dobro": [
+    "bez uzbrdica 4 nedelje i jasno pravilo za bol.",
+    "blok 39 → 55 min."
+   ]
+  },
+  {
+   "plan": "p17",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7.5,
+    "p2": 7.5,
+    "p3": 7,
+    "p4": 7.5,
+    "p5": 8.5,
+    "p6": 8.5,
+    "p7": 8
+   },
+   "ukupno": 76.5,
+   "dao_bih": "da",
+   "posebna_ocena": null,
+   "zamerke": [
+    "rad u tempu trke najviše 13 km u dugom i 3 × 4,5 km; za ispod 3 h bih hteo 16–20 km.",
+    "neparne nedelje specifične faze samo jedan brzi trening.",
+    "pon 4. 1. 14,5 km dan posle polumaratona."
+   ],
+   "dobro": [
+    "cilj „dostižan\", trka 4:15, „ako\" 4:07 — jasno.",
+    "dugi 29–33 km stabilno."
+   ]
+  },
+  {
+   "plan": "p18",
+   "grupa": "ulaz dozvoljava",
+   "ocene": {
+    "p1": 7.5,
+    "p2": 8,
+    "p3": 5.5,
+    "p4": 6.5,
+    "p5": 7,
+    "p6": 7,
+    "p7": 6.5
+   },
+   "ukupno": 69.0,
+   "dao_bih": "da uz izmenu (dugi 28–30 km hod-trk)",
+   "posebna_ocena": null,
+   "zamerke": [
+    "najduži dugi 24 km (3 h) posle 20 nedelja; vrh 47,5 km.",
+    "N4, N7, N10, N11, N16 su lake: 5 od 17 nedelja pre sužavanja.",
+    "četiri pasusa upozorenja, isti predlog dva puta.",
+    "5:02:24 naspram 4:30:52."
+   ],
+   "dobro": [
+    "hod-trk u svakom dugom.",
+    "prve četiri nedelje bez brzog rada."
+   ]
+  },
+  {
+   "plan": "p19",
+   "grupa": "ulaz ne dozvoljava",
+   "ocene": {
+    "p1": 6,
+    "p2": 7,
+    "p3": 4.5,
+    "p4": 6,
+    "p5": 6.5,
+    "p6": 7,
+    "p7": 5.5
+   },
+   "ukupno": 60.0,
+   "dao_bih": "da uz izmenu (duži dugi umesto bloka)",
+   "posebna_ocena": 6,
+   "zamerke": [
+    "dugi najviše 23 km; blok 8 km na 5:45, a trka na 6:20 (35 s/km razlike).",
+    "N1 odmah „specifična\": prag i dugi sa 5 km u tempu.",
+    "drugo upozorenje ponavlja „5. dan\" i „16 nedelja\" po dva puta.",
+    "bez provere forme."
+   ],
+   "dobro": [
+    "kaže jasno: 8 naspram 16 nedelja i polumaraton istog dana.",
+    "sužavanje 47,5 → 36,1 → 29,5."
+   ]
+  }
+ ],
+ "prosek_planova": 69.9,
+ "prosek_ulaz_dozvoljava": 72.2,
+ "prosek_ulaz_ne_dozvoljava": 63.3,
+ "prosek_posebne_ocene": 6.4,
+ "scenariji": {
+  "s01": 8.5,
+  "s02": 8.5,
+  "s03": 8.5,
+  "s04": 8.5,
+  "s05": 7.5,
+  "s06": 7.5,
+  "s07": 6.5,
+  "s08": 7.5,
+  "s09": 8.5,
+  "s10": 8.5,
+  "s11": 5.5,
+  "s12": 5.5,
+  "s13": 8,
+  "s14": 8,
+  "s15": 8.5,
+  "s16": 7.5,
+  "s17": 8.5,
+  "s18": 8.5,
+  "s19": 8.5,
+  "s20": 8,
+  "s21": 10,
+  "s22": 10,
+  "s23": 10,
+  "s24": 8,
+  "s25": 6.5,
+  "s26": 8,
+  "s27": 7.5,
+  "s28": 8.5,
+  "s29": 8
+ },
+ "prosek_scenarija": 8.03,
+ "parovi": {
+  "P1": 8,
+  "P2": 7,
+  "P3": 8.5
+ },
+ "prosek_parova": 7.83,
+ "ispravke": [
+  "Propušten dugi ne sme da skrati sledeći najduži dugi (s11, s12, s25); tekst promene mora da odgovara planu.",
+  "Jedan tempo trke: blok u dugom i „tempo maratona\" ne smeju biti 14–41 s/km brži od tempa koji plan savetuje za trku.",
+  "Dan posle pripremne trke/testa: odmor ili ≤ 30 min; nedelja posle polumaratona ≤ 80 % obima, dugi ≤ 1 h 45–2 h.",
+  "Dugi po vremenu, ne po udelu u nedelji: do ≈ 3 h – 3 h 15 (hod-trk za spore) kad je obim mali (p13, p19, p18, p06, P2B).",
+  "Upozorenja: jedno po temi, bez ponavljanja; predlog samo ako donosi primetno više (ne „27 umesto 26,5 km\").",
+  "Provera forme samo vikendom; ne premeštati polumaraton na radni dan ni test posle trke koja je već dala formu (s07, s16).",
+  "Jedna polazna forma u zaglavlju za trkače po osećaju (sada dva broja), i jedan raspon u planu.",
+  "Hod-trk dosledno: ako ga plan traži na trci, mora biti u dugima (p03, p10); prag za uvođenje isti za p11 i s19.",
+  "Raspored u nedelji: kratak dan oporavka i srednje dugi umesto 3–4 ista laganog dana; bez 4 dana zaredom oko najdužeg dugog.",
+  "Godine i povratak posle povrede: jedan brzi trening nedeljno i duži oporavak (p16, p15); prvi brzi rad ne „usponi snažno\"."
+ ],
+ "za_pregled_vlasnika": [
+  "p13",
+  "p17",
+  "s11+s12",
+  "p16"
+ ],
+ "ispod_65": [
+  "p06",
+  "p10",
+  "p13",
+  "p19"
+ ],
+ "literatura": "Daniels, Pfitzinger, Hansons, Galloway (po sećanju)"
+}

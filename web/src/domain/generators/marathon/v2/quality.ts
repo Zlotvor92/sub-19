@@ -27,6 +27,8 @@ export interface QualityState {
   t: number;
   /** MAR-11 (T3): stanje posle novog starta (A3; q1/q2 = doze posle povratka). */
   restart?: true;
+  /** M19: poslednji blok MP u dugom nedelje B [m] (polja nema dok nedelje B nije bilo). Nedelja B ne menja q1 (MP). */
+  blockM?: number;
 }
 
 export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
@@ -58,9 +60,37 @@ export function carries(from: LadderId, to: LadderId): boolean {
   );
 }
 
-/** M11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
-export function capM(zone: WorkZone, targetKm: number): number {
-  return Math.floor(P.caps[zone] * targetKm * 1000 + 1e-6);
+/** Šta plafon zone čita iz nedelje osim cilja: tempo zone te nedelje i iskustvo (P8-G4, P8-G2). */
+export interface CapCtx {
+  p: Paces;
+  beginner: boolean;
+}
+
+/** P8-G4: plafon rada jednog treninga usred nedelje u sekundama (null = zona nema član u minutima). */
+export function capSec(zone: WorkZone, targetKm: number, c: CapCtx): number | null {
+  const m = P.capsMin;
+  if (zone === 'T') return targetKm >= m.T.bigWeekKm - 1e-9 ? m.T.bigWeekSec : m.T.sec;
+  if (zone === 'I') return c.p.vdot < m.I.slowVdot ? m.I.slowSec : m.I.sec;
+  if (zone === 'MP') return c.beginner ? m.MP.beginnerSec : m.MP.sec;
+  return null;
+}
+
+/** P8-G2: najmanja doza zone koja uvek staje u plafon [m] — prvi nivo lestvice zone (T: T cruise 2 × 1200 m, veći od
+    prvog nivoa T kontinuirano; početnik ima istu lestvicu T cruise). */
+export function capFloorM(zone: WorkZone): number {
+  const ladder: LadderId =
+    zone === 'T' ? 'T_cruise' : zone === 'MP' ? 'MP' : zone === 'I' ? 'I' : 'R';
+  return doseOf(ladderLevels(ladder)[0]!);
+}
+
+/** M11 + P8-G4 + P8-G2 — JEDAN plafon zone za trening usred nedelje, u metrima: min(udeo ciljnog obima nedelje; minuti
+    rada po tempu zone te nedelje), a najmanje prvi nivo lestvice zone (najniži nivo uvek staje). Jedna funkcija za
+    konstruktor i validator. `midweek` false = blok u dugom (bez člana u minutima). */
+export function capM(zone: WorkZone, targetKm: number, c: CapCtx, midweek = true): number {
+  const share = Math.floor(P.caps[zone] * targetKm * 1000 + 1e-6);
+  const sec = midweek ? capSec(zone, targetKm, c) : null;
+  const time = sec === null ? Infinity : Math.floor((sec / c.p[zone]) * 1000 + 1e-6);
+  return Math.max(Math.min(share, time), capFloorM(zone));
 }
 
 const pick = (ladder: LadderId, s: Structure, step: Dose['step']): Dose => ({
@@ -123,15 +153,25 @@ export function nextLevel(ladder: LadderId, doseM: number, beginner = false): St
   return ladderLevels(ladder, beginner).find((s) => doseOf(s) > doseM) ?? null;
 }
 
-/** M12: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (M11) za cilj nedelje, najmanje prvi
+/** M12 / P5-F4: udeo plafona zone za početni nivo — T i I 80 %, R i MP 60 % (policy.startLevel). JEDNA funkcija za
+    konstruktor i validator. */
+export const startShareOf = (ladder: LadderId): number =>
+  P.startLevel.zoneShare[zoneOf(ladder)] ?? P.startLevel.capShare;
+
+/** M12: početni nivo — najviši nivo lestvice ≤ udeo plafona zone (startShareOf; M11) za cilj nedelje, najmanje prvi
     nivo; početnik (`beginner`, M17): prvi nivo (T kontinuirano 1,5 km). null = ni prvi nivo ne staje u
     plafon. */
-export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
+export function startLevel(
+  ladder: LadderId,
+  targetKm: number,
+  p: Paces,
+  beginner = false
+): Structure | null {
   const levels = ladderLevels(ladder, beginner);
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, { p, beginner });
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
-  const limit = P.startLevel.capShare * cap + 1e-6;
+  const limit = startShareOf(ladder) * cap + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
 }
 
@@ -157,9 +197,14 @@ export function pickSlot(
   allowDrop = false,
   oneSlot = false,
   beginner = false,
-  dayFits?: DayFits
+  dayFits?: DayFits,
+  minM = 0,
+  /** P5-F2: nedelja bez rasta doze — ista lestvica bez sledećeg nivoa (druga struktura iste doze, ponavljanje);
+      prelaz iste zone koji nosi dozu (T kontinuirano ↔ T cruise) samo na istu dozu; prelaz u novu zonu i nova
+      lestvica po M12. */
+  hold = false
 ): Dose | null {
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, { p, beginner });
   const levels = ladderLevels(ladder, beginner);
   // Plafon zone (pouka 32): M11 (doza ≤ udeo cilja) i trajanje dana ≤ dugi iste nedelje (`dayFits`, najniži
   // nivo izuzet). MP nikad ispod najnižeg nivoa (2 × 3000 m, najmanja smislena MP doza — M7a, MAR-03): prelaz sa
@@ -168,7 +213,7 @@ export function pickSlot(
   const floorM = ladder === 'MP' ? doseOf(levels[0]!) : 0;
   const ok = (s: Structure): boolean =>
     doseOf(s) >= floorM && doseOf(s) <= cap && fitsDay(ladder, s, beginner, dayFits);
-  const start0 = startLevel(ladder, targetKm, beginner);
+  const start0 = startLevel(ladder, targetKm, p, beginner);
   const start =
     start0 && !ok(start0)
       ? (levels.filter((s) => doseOf(s) <= doseOf(start0) && ok(s)).pop() ?? null)
@@ -184,10 +229,15 @@ export function pickSlot(
     return lv ? pick(ladder, lv, 'drop') : null;
   };
   if (!prev) return start ? pick(ladder, start, 'start') : null;
+  // P8-G4: prethodna doza staje u udeo cilja, a ne staje u član plafona u minutima (blok u dugom veći od MP treninga
+  // — M19 O3; prag 80 km za T; sporiji tempo posle novog rezultata) → najviši nivo koji staje, bez pretrage cilja
+  // (član u minutima ne zavisi od cilja).
+  const minuteOnly = (): boolean =>
+    prev.doseM <= capM(zoneOf(ladder), targetKm, { p, beginner }, false);
   const progress = (): Dose | null => {
-    const next = nextLevel(ladder, prev.doseM, beginner);
+    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);
     if (next && ok(next)) return pick(ladder, next, 'next');
-    if (prev.doseM > cap) return drop();
+    if (prev.doseM > cap) return minuteOnly() ? longDrop() : drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p, ok);
     if (alt) return pick(ladder, alt, 'alt');
     return ok(prev.structure) ? pick(ladder, prev.structure, 'repeat') : longDrop();
@@ -197,10 +247,16 @@ export function pickSlot(
   const newZone = zoneOf(prev.ladder) !== zoneOf(ladder);
   const repeats = (s: Structure): boolean =>
     oneSlot && !newZone && sameStructure(s, prev.structure);
-  const lo = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
-  const lv = levels.find((s) => doseOf(s) >= lo);
+  // M19 (O3): prelaz I → MP posle nedelje B — najmanje nivo iznad bloka (`minM`) kad staje u plafon zone, inače
+  // prelaz po M12.
+  // P5-F2: `hold` važi za prelaz iste zone (T kontinuirano ↔ T cruise); prelaz u novu zonu (I/T → MP) ide po M12.
+  const keep = hold && !newZone;
+  const lo0 = keep ? prev.doseM : Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
+  const lvMin = minM > 0 ? levels.find((s) => doseOf(s) >= Math.max(lo0, minM)) : undefined;
+  const lv0 = lvMin && ok(lvMin) ? lvMin : levels.find((s) => doseOf(s) >= lo0);
+  const lv = keep && lv0 && doseOf(lv0) > prev.doseM ? undefined : lv0;
   if (lv && ok(lv)) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
-  if (prev.doseM > cap) return drop();
+  if (prev.doseM > cap) return minuteOnly() ? longDrop() : drop();
   // Nivo prelaza ne staje (plafon ili trajanje): ista doza druge strukture; nijedna ne staje u trajanje dugog →
   // najviši nivo koji staje (pouka 32).
   const all = structuresForDose(ladder, prev.doseM);
@@ -214,19 +270,33 @@ export function pickSlot(
 export interface Picks {
   q1: Dose | null;
   q2: Dose | null;
+  /** M19: nedelja tipa B — blok MP u dugom [m] (q1 je tada null: dan MP treninga je lagan). */
+  blockM?: number;
 }
 
 /** Prvi nivo lestvice ne staje u plafon zone (M11) cilja nedelje; `beginner`: lestvica početnika (M17). */
-export function firstLevelOverCap(ladder: LadderId, targetKm: number, beginner = false): boolean {
-  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm);
+export function firstLevelOverCap(
+  ladder: LadderId,
+  targetKm: number,
+  p: Paces,
+  beginner = false
+): boolean {
+  return (
+    doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, { p, beginner })
+  );
 }
 
 /** Lestvica Q1 nedelje izgradnje: po fazi (M10/M15); početnik (M17) — T kontinuirano (od 1,5 km) kad prvi
     nivo lestvice faze ne staje u plafon; null = ni 1,5 km ne staje (bez kvaliteta, odstupanje M17). */
-export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): LadderId | null {
+export function buildLadder(
+  phase: Phase,
+  targetKm: number,
+  rule: PlanRule,
+  p: Paces
+): LadderId | null {
   const l = ladderFor(phase, 'q1', rule.quality);
-  if (!rule.beginner || !firstLevelOverCap(l, targetKm, true)) return l;
-  return firstLevelOverCap('T_continuous', targetKm, true) ? null : 'T_continuous';
+  if (!rule.beginner || !firstLevelOverCap(l, targetKm, p, true)) return l;
+  return firstLevelOverCap('T_continuous', targetKm, p, true) ? null : 'T_continuous';
 }
 
 /** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana i početnik, `quality` 1). `skipQ1` =
@@ -240,13 +310,26 @@ export function pickBuild(
   rule: PlanRule,
   allowDrop = false,
   skipQ1 = false,
-  limit?: BuildLimit
+  limit?: BuildLimit,
+  /** P5-F2: nedelja bez rasta doze (pickSlot `hold`). */
+  hold = false
 ): Picks | null {
   const one = rule.quality === 1;
-  const l1 = buildLadder(phase, targetKm, rule);
+  const l1 = buildLadder(phase, targetKm, rule, p);
   let q1: Dose | null = null;
   if (!skipQ1 && l1) {
-    q1 = pickSlot(state.q1, l1, targetKm, p, allowDrop, one, rule.beginner, limit?.q1);
+    q1 = pickSlot(
+      state.q1,
+      l1,
+      targetKm,
+      p,
+      allowDrop,
+      one,
+      rule.beginner,
+      limit?.q1,
+      l1 === 'MP' ? mpAfterBlockM(state.q1, state.blockM) : 0,
+      hold
+    );
     if (!q1) return null;
   }
   if (one) return { q1, q2: null };
@@ -258,7 +341,9 @@ export function pickBuild(
     allowDrop,
     false,
     false,
-    limit?.q2(q1)
+    limit?.q2(q1),
+    0,
+    hold
   );
   return q2 ? { q1, q2 } : null;
 }
@@ -276,12 +361,40 @@ export function advance(picks: Picks, prev: QualityState): QualityState {
   const slot = (d: Dose | null, before: SlotState | null): SlotState | null =>
     d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : before;
   const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
+  const blockM = picks.blockM ?? prev.blockM;
+  // M19 (O3): blok veći od poslednjeg MP treninga postaje „poslednja MP doza" slota Q1 — MP trening nedelje A i taper
+  // (M7) nastavljaju od max(poslednji MP trening, poslednji blok).
+  const q1 = slot(picks.q1, prev.q1);
   return {
-    q1: slot(picks.q1, prev.q1),
+    q1: picks.blockM ? mpCarry(q1, picks.blockM) : q1,
     q2: slot(picks.q2, prev.q2),
     t: t ? t.doseM : prev.t,
-    ...(prev.restart ? { restart: true as const } : {})
+    ...(prev.restart ? { restart: true as const } : {}),
+    ...(blockM !== undefined ? { blockM } : {})
   };
+}
+
+/** M19 (O3) — poslednja MP doza (jedna funkcija za konstruktor, taper i validator): MP doza slota Q1 posle
+    advance — max(poslednji MP trening, poslednji blok); 0 bez MP. */
+export const lastMpM = (state: { q1: SlotState | null }): number =>
+  state.q1?.ladder === 'MP' ? state.q1.doseM : 0;
+
+/** M19 (O3): stanje slota Q1 posle nedelje B sa blokom `blockM` — kad je slot MP, blok veći od poslednje MP doze
+    postaje MP doza slota (nivo lestvice MP te doze); manji ili jednak ne menja slot. Slot koji još nije MP (I iz
+    razvoja) se ne menja — prelaz I → MP nedelje A kreće najmanje od nivoa iznad bloka (mpAfterBlockM). Jedna funkcija
+    za konstruktor (advance) i validator. */
+export function mpCarry(q1: SlotState | null, blockM: number): SlotState | null {
+  if (!q1 || q1.ladder !== 'MP' || q1.doseM >= blockM) return q1;
+  return { ladder: 'MP', doseM: blockM, structure: floorOf('MP', blockM) };
+}
+
+/** M19 (O3): najmanja MP doza treninga nedelje A posle bloka `blockM` [m] kad slot Q1 još nije MP (prelaz I → MP) —
+    sledeći nivo lestvice MP iznad bloka (na vrhu vrh); 0 bez bloka. Konstruktor (pickSlot `minM`) i validator
+    (START_LEVEL). */
+export function mpAfterBlockM(q1: SlotState | null, blockM: number | undefined): number {
+  if (!blockM || q1?.ladder === 'MP') return 0;
+  const lv = ladderLevels('MP');
+  return doseOf(lv.find((s) => doseOf(s) > blockM) ?? lv[lv.length - 1]!);
 }
 
 /** Struktura doze `minM` u lestvici: nivo sa tom dozom, inače prva struktura iste doze (M10). */
@@ -327,13 +440,14 @@ export function pickDeload(
   state: QualityState,
   phase: Phase,
   targetKm: number,
+  p: Paces,
   beginner = false,
   dayFits?: DayFits
 ): Dose | null {
   const ladder = deloadLadder(phase);
   const floor = floorOf(ladder, deloadMinM(beginner), beginner);
   const s0 = reduced(ladder, state.t, P.deload.tShare, floor, beginner);
-  if (doseOf(s0) > capM('T', targetKm)) return null;
+  if (doseOf(s0) > capM('T', targetKm, { p, beginner })) return null;
   return pick(
     ladder,
     reduced(ladder, state.t, P.deload.tShare, floor, beginner, dayFits),
@@ -373,7 +487,7 @@ export function taperDoses(
     };
   }
   // Poslednja MP doza izgradnje (slot Q1; početnik čija specifična faza nije imala MP: 0 → minimum).
-  const lastMp = state.q1?.ladder === 'MP' ? state.q1.doseM : 0;
+  const lastMp = lastMpM(state);
   // MAR-11 (T3): posle novog starta, kad je posle povratka bar jedna nedelja sa kvalitetom — taper zadržava jedan
   // kvalitet: MP ≈ 60 % poslednje MP doze posle povratka (najmanje najniži nivo 2 × 3000 m, T2 skraćenje), bez T.
   if (state.restart && (state.q1 !== null || state.q2 !== null)) {
@@ -383,7 +497,7 @@ export function taperDoses(
     );
     return { mp, t: null, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
   }
-  const mp = taperMpFit(reduced('MP', lastMp, w.mpShare, P.taper.mpMin, false, limit?.q1), limit);
+  const mp = taperMpFit(taperMp(lastMp, w.mpShare, limit?.q1), limit);
   const t =
     w.tShare === null || quality === 1
       ? null
@@ -398,6 +512,20 @@ export function taperDoses(
             : (limit?.alone ?? limit?.q2(pick('MP', P.taper.mpMin, 'taper')))
         );
   return { mp, t, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
+}
+
+/** P8-G5 — MP tapera u odnosu na najveći MP rad izgradnje `lastM` (poslednja MP doza: trening ili blok; bez MP u
+    izgradnji osnova je najniži nivo lestvice): najviši nivo lestvice ≤ `share` × osnova; kad ni najniži nivo (2 × 3000 m)
+    ne staje u udeo — kontinuirani blok naniže na 0,5 km, najmanje `mpShortMinKm`. Isti tempo, pa udeo metara = udeo
+    minuta. Drugi član plafona zone (`dayFits`) spušta nivo lestvice kao `reduced`. JEDNA funkcija (taperDoses) za
+    konstruktor i validator. */
+export function taperMp(lastM: number, share: number, dayFits?: DayFits): Structure {
+  const base = lastM > 0 ? lastM : doseOf(P.taper.mpMin);
+  const limit = share * base + 1e-6;
+  if (doseOf(P.taper.mpMin) <= limit)
+    return reduced('MP', base, share, P.taper.mpMin, false, dayFits);
+  const km = Math.max(P.taper.mpShortMinKm, Math.floor(limit / 500) * 0.5);
+  return { form: 'continuous', km };
 }
 
 /** MAR-11 (T2): u taperu dan MP ne traje duže od dugog iste nedelje — kad ni najmanja doza (2 × 3000 m, izuzeta od
@@ -437,6 +565,7 @@ export function pickTaper(
   step: number,
   targetKm: number,
   quality: 1 | 2,
+  p: Paces,
   relax = false,
   beginner = false,
   limit?: TaperLimit
@@ -444,7 +573,10 @@ export function pickTaper(
   // M11 na dozama po pravilu (izvodljivost kao pre pouke 32); drugi član plafona zone spušta izabrane doze.
   const d0 = taperDoses(state, step, quality, beginner);
   const d = limit ? taperDoses(state, step, quality, beginner, limit) : d0;
-  const t = d0.t && doseOf(d0.t) <= capM('T', targetKm) ? pick(d.tLadder, d.t!, 'taper') : null;
+  const t =
+    d0.t && doseOf(d0.t) <= capM('T', targetKm, { p, beginner })
+      ? pick(d.tLadder, d.t!, 'taper')
+      : null;
   // MAR-11 (T2): MP otpao (ni najkraći blok ne staje u trajanje dugog) — dan je lagan, T ostaje kao po pravilu.
   if (!d.mp && d.mpDropped) return { mp: null, t, mpDropped: true };
   if (!d.mp) return t ? { mp: null, t } : null;

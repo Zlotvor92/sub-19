@@ -1329,6 +1329,13 @@ export const canon09 = (r: unknown): string =>
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
 export type Why09 =
+  /* P8 (5k-v2.15.0): G1 obim do kraja razvoja, G2 prvi nivo lestvice, G3 tekst, (a) I 10 %, (b) rasterećenje/taper,
+     (c) prvi I, (d) trkački dan, (e) početnik iznad kapaciteta (markP8). */
+  | 'P8'
+  /* P5 (5k-v2.14.0): F1 test u planu sa rezultatom ≥ 10 ned ili F2 zadržana doza / HARD_QUALITY (markP5). */
+  | 'P5'
+  /* P4 (5k-v2.13.0): S1 budžet I/RP 10/12 % ili S2 VDOT > 60 (markP4). */
+  | 'P4'
   | 'F1'
   | 'F2'
   | 'C1'
@@ -1357,12 +1364,16 @@ export type Why09 =
 
 interface MarkPlan {
   planType?: string;
+  policyVersion?: string;
   experience?: string;
   paceMode?: string;
   pattern?: { q1: string; q2: string | null; long: string };
+  vdot?: number | null;
   weeks: {
     index: number;
     phase: string;
+    targetKm: number;
+    budgets: { I: number };
     deload: boolean;
     test?: boolean;
     taperStep?: number | null;
@@ -1455,10 +1466,57 @@ export function mark10(why: Why09, r: unknown): boolean {
   }
 }
 
+/** P4 (5k-v2.13.0): kontinuirani plan sa nedeljom čiji je budžet I iznad starog plafona 8 % cilja (S1) ili VDOT > 60 (S2). */
+export function markP4(r: unknown): boolean {
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some(
+      (p) =>
+        (p.vdot ?? 0) > 60 ||
+        p.weeks.some(
+          (w) => w.phase !== 'race' && w.budgets.I > Math.floor(w.targetKm * 8 + 1e-9) / 100 + 1e-9
+        )
+    );
+}
+
+/** P5 (5k-v2.14.0): kontinuirani plan trkača sa rezultatom ≥ 10 nedelja (F1: kontrolno trčanje u vrhuncu) ili rezultat
+    adaptacije sa razlogom HARD_QUALITY / nedeljom zadržane doze (F2, Odluka 10). */
+/** P8 (5k-v2.15.0): pravila P8 menjaju skoro svaki plan (obim, doze, trkački dan); oznaka = plan neprekidnog trčanja
+    po pravilima 5k-v2.15.0 (trkački dan sa WU/CD iz workouts.raceWarmup). */
+export function markP8(r: unknown): boolean {
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some(
+      (p) =>
+        (p.policyVersion === '5k-v2.15.0' ||
+          ['5k-v2.15.1', '5k-v2.15.2', '5k-v2.15.3', '5k-v2.16.0', '5k-v2.17.0'].includes(
+            p.policyVersion ?? ''
+          )) &&
+        p.weeks.some((w) => w.phase === 'race')
+    );
+}
+
+export function markP5(r: unknown): boolean {
+  if (reasonsOf(r).some((x) => x.condition === 'HARD_QUALITY')) return true;
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some(
+      (p) =>
+        p.weeks.some((w) => (w as { hold?: boolean }).hold === true) ||
+        (p.experience !== 'beginner' && p.paceMode === 'vdot' && p.weeks.length >= 10)
+    );
+}
+
 /** Oznaka razloga na TEKUĆEM rezultatu (provera u testu; razlog određuje skripta otisaka poređenjem sa c13c258). */
 export function mark09(why: Why09, r: unknown): boolean {
   const ps = plansOf(r);
   switch (why) {
+    case 'P8':
+      return markP8(r);
+    case 'P5':
+      return markP5(r);
+    case 'P4':
+      return markP4(r);
     case 'F1':
       // Oštrenje trkačke nedelje na danu koji nije zahtevni dan šablona (week.sharpenerCandidates).
       return ps.some((p) => {
@@ -1528,3 +1586,27 @@ export function mark09(why: Why09, r: unknown): boolean {
       return true;
   }
 }
+
+/** 5k-v2.16.0 (K3-A, glavni trener krug 2 § 3b) — NEZAVISNO od policy.ts (brojevi pravila ispisani ovde): donja granica
+    rada jednog I treninga [min] po cilju nedelje (VDOT ≥ 40): 30–45 km 12, 45–65 km 16, ≥ 65 km 18; inače 0. */
+export const k3ILoMin = (vdot: number, targetKm: number): number =>
+  vdot < 40 || targetKm < 30 - 1e-9
+    ? 0
+    : targetKm < 45 - 1e-9
+      ? 12
+      : targetKm < 65 - 1e-9
+        ? 16
+        : 18;
+/** Gornja granica [min] (plafon): VDOT < 40 od 30 km 18; VDOT ≥ 40: 16 / 20 / 24; ispod 30 km G4 (20 / 24). */
+export const k3IHiMin = (vdot: number, targetKm: number): number =>
+  targetKm < 30 - 1e-9
+    ? vdot < 40
+      ? 20
+      : 24
+    : vdot < 40
+      ? 18
+      : targetKm < 45 - 1e-9
+        ? 16
+        : targetKm < 65 - 1e-9
+          ? 20
+          : 24;

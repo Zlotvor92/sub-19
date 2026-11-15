@@ -1,6 +1,7 @@
 /* Segment 03 (5k-v2.2.0): preostale trenerske odluke 4-dnevnog jezgra (Odluke 1–6) i mreža 240 ulaza. */
 
 import { belowTargetShown } from './text.ts';
+import { shortRestWeek } from './week.ts';
 import { describe, expect, it } from 'vitest';
 import { generateFiveKV2 } from './generate.ts';
 import { pacesFromVdot } from './paces.ts';
@@ -175,7 +176,10 @@ describe('Odluka 4: jedan T limit po fazi, jedan vrh obima', () => {
       for (const d of w.days)
         if (w.phase !== 'race')
           expect(d.workout.maxBoutSec.T).toBeLessThanOrEqual(P.quality.tContinuousMaxSec[w.phase]);
-    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm, plan.capacityKm, 4));
+    // 5k-v2.15.0 (P8 G1a): faktor vrha po dužini pripreme (1,30 / 1,35 / 1,40) i satni plafon.
+    expect(plan.peakKm).toBeLessThanOrEqual(
+      volume.peakKm(plan.startKm, plan.capacityKm, 4, { weeks: plan.weeks.length, p: plan.paces })
+    );
   });
 
   it('peakKm = min(1,3 × start, kapacitet, 50) za 4 dana', () => {
@@ -192,27 +196,29 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
     expect(errorsOf(plan)).toEqual([]);
   });
 
-  it('12 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
+  it('rasteretni vrhunac malog obima: I prvog nivoa lestvice (P8 G2; ranije samo ubrzanja)', () => {
     // 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja — 12 nedelja (rasterećenje vrhunca u ned 8).
-    // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima.
+    // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima. 5k-v2.13.0 (P4 S1: I 10 %): na
+    // VDOT ~52 kvalitet staje — samo ubrzanja tek na VDOT 62 (S2).
     const w = planOf({
       ...FAST_SMALL(9),
       km: 12,
-      timeSec: 1157,
+      timeSec: 994,
       days: ['tue', 'thu', 'sun']
     }).weeks.find((x) => x.phase === 'peak' && x.deload)!;
-    expect(quality(w)).toHaveLength(0);
-    expect(w.stridesOnly).toBe(true);
-    expect(w.notes.some((n) => n.includes('samo ubrzanja'))).toBe(true);
-    expect(
-      w.days.some((d) => d.role === 'easy' && d.workout.segments.some((s) => s.kind === 'stride'))
-    ).toBe(true);
+    // 5k-v2.15.0 (P8 G2): prvi nivo lestvice I uvek staje — jedan kratak I (2 × 700 m), ne samo ubrzanja.
+    expect(quality(w).map((d) => d.workout.qualityType)).toEqual(['I']);
+    expect(w.stridesOnly).toBe(false);
+    expect(w.notes.some((n) => n.includes('jedan kratak kvalitet'))).toBe(true);
   });
 
   // 2.4.0 (Segment 05, Odluka 3): bez višeg nivoa I više nije zadržan — ista doza druge strukture
   // (ovde kraći oporavak); identičan I dve nedelje zaredom ne postoji.
   it('11 ned: I neopadajući; bez višeg nivoa ista doza druge strukture (ne zadržan I)', () => {
-    const peak = planOf(FAST_SMALL(11)).weeks.filter((w) => w.phase === 'peak' && !w.deload);
+    // 5k-v2.14.0 (P5 F1): bez nedelje kontrolnog trčanja.
+    const peak = planOf(FAST_SMALL(11)).weeks.filter(
+      (w) => w.phase === 'peak' && !w.deload && !w.test
+    );
     let alt = 0;
     for (let i = 1; i < peak.length; i++) {
       const a = roleDay(peak[i - 1]!, 'q1').workout;
@@ -281,7 +287,10 @@ describe('mreža 240 ulaza (segment02): Odluke 1, 2 i 5', () => {
         r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
       ).toEqual(
         plan.weeks
-          .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+          .filter(
+            (w) =>
+              w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w)
+          )
           .map((w) => w.index)
       );
     }

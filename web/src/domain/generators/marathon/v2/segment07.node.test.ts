@@ -93,7 +93,9 @@ const easy35 = (w: PlanWeek): boolean => w.notes.some((n) => n.endsWith('(pouka 
 
 describe('pouka 35: dva dana kvaliteta samo kad dugi ostaje najduži', () => {
   it('generator (M13a, kratak skorašnji dugi): drugi dan kvaliteta lagan, dugi raste; inače nedelja sa jednim kvalitetom nije izvodljiva', () => {
-    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-12w-40km-v70-A-r6')!.input);
+    // K4-B (marathon-v2.14.0): recent-d5-12w-40km-v70-A-r6 ima nedelje malog obima sa danom odmora (bez nedelje pouke
+    // 35) — primer iste mreže sa nedeljom pouke 35.
+    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-12w-50km-v70-A-r8')!.input);
     const w = p.weeks.find(easy35)!;
     expect(w).toBeDefined();
     expect(w.days.filter((d) => d.role === 'q2')).toEqual([]);
@@ -178,7 +180,9 @@ describe('N8 (pouka 29): validator čita stanje upisane mešovite nedelje', () =
   it('d4-r-16w, manjak kraj ned 6 + zaključan Q1 ned 7 (mešovita): skok doze u ned 8 → DOSE_JUMP (ranije preskočeno)', () => {
     const p = planOf(base('d4-r-16w'));
     const at = p.weeks[5]!.endDate;
-    const lock = p.weeks[6]!.days.find((d) => d.role === 'q1')!.date;
+    // P5-F1: nedelja 7 je nedelja testa plana sa rezultatom (test na danu Q1, ne menja se manjkom); P8-G7: test je
+    // jedini kvalitet te nedelje — zaključan je lagan dan, koji manjak menja.
+    const lock = p.weeks[6]!.days.find((d) => d.role === 'easy')!.date;
     const r = ok(adaptMarathonV2(p, { ...factsOf(p, 'under50', at), lockedDayIds: [lock] }, at));
     expect(r.plan.adaptation!.mixedWeeks).toEqual([7]);
     expect(errors(r.plan)).toEqual([]);
@@ -218,10 +222,10 @@ describe('N11: upozorenja i napomene', () => {
     const longest = Math.max(
       ...slow.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
     );
-    expect(slow.notes).toContain(longTimeCapNote(longest, 26, false));
-    const q = structuredClone(slow);
-    q.notes = q.notes.filter((n) => !n.startsWith('Najduže dugo trčanje je'));
-    expect(errors(q)).toContain('LONG_SHORT_NOTE@-');
+    // K3-A: cilj najdužeg je i trajanje (≥ 165 min sporim E) — dugi na 180 min ga dostiže: ni upozorenja ni rečenice.
+    expect(longest * slow.paces.E.slow).toBeGreaterThanOrEqual(9900);
+    expect(slow.notes).not.toContain(longTimeCapNote(longest, 26, false));
+    expect(errors(slow)).not.toContain('LONG_SHORT_NOTE@-');
     const fast = planOf(
       inputOf({ weeks: 16, km: 35, vdot: 70, days: ['tue', 'thu', 'sat', 'sun'], long: 'sun' })
     );
@@ -230,7 +234,8 @@ describe('N11: upozorenja i napomene', () => {
   });
 
   it('napomena „Cilj po pravilu … nije izvodljiv" ostaje u planu (validator), ne ide korisniku (aplikacija)', () => {
-    const p = planOf(grid('d3-12w-30km-v30-A-sat'));
+    // P2-S2 (dugi do 180 min): d3-12w-30km-v30 više nema neizvodljiv cilj — d3-12w-35km-v30.
+    const p = planOf(grid('d3-12w-35km-v30-A-sat'));
     const w = p.weeks.find((x) =>
       x.notes.some((n) => n.includes('nije izvodljiv u konstrukciji'))
     )!;
@@ -269,7 +274,8 @@ describe('MAR-07b (pouka 4, stalni uslov 4): provere po danu preskaču zaštiće
     (k) => {
       const p = planOf(base('d4-r-16w'));
       const at = p.weeks[k - 1]!.endDate;
-      const q1 = p.weeks[k]!.days.find((d) => d.role === 'q1')!;
+      // P5-F1: nedelja 7 je nedelja testa (test na danu Q1).
+      const q1 = p.weeks[k]!.days.find((d) => d.role === 'q1' || d.role === 'test')!;
       const f = { ...factsOf(p, 'faster', at), lockedDayIds: [q1.date] };
       const r = ok(adaptMarathonV2(p, f, at));
       expect(r.plan.weeks[k]!.days.find((d) => d.date === q1.date)).toEqual(q1);

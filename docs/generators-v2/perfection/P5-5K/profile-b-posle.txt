@@ -1,0 +1,14 @@
+5k-v2.14.0 VDOT 48.6; napomene plana:
+1 base cilj 30 plan 30: q1:R: 4 × 300 m (oporavak 300 m lagano) [5.6 km 29 min] | q2:T: 2 km kontinuirano [5.5 km 28 min] | easy:Lagano 8,4 km + 4 × 20 s ubrzanja [8.4 km 46 min] | long:Dugi lagano 10,5 km [10.5 km 58 min]
+2 base cilj 32.4 plan 32.4: q1:R: 4 × 400 m (oporavak 400 m lagano) [6.3 km 32 min] | q2:T: 2,5 km kontinuirano [6 km 30 min] | easy:Lagano 8,8 km + 4 × 20 s ubrzanja [8.8 km 48 min] | long:Dugi lagano 11,3 km [11.3 km 62 min]
+3 base cilj 34.9 plan 34.7: q1:R: 4 × 400 m (oporavak 400 m lagano) [6.3 km 32 min] | q2:T: 3 km kontinuirano [6.5 km 32 min] | easy:Lagano 9,7 km + 4 × 20 s ubrzanja [9.7 km 53 min] | long:Dugi lagano 12,2 km [12.2 km 67 min]
+4 peak cilj 37.6 plan 37.6: q1:I: 4 × 800 m (oporavak 3:15 lagano) [8.88 km 45 min] | q2:T: 2 × 1600 m (oporavak 1:00) [7.37 km 37 min] | easy:Lagano 8,3 km [8.25 km 45 min] | long:Dugi lagano 13,1 km [13.1 km 72 min]
+5 peak cilj 39 plan 39: q1:I: 5 × 700 m (oporavak 2:45 lagano) [9.42 km 47 min] | q2:T: 2 × 1600 m (oporavak 1:00) [7.37 km 37 min] | easy:Lagano 8,6 km [8.61 km 47 min] | long:Dugi lagano 13,6 km [13.6 km 75 min]
+6 sharpen cilj 39 plan 39: q1:RP: 4 × 800 m (oporavak 1:45 lagano) [8.1 km 40 min] | q2:R: 6 × 300 m (oporavak 300 m lagano) [7.3 km 37 min] | easy:Lagano 10 km [10 km 55 min] | long:Dugi lagano 13,6 km [13.6 km 75 min]
+7 taper cilj 33.2 plan 33.2: q1:RP: 3 × 1000 m (oporavak 2:00 lagano) [7.2 km 36 min] | q2:T: 2 km kontinuirano [5.5 km 28 min] | easy:Lagano 8,9 km [8.9 km 49 min] | long:Dugi lagano 11,6 km [11.6 km 64 min]
+    · Smanjenje obima pred trku.
+8 race cilj 14.29 plan 14.29: easy:Lagano 5,8 km [5.8 km 32 min] | q1:Oštrenje: 4 × 400 m RP (oporavak 0:45 lagano) [4.49 km 23 min] | easy:Lagano 4 km + 4 × 20 s ubrzanja [4 km 22 min] | race:Trka 5K [8.5 km 40 min]
+    · Trkačka nedelja: trka se ne računa u nedeljni obim.
+    · Dan pred trku: lagano 4 km sa ubrzanjima.
+    · Trkačka nedelja: 14,3 km (najviše 19,5 km, 50 % najvećeg nedeljnog obima; lagan dan najviše 5,8 km).
+upozorenja: GOAL_STATUS@-

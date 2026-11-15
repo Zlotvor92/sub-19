@@ -123,6 +123,8 @@ export interface WeekFrame {
   deload: boolean;
   /** M16: nedelja testa 5 km (samo plan po osećaju koji nije početnik). */
   test?: true;
+  /** W1-B: nedelja osnovne pripreme dugog plana (N > 24): baza bez kvaliteta, obim = trenutni (bez rasta). */
+  prep?: true;
   /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
   limits?: WeekLimits;
 }
@@ -434,6 +436,11 @@ export interface MarathonV2AdaptStep {
   /** MAR-10 (Z7): primenjen manjak izvršenja — prvi dan prozora zapisa (7 dana do asOf); kasniji korak čiji se prozor
       preklapa ne pravi nov manjak. Samo kad ga ima. */
   underFrom?: IsoDate;
+  /** P5-F2 (A18): nedelja izgradnje bez rasta doze nijednog slota (dva uzastopna kvalitetna dana preteška ili
+      preskočena); `holdFrom` = datum kasnijeg od ta dva dana (isti zapisi ne prave nov korak). Samo kad je
+      primenjeno. */
+  holdDose?: number;
+  holdFrom?: IsoDate;
 }
 
 /** Pouka 34: referenca umora pre starta (nedelja 1 generatora bez činjenica). */
@@ -467,6 +474,7 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
+  | 'QUALITY_HARD'
   | 'TEST_MOVED';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */

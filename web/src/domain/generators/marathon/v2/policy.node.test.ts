@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.8.0');
+    expect(P.version).toBe('marathon-v2.15.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -45,7 +45,27 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'MAR-09',
       'MAR-10',
       'MAR-11',
-      'F-final'
+      'F-final',
+      'M19',
+      'P5-F1',
+      'A18',
+      'P5-F3',
+      'P5-F4',
+      'P8-G1',
+      'P8-G2',
+      'P8-G4',
+      'P8-G5',
+      'P8-G6',
+      'P8-G7',
+      'K3-A',
+      'K3-B',
+      'K3-C',
+      'K3-E',
+      'K4-A',
+      'K4-B',
+      'W1-A',
+      'W1-B',
+      'W1-C'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -59,6 +79,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.input).toEqual({
       weeksMin: 12,
       weeksMax: 24,
+      weeksLimit: 52,
       resultMaxAgeDays: 84,
       resultDistancesM: [5000, 10000, 21097.5, 42195],
       shortResultM: 5000,
@@ -127,7 +148,18 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       growthMinKm: 1,
       growthMaxKm: 5,
       peakFactor: 1.5,
-      peakAddKm: 30
+      peakAddKm: 30,
+      peakByWeeks: [
+        { fromWeeks: 0, factor: 1.3 },
+        { fromWeeks: 13, factor: 1.35 },
+        { fromWeeks: 16, factor: 1.4 }
+      ],
+      peakHours: [
+        { fromVdot: 0, hours: 9 },
+        { fromVdot: 40, hours: 10 },
+        { fromVdot: 50, hours: 11 }
+      ],
+      minStepShare: 0.03
     });
   });
 
@@ -135,7 +167,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.taper).toEqual({
       weeks: [
         { factor: 0.8, mpShare: 0.6, tShare: 0.6, longFactor: 0.65 },
-        { factor: 0.6, mpShare: 0.5, tShare: null, longFactor: 0.45 }
+        { factor: 0.6, mpShare: 0.4, tShare: null, longFactor: 0.45 }
       ],
       mpMin: { form: 'reps', reps: 2, repM: 3000 },
       mpShortMinKm: 1,
@@ -144,7 +176,9 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.raceWeek).toEqual({
       maxRunDays: 5,
       sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
-      sharpenerMinRepM: 1000,
+      sharpenerMinRepM: 400,
+      sharpenerMaxSec: 600,
+      sharpenerNoMpRepM: 1000,
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },
@@ -191,13 +225,29 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
 
   it('M11 plafoni, M12 početni nivo, M13 dužine, M14 WU/CD i oporavci', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, MP: 0.2 });
-    expect(P.startLevel).toEqual({ capShare: 0.6 });
+    // P8-G4: član plafona u minutima rada.
+    expect(P.capsMin).toEqual({
+      T: { sec: 1800, bigWeekKm: 80, bigWeekSec: 2400 },
+      I: { sec: 1440, slowVdot: 40, slowSec: 1200 },
+      MP: { sec: 3600, beginnerSec: 2700 }
+    });
+    expect(P.startLevel).toEqual({ capShare: 0.6, zoneShare: { T: 0.8, I: 0.8 } });
     expect(P.lengths).toEqual({
-      longMaxSec: 9000,
+      longMaxSec: 10800,
+      longMaxKm: 32,
       easyMinKm: 5,
       longShortKm: 26,
       easyLongShare: 0.8,
-      easyMinSec: 1200
+      easyLongShareMany: 0.7,
+      easyLongShareManyDays: 4,
+      easyMinSec: 1200,
+      // K3-A: cilj najdužeg 26 km ili 165 min; vrh dugog 3 nedelje 50 % (3 dana) / 45 % (4+ dana).
+      longGoalSec: 9900,
+      peakLong: { weeks: 3, share3: 0.5, shareMany: 0.45 },
+      // K4-A: talas dugog 3 dana — plafon najviše 3 puta od kraja, ostalo 0,85 × najduži.
+      wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 },
+      // K4-B: lagan < 30 min u više od 2 nedelje izgradnje → jedan lagan dan odmor.
+      shortEasy: { minSec: 1800, weeksMax: 2 }
     });
     expect(P.longJump).toEqual({ factor: 1.1, addKm: 1, windowWeeks: 4 });
     expect(P.workout).toEqual({
@@ -227,10 +277,10 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
         MP: { min: 5, max: 6, cue: 'ritam maratona' }
       }
     });
-    expect(P.test).toEqual({ km: 5 });
+    expect(P.test).toEqual({ km: 5, resultMinWeeks: 12, minWeek: 4 });
   });
 
-  it('M17 početnik: jedina tabela (4–5 dana, 16 ned, obim 25–45 / 30–50, uvod 2, +5 % 1,0–2,5, vrh 1,5× / +25, T 1,5, prag 26 km, vrh dugog 3 ned 50 % / 180 min, WU/CD 15/10) i planRule', () => {
+  it('M17 početnik: jedina tabela (4–5 dana, 16 ned, obim 25–45 / 30–50, uvod 2, +5 % 1,0–2,5, vrh 1,5× / +25, T 1,5, prag 24 km (K3-A), vrh dugog 3 ned 50 % / 180 min, WU/CD 15/10) i planRule', () => {
     expect(P.beginner).toEqual({
       days: { 4: { kmMin: 25, kmMax: 45 }, 5: { kmMin: 30, kmMax: 50 } },
       weeksMin: 16,
@@ -240,9 +290,16 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       growthMaxKm: 2.5,
       peakFactor: 1.5,
       peakAddKm: 25,
+      // K3-B: vrh ≤ 1,30 × start i ≤ 7,5 h; dno tabele (start < kmMin + 5) zadržava 1,5 × / +25.
+      peakStartFactor: 1.3,
+      peakHours: 7.5,
+      peakKeepBelowKm: 5,
       tFirstKm: 1.5,
-      longShortKm: 26,
+      // K3-A: cilj najdužeg početnika 24 km ili 180 min.
+      longShortKm: 24,
+      longGoalSec: 10800,
       peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
+      longMaxSec: 9000,
       warmupSec: 900,
       cooldownSec: 600
     });
@@ -261,7 +318,9 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       introWeeks: 2,
       weeksMin: 16,
       feelTest: false,
-      longShortKm: 26,
+      longShortKm: 24,
+      longGoalSec: 10800,
+      longMaxSec: 9000,
       fixedWarmupCooldown: { warmupSec: 900, cooldownSec: 600 }
     });
     expect(planRule(5, 'beginner')).toMatchObject({ quality: 1, easy: 3, kmMin: 30, kmMax: 50 });
@@ -279,8 +338,19 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
         weeksMin: 12,
         feelTest: true,
         longShortKm: 26,
+        longGoalSec: 9900,
+        longMaxSec: 10800,
         fixedWarmupCooldown: null
       });
+  });
+
+  it('M19 (P2-S1): smena A/B — lestvica bloka 8–16 km, blok ≤ 50 % dugog', () => {
+    expect(P.specific).toEqual({
+      blockKm: [8, 10, 12, 14, 16],
+      blockMaxLongShare: 0.5,
+      // K3-E: brz trkač do 18 km, dva nivoa po nedelji B, MP deo ≤ 75 min.
+      fast: { vdotMin: 50, weekKmMin: 80, blockKm: [8, 10, 12, 14, 16, 18], steps: 2, maxSec: 4500 }
+    });
   });
 
   it('pouka 10 (M17): T kont. 1,5 km i T cruise staju u plafon pri najmanjem obimu početnika (i 1,5 km u rasterećenju); MP 2 × 3000 m tek od 30 km (T kont. umesto MP)', () => {

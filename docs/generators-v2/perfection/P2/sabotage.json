@@ -1,0 +1,83 @@
+[
+  {
+    "name": "P2-S1a raspored: prva nedelja od kraja je A (smena obrnuta)",
+    "file": "src/domain/generators/marathon/v2/specific.ts",
+    "find": "spec.reverse().forEach((i, k) => out.set(i, k % 2 === 0 ? 'B' : 'A'));",
+    "replace": "spec.reverse().forEach((i, k) => out.set(i, k % 2 === 0 ? 'A' : 'B'));",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S1b blok ne gleda poslednju MP dozu",
+    "file": "src/domain/generators/marathon/v2/specific.ts",
+    "find": "  const next = nextBlockKm(Math.max(lastBlockM, lastMpM));",
+    "replace": "  const next = nextBlockKm(lastBlockM);",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S1c blok > 50 % dugog",
+    "file": "src/domain/generators/marathon/v2/specific.ts",
+    "find": "    x <= P.specific.blockMaxLongShare * km + 1e-9 && longBlockSec(km, x, p) <= longMaxSecOf(rule)",
+    "replace": "    longBlockSec(km, x, p) <= longMaxSecOf(rule)",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S1d taper i MP trening ne nastavljaju od bloka (mpCarry bez dejstva)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "    q1: picks.blockM ? mpCarry(q1, picks.blockM) : q1,",
+    "replace": "    q1,",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S1e validator ne proverava nivo bloka",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "        if (want !== bk)\n          err(\n            'LONG_BLOCK',",
+    "replace": "        if (want !== bk && false)\n          err(\n            'LONG_BLOCK',",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S2a bez gornje granice dugog 32 km",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "    longTimeCap10(p, longMaxSecOf(rule)),\n    longKmCap10()\n  );",
+    "replace": "    longTimeCap10(p, longMaxSecOf(rule))\n  );",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S2b početnik dobija 180 min",
+    "file": "src/domain/generators/marathon/v2/policy.ts",
+    "find": "    longMaxSec: b.longMaxSec,",
+    "replace": "    longMaxSec: P.lengths.longMaxSec,",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S3a umor broji dugi sa blokom kao lagan",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "(d.workout.kind === 'long' && longBlockKm(d.workout) === 0)",
+    "replace": "d.workout.kind === 'long'",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  },
+  {
+    "name": "P2-S3b validator: dugi sa blokom na danu bola nije kvalitet (LIMITS)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "        d.workout.kind === 'quality' || d.workout.kind === 'test' || longBlockKm(d.workout) > 0;",
+    "replace": "        d.workout.kind === 'quality' || d.workout.kind === 'test';",
+    "tests": [
+      "src/domain/generators/marathon/v2/p2.node.test.ts"
+    ]
+  }
+]

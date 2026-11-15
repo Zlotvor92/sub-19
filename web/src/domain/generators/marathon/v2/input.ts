@@ -136,20 +136,12 @@ export function checkInput(raw: unknown): InputCheck {
       'PLAN_NOT_WHOLE_WEEKS',
       `Od starta do trke mora biti ceo broj nedelja (sada ${span} dana); start ${addDays(raceDate, -7 * Math.max(1, Math.round(weeks)) + 1)} daje ${Math.max(1, Math.round(weeks))} nedelja.`
     );
-  else if (weeks < q.weeksMin)
-    no(
-      'PLAN_TOO_SHORT',
-      `Plan od ${weeks} nedelja je prekratak: maraton traži najmanje ${q.weeksMin} nedelja pripreme; preporuka: polumaraton.`
-    );
-  else if (weeks > q.weeksMax)
+  // W1-A: kratak plan (< weeksMin; početnik < beginner.weeksMin) se pravi uz upozorenje — periodize.phasesOf.
+  // W1-B: dug plan (> weeksMax) se pravi uz upozorenje — osnovna priprema + standardni plan (periodize.phasesOf).
+  else if (weeks > q.weeksLimit)
     no(
       'PLAN_TOO_LONG',
-      `Plan od ${weeks} nedelja je predug (najviše ${q.weeksMax}): počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksMax + 1)}.`
-    );
-  else if (beginner && weeks < P.beginner.weeksMin)
-    no(
-      'BEGINNER_SHORT',
-      `Početnik: maratonski plan traži najmanje ${P.beginner.weeksMin} nedelja (izabrano ${weeks}); počni plan najkasnije ${addDays(raceDate, -7 * P.beginner.weeksMin + 1)} ili izaberi polumaraton.`
+      `Plan od ${weeks} nedelja je predug: najviše ${q.weeksLimit} nedelje; počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksLimit + 1)}.`
     );
 
   // Dani trčanja i dan dugog.

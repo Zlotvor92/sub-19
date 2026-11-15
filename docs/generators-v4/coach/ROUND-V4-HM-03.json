@@ -1,0 +1,92 @@
+{
+  "round": "V4-HM-03",
+  "date": "2026-11-13",
+  "source": "origin/claude/v4 @ 5072cf8c (kandidat 0d9d9bd)",
+  "weights": { "plan": 0.5, "adaptation": 0.3, "personalization": 0.2 },
+  "summary": {
+    "plan": 78.7,
+    "planWithChecks": 78.7,
+    "adaptation": 81.9,
+    "personalization": 82.5,
+    "combined": 80.4,
+    "previous": { "v3k3Plan": 77.6, "k2Plan": 74.3, "k2Adaptation": 79.2, "k2Personalization": 59.3, "k2Combined": 72.8 },
+    "profilesAtOrAbove80": ["p01", "p02", "p05", "p07", "p09", "p11", "p12"]
+  },
+  "criteriaOrder": ["fit", "quality", "progression", "recovery", "specificity", "taper", "clarity"],
+  "plans": {
+    "p01": { "k2": 77.5, "scores": [8.5, 8.5, 8, 8, 8.5, 8, 8], "total": 82.0, "findings": [] },
+    "p02": { "k2": 76.5, "total": 81.0, "findings": [] },
+    "p03": { "k2": 73.0, "scores": [7.5, 7.5, 7.5, 7.5, 8, 8, 8], "total": 76.5, "findings": [] },
+    "p04": { "k2": 75.0, "scores": [8, 8, 7, 8, 8.5, 8, 8], "total": 79.0, "findings": [] },
+    "p05": { "k2": 80.5, "scores": [8.5, 8.5, 7.5, 8, 8.5, 8, 8], "total": 81.5, "findings": [] },
+    "p06": { "k2": 67.5, "scores": [7, 7, 7.5, 7.5, 7.5, 7.5, 8], "total": 73.5, "findings": [] },
+    "p07": { "k2": 80.0, "scores": [8.5, 8, 7.5, 8, 8.5, 8, 8], "total": 80.5, "findings": [] },
+    "p08": { "k2": 68.5, "scores": [7, 7.5, 6.5, 7.5, 8, 8, 8], "total": 74.0, "findings": [] },
+    "p09": { "k2": 77.5, "scores": [8, 8.5, 8, 7.5, 8.5, 8, 8], "total": 80.5, "findings": [] },
+    "p10": { "k2": 73.0, "scores": [7.5, 7, 7.5, 7.5, 8, 8, 7.5], "total": 75.0, "findings": [] },
+    "p11": { "k2": 62.0, "scores": [8, 8, 8, 8, 8, 8, 8], "total": 80.0, "findings": [] },
+    "p12": { "k2": 80.5, "total": 81.0, "findings": [] }
+  },
+  "adaptationCriteriaOrder": ["B1", "B2", "B3", "B4", "B5"],
+  "scenarios": {
+    "s01": { "total": 87, "scores": [8.5, 8.5, 9, 9, 8.5] },
+    "s02": { "total": 75.5, "scores": [7, 8, 9, 6, 8] },
+    "s03": { "total": 84.5, "scores": [8.5, 8, 8.5, 9, 8] },
+    "s04": { "total": 81.5 },
+    "s05": { "total": 60, "scores": [8, 4.5, 7.5, 3.5, 6], "note": "27 izmena, najteža nedelja 51 → 37,5 km" },
+    "s06": { "total": 76, "scores": [8.5, 7, 8, 6.5, 8] },
+    "s07": { "total": 79, "scores": [8.5, 8, 8, 7, 8] },
+    "s08": { "total": 85 },
+    "s09": { "total": 86, "scores": [8.5, 8.5, 8, 9, 9] },
+    "s10": { "total": 84 },
+    "s11": { "total": 84 },
+    "s12": { "total": 85.5 },
+    "s13": { "total": 78, "scores": [8.5, 7, 8, 6.5, 9] },
+    "s14": { "total": 77, "scores": [8.5, 7.5, 8, 5.5, 9] },
+    "s15": { "total": 82, "scores": [8.5, 7.5, 8, 8, 9] },
+    "s16": { "total": 57, "scores": [6.5, 4, 8, 2.5, 8], "note": "49 izmena, ned 9–13 58–61 → 34–46 km" },
+    "s17": { "total": 85 },
+    "s18": { "total": 84 },
+    "s19": { "total": 85 },
+    "s20": { "total": 85 },
+    "s21": { "total": 91 },
+    "s22": { "total": 91 },
+    "s23": { "total": 91 },
+    "s24": { "total": 91 }
+  },
+  "eventAverages": { "E1": 82.1, "E2": 75.0, "E3": 84.9, "E4": 73.5, "E5": 84.8, "E6": 91.0 },
+  "eventAveragesK2": { "E1": 74.4, "E2": 76.3, "E3": 80.6, "E4": 75.4, "E5": 80.8, "E6": 87.9 },
+  "personalizationCriteriaOrder": ["C1", "C2", "C3", "C4", "C5"],
+  "pairs": {
+    "P1": { "k2": 82, "scores": [7.5, 8.5, 8.5, 7.5, 9], "total": 81 },
+    "P2": { "k2": 60, "scores": [8.5, 8.5, 7.5, 8.5, 9], "total": 83.5 },
+    "P3": { "k2": 36, "scores": [8.5, 8, 8.5, 8.5, 7.5], "total": 83 }
+  },
+  "verdictNew": {
+    "longWave": "samo kad je dugi na plafonu (p05, p08); ne kao zamena za rast (p04); nedelja se ne ljulja",
+    "pocetnikNov": "prihvaćeno (2:1, hod-trk kao tekst)",
+    "p2bLong": "prekratko: hod-trk dugi do 1 h 40 – 1 h 45, udeo do 50 %",
+    "vlasnikV2Long": "treba 18 km u dve nedelje; udeo dugog meriti u km ili 42 % do 50 km",
+    "vlasnikV1Long": "15 km prihvaćeno",
+    "threeDayLongShare": "do 50 % prihvaćeno; dugi ≤ vreme trke + 5 min, blok ≤ 35 min"
+  },
+  "worsened": [
+    "s05: 27 izmena, rep 8 nedelja, najteža nedelja 51 → 37,5 km uz netaknut dugi sa blokom",
+    "s16: 49 izmena, nedelje 9–13 smanjene za 25–40 %",
+    "s14 23 izmene; s13 najteža nedelja 51 → 41,5 km",
+    "P1 B kreće sa 23,6 km (poslednja nedelja 40 km)"
+  ],
+  "fixes": [
+    "motor: pravilo 1,10 × ne lančati preko rasterećenja; povratak na stari plan posle 2 nedelje",
+    "motor: skraćena nedelja skraćuje dugi i blok srazmerno",
+    "motor: pomerena provera ne ide uz tempo trke dva dana ranije niti zamenjuje jedini tempo trke",
+    "podatak: bol 4 posle laganog dana bez smanjenja kasnijih nedelja",
+    "motor: planirana pripremna trka isti oporavak bez obzira na dan",
+    "podatak: talas dugog samo na plafonu; p04 dugi od 1 h 50",
+    "motor/podatak: udeo dugog u km; hod-trk dugi do 1 h 45",
+    "motor: polazni obim povratnika iz poslednje 2–3 nedelje",
+    "podatak: dugi ≤ vreme trke + 5 min, blok ≤ 35 min za sporije od 2:00; p10 bez drugog testa",
+    "podatak: p06 ned 1–2 i ned 5; p07 rast prve tri nedelje ≤ 8 %"
+  ],
+  "ownerReview": ["p11", "vlasnik-v2", "scenarios/s05"]
+}

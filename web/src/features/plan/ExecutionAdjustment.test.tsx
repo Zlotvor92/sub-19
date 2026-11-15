@@ -8,7 +8,7 @@ import { recordPlanRevision } from '../../domain/plan/versions';
 import {
   analyzeExecution,
   recommendExecution
-} from '../../domain/generators/tenK/training/execution';
+} from '../../domain/generators/halfMarathon/training/execution';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { seedState } from '../../domain/state';
 import { ExecutionAdjustment } from './ExecutionAdjustment';

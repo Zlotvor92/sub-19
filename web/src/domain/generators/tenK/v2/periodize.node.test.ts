@@ -89,17 +89,18 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.10.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.16.0');
   });
 });
 
 describe('D27: gde je test 5 km', () => {
-  it('poslednja nedelja baze za N = 8–18; oznaka samo u planu po osećaju i samo na toj nedelji', () => {
+  it('poslednja nedelja baze za N = 12–18; P9b (D52): N = 9–11 prva ne-rasteretna nedelja razvoja ≥ 4, N = 8 bez testa (razvoj 3–4, ned 4 rasterećenje); oznaka samo u planu po osećaju i samo na toj nedelji', () => {
     const want: Record<number, number> = {
-      8: 2,
-      9: 2,
-      10: 3,
-      11: 3,
+      // P8 G7 (D46): test ne pre nedelje 4; P9b (D52): baza kraća od 4 nedelje → prva ne-rasteretna nedelja razvoja ≥ 4.
+      8: 0,
+      9: 5,
+      10: 4,
+      11: 4,
       12: 4,
       13: 4,
       14: 4,
@@ -110,12 +111,23 @@ describe('D27: gde je test 5 km', () => {
     };
     for (let N = 8; N <= 18; N++) {
       const ph = phasesOf(N);
-      expect(testWeekOf(ph), `N=${N}`).toBe(want[N]);
-      expect(ph[want[N]! - 1]).toBe('base');
-      expect(ph[want[N]!]).toBe('development');
-      const f = periodize('2026-11-02', N, true)!;
+      const deloads = periodize('2026-11-02', N, null)!.flatMap((w) => (w.deload ? [w.index] : []));
+      expect(testWeekOf(ph, 'feel', deloads), `N=${N}`).toBe(want[N]);
+      const f = periodize('2026-11-02', N, 'feel')!;
+      if (want[N] === 0) {
+        expect(ph.lastIndexOf('base') + 1, `N=${N}`).toBeLessThan(4);
+        expect(f.some((w) => w.test)).toBe(false);
+        continue;
+      }
+      if (N <= 11) {
+        expect(ph[want[N]! - 1], `N=${N}`).toBe('development');
+        expect(f[want[N]! - 1]!.deload, `N=${N}`).toBe(false);
+      } else {
+        expect(ph[want[N]! - 1]).toBe('base');
+        expect(ph[want[N]!]).toBe('development');
+      }
       expect(f.filter((w) => w.test).map((w) => w.index)).toEqual([want[N]]);
-      expect(periodize('2026-11-02', N)!.some((w) => 'test' in w)).toBe(false);
+      expect(periodize('2026-11-02', N, null)!.some((w) => 'test' in w)).toBe(false);
     }
     // Nedelja testa je rasterećenje u 12, 13 i 14 ned (D5: [4, …]) — test tada zamenjuje kvalitet
     // rasterećenja.
@@ -184,7 +196,7 @@ describe('D5: gde su rasterećenja', () => {
           if (r.ok) plans.push(r.plan);
         }
 
-  it('sadržaj: cilj 0,8 × poslednji ne-rasteretni, 1 kvalitet T ≈ 60 % (naniže, min 2,0; bez kvaliteta samo kad 2,0 km > 10 % cilja), dugi 0,8 ×, ostalo lagano', () => {
+  it('sadržaj: cilj 0,8 × poslednji ne-rasteretni, 1 kvalitet T ≈ 60 % (naniže, min 2,0; P8 G2: i kad 2,0 km > 10 % cilja), dugi ≤ 0,8 ×, ostalo lagano', () => {
     expect(plans.length).toBe(4 * 5 * 3 * 3);
     let none = 0;
     for (const p of plans) {
@@ -199,11 +211,11 @@ describe('D5: gde su rasterećenja', () => {
           if (w.fitted === null) expect(w.targetKm).toBe(nominal);
           else expect(w.targetKm).toBeLessThan(nominal);
           const q = w.days.filter((d) => d.workout.kind === 'quality');
-          if (q.length === 0) {
-            // Odstupanje D5 (D11 ispred D5): ni T 2,0 km ne staje u plafon 10 % cilja.
-            expect(2000).toBeGreaterThan(Math.floor(0.1 * w.targetKm * 1000 + 1e-6));
-            none++;
-          } else {
+          // P8 G2 (D40): plafon T nije ispod 2,0 km — rasterećenje uvek ima kvalitet (ranije bez kvaliteta kad 2,0 km > 10 %
+          // cilja); `small` broji rasterećenja u kojima 2,0 km > 10 % cilja.
+          expect(q.length).toBeGreaterThan(0);
+          if (2000 > Math.floor(0.1 * w.targetKm * 1000 + 1e-6)) none++;
+          {
             expect(q.length).toBe(1);
             expect(q[0]!.role).toBe(tSlot);
             expect(q[0]!.workout.dose!.zone).toBe('T');
@@ -223,7 +235,9 @@ describe('D5: gde su rasterećenja', () => {
           (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
         ) {
           last = w;
-          lastT = w.days.find((d) => d.role === tSlot)?.workout.dose!.doseM ?? lastT;
+          // D34: Q2 nedelje B (I održavanja) ne menja poslednju T dozu.
+          const t = w.days.find((d) => d.role === tSlot)?.workout.dose;
+          if (t && t.ladder !== 'I') lastT = t.doseM;
         }
       }
     }

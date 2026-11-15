@@ -1,0 +1,29 @@
+[
+  {
+    "name": "W1-A kratak plan zadržava PRVIH N nedelja rasporeda",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "standardPhases(minWeeks).slice(minWeeks - weeks)",
+    "replace": "standardPhases(minWeeks).slice(0, weeks)",
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
+  },
+  {
+    "name": "W1-B osnovna priprema raste po M6 (cilj nije trenutni obim)",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "  if (frame.prep)\n    return frame.deload",
+    "replace": "  if (frame.prep && frame.index < 0)\n    return frame.deload",
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
+  },
+  {
+    "name": "W1-C upozorenje PLAN_LENGTH se ne izdaje",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    warn('PLAN_LENGTH', lw);\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
+  }
+]

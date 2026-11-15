@@ -12,11 +12,9 @@ import {
   type LogEntry,
   type PersistedState
 } from '../../domain/state';
-import { ADMIN_UID } from '../../services/config';
 import { collectPersisted, hydratePersisted } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
-import { TrainingSettingsScreen } from '../ti/screens';
 import { FormScreen } from '../race/FormScreen';
 import { Advisories } from '../today/Advisories';
 import { AdjustPlan } from './AdjustPlan';
@@ -181,23 +179,5 @@ describe('Napredak → Forma (5K v2) i km nedelje', () => {
         /^\+ trka 5 km \(dan trke \d+[.,]?\d* km sa zagrevanjem i hlađenjem\) — van obima nedelje$/
       )
     );
-  });
-});
-
-describe('Prekidač 5K v2: vidljiv samo uz VITE_FIVEK_V2 ili administratoru', () => {
-  it('običan korisnik bez env: nema prekidača; administrator ili env: ima', () => {
-    hydratePersisted(state({}));
-    vi.stubEnv('VITE_FIVEK_V2', '');
-    const a = render(<TrainingSettingsScreen />);
-    expect(screen.queryByText('Generator plana')).toBeNull();
-    a.unmount();
-    useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID, email: null });
-    const b = render(<TrainingSettingsScreen />);
-    expect(screen.getByText('Generator plana')).toBeTruthy();
-    b.unmount();
-    useAuthStore.setState({ configured: true, hasSession: false, userId: null, email: null });
-    vi.stubEnv('VITE_FIVEK_V2', '1');
-    render(<TrainingSettingsScreen />);
-    expect(screen.getByLabelText(/Novi 5K plan pravi generator v2/)).toBeTruthy();
   });
 });

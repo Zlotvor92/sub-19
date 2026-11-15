@@ -10,7 +10,6 @@ import {
   weekPlanKm,
   weekRace
 } from '../../../../day';
-import { initialWizard, toGenerationInput } from '../../../../onboarding';
 import { personalPlan } from '../../../../personal';
 import { resolvePlan, type ResolvedDay } from '../../../../plan';
 import { getPlanRevisions, recordPlanRevision } from '../../../../plan/versions';
@@ -24,14 +23,12 @@ import {
   type PersistedState
 } from '../../../../state';
 import type { HmV2PlanInput } from '../../../contract';
-import { generatorFlags, hmV2Enabled, hmV2ToggleVisible } from '../../../flags';
-import { regeneratorForDistance } from '../../../handoff';
 import {
-  FIVE_K_GENERATOR,
-  HALF_MARATHON_GENERATOR,
+  FIVE_K_V2_GENERATOR,
   HALF_MARATHON_V2_GENERATOR,
-  MARATHON_GENERATOR,
-  TEN_K_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
+  LEGACY_PLAN,
+  MARATHON_V2_GENERATOR,
   TEN_K_V2_GENERATOR,
   UNKNOWN_POLICY,
   generateHmV2Plan,
@@ -47,8 +44,10 @@ import {
   unsupportedPlanReason,
   type PlanGenerator
 } from '../../../select';
-import * as tenK from '../../../tenK/index';
-import * as hm from '../../index';
+import { hmV2 } from './index.ts';
+/* V1b: HM v1 ostaje zamrznut SAMO za lični plan vlasnika (`LEGACY_PERSONAL_GENERATOR`); poređenja „ista vrednost kao HM
+   v1" idu na njega. Ostali v1 generatori su obrisani. */
+const OLD = LEGACY_PERSONAL_GENERATOR;
 import { midEasy, pacesFromVdot } from '../paces.ts';
 import { HM_V2_POLICY } from '../policy.ts';
 import type { HmV2Plan } from '../types.ts';
@@ -276,7 +275,14 @@ describe('generisanje kroz adapter', () => {
       for (const b of d.structure!.blocks)
         if (b.step.kind === 'work') expect(b.step.paceSec).toBeGreaterThan(0);
     }
-    expect(res.dated.some((d) => d.tag === 'test')).toBe(false);
+    // P5-F1: plan sa rezultatom ≥ 12 nedelja ima jedan kontrolni test (procena tempa, kao po osećaju), bez RPE.
+    const rt = res.dated.filter((d) => d.tag === 'test');
+    expect(rt).toHaveLength(1);
+    expect(rt[0]!.structure!.rpe).toBeUndefined();
+    expect(rt[0]!.structure!.blocks.find((b) => b.step.kind === 'test')!.step).toMatchObject({
+      km: 5,
+      paceSec: null
+    });
     // Početnik (H17): bez testa i po osećaju.
     expect(view(planOf(BEGINNER)).dated.some((d) => d.tag === 'test')).toBe(false);
   });
@@ -297,9 +303,9 @@ describe('generisanje kroz adapter', () => {
     });
     expect(seven.ok).toBe(false);
     if (!seven.ok) expect(seven.reasons.map((r) => r.code)).toContain('RUN_DAYS_COUNT');
+    // W1-A: kratak plan se pravi (upozorenje plana), nije degenerisan ulaz.
     const short = generateHmV2Plan({ ...WITH_RESULT, startDate: '2026-12-07' });
-    expect(short.ok).toBe(false);
-    if (!short.ok) expect(short.reasons.map((r) => r.code)).toEqual(['PLAN_TOO_SHORT']);
+    expect(short.ok).toBe(true);
     const low = generateHmV2Plan({ ...WITH_RESULT, currentWeeklyKm: 5 });
     expect(low.ok).toBe(false);
     if (!low.ok) expect(low.reasons[0]!.code).toBe('WEEKLY_KM_TOO_LOW');
@@ -316,60 +322,15 @@ describe('generisanje kroz adapter', () => {
   });
 });
 
-describe('prekidač i rutiranje po oznaci politike', () => {
-  it('flags: podrazumevano isključen; override 1/true i 0/false nadjačavaju podešavanje; vidljivost', () => {
-    const off = { setting: undefined, devOverride: undefined };
-    expect(hmV2Enabled(off)).toBe(false);
-    expect(hmV2Enabled({ setting: 'true', devOverride: undefined })).toBe(false);
-    expect(hmV2Enabled({ setting: true, devOverride: undefined })).toBe(true);
-    expect(hmV2Enabled({ setting: false, devOverride: '1' })).toBe(true);
-    expect(hmV2Enabled({ setting: false, devOverride: 'TRUE' })).toBe(true);
-    expect(hmV2Enabled({ setting: true, devOverride: '0' })).toBe(false);
-    expect(hmV2Enabled({ setting: true, devOverride: 'false' })).toBe(false);
-    expect(hmV2Enabled({ setting: true, devOverride: 'x' })).toBe(true);
-    // Bez izvora HM prekidača polje izostaje (= isključen); 5K i 10K prekidači se ne mešaju.
-    expect(generatorFlags(off)).toEqual({ fiveKV2: false });
-    expect(generatorFlags(off, off)).toEqual({ fiveKV2: false, tenKV2: false });
-    expect(generatorFlags(off, off, { setting: true, devOverride: undefined })).toEqual({
-      fiveKV2: false,
-      tenKV2: false,
-      hmV2: true
-    });
-    expect(
-      generatorFlags(
-        { setting: true, devOverride: undefined },
-        { setting: true, devOverride: undefined },
-        off
-      )
-    ).toEqual({ fiveKV2: true, tenKV2: true, hmV2: false });
-    expect(hmV2ToggleVisible({ devOverride: undefined, isAdmin: false })).toBe(false);
-    expect(hmV2ToggleVisible({ devOverride: ' ', isAdmin: false })).toBe(false);
-    expect(hmV2ToggleVisible({ devOverride: '0', isAdmin: false })).toBe(true);
-    expect(hmV2ToggleVisible({ devOverride: undefined, isAdmin: true })).toBe(true);
+describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
+  it('nov plan: polumaraton → HM v2; ostale distance → v2 te distance', () => {
+    expect(generatorForNewPlan(21097.5)).toBe(HALF_MARATHON_V2_GENERATOR);
+    expect(generatorForNewPlan(5000)).toBe(FIVE_K_V2_GENERATOR);
+    expect(generatorForNewPlan(10000)).toBe(TEN_K_V2_GENERATOR);
+    expect(generatorForNewPlan(42195)).toBe(MARATHON_V2_GENERATOR);
   });
 
-  it('nov plan: uključen prekidač menja SAMO polumaraton; isključen = kao do sada; predaja ostaje v1', () => {
-    expect(generatorForNewPlan(21097.5, { fiveKV2: false })).toBe(HALF_MARATHON_GENERATOR);
-    expect(generatorForNewPlan(21097.5, { fiveKV2: true, tenKV2: true, hmV2: false })).toBe(
-      HALF_MARATHON_GENERATOR
-    );
-    expect(generatorForNewPlan(21097.5, { fiveKV2: false, hmV2: true })).toBe(
-      HALF_MARATHON_V2_GENERATOR
-    );
-    expect(generatorForNewPlan(5000, { fiveKV2: false, hmV2: true })).toBe(FIVE_K_GENERATOR);
-    expect(generatorForNewPlan(10000, { fiveKV2: false, hmV2: true })).toBe(TEN_K_GENERATOR);
-    expect(generatorForNewPlan(10000, { fiveKV2: false, tenKV2: true, hmV2: true })).toBe(
-      TEN_K_V2_GENERATOR
-    );
-    expect(generatorForNewPlan(42195, { fiveKV2: true, tenKV2: true, hmV2: true })).toBe(
-      MARATHON_GENERATOR
-    );
-    // Predaja „kraća distanca" (maraton → HM, HM → 10K) ostaje v1 (predaja v2 je faza 3).
-    expect(regeneratorForDistance(21097.5)).toBe(hm.handoffFuture);
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-  });
-
-  it('postojeći planovi: hm-v1, legacy-hm i lični plan ostaju na HM v1; hm-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
+  it('postojeći planovi: hm-v1 i bez oznake → stari plan (bez generatora); lični plan → zamrznut HM v1; hm-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
     const v2 = stampForStorage(planOf(WITH_RESULT));
     expect(generatorForPlan(v2)).toBe(HALF_MARATHON_V2_GENERATOR);
     expect(isHmV2Plan(v2)).toBe(true);
@@ -383,13 +344,14 @@ describe('prekidač i rutiranje po oznaci politike', () => {
       ...v2,
       meta: { ...meta, ...m }
     });
-    expect(generatorForPlan(withMeta({ policyId: 'hm-v1', policyVersion: 'hm-v1.0.0' }))).toBe(
-      HALF_MARATHON_GENERATOR
-    );
+    const hmV1 = withMeta({ policyId: 'hm-v1', policyVersion: 'hm-v1.0.0' });
+    expect(generatorForPlan(hmV1)).toBeNull();
+    expect(unsupportedPlanReason(hmV1)).toBe(LEGACY_PLAN);
     const legacy = { ...v2, meta: { ...meta } };
     delete legacy.meta['policyId'];
     delete legacy.meta['policyVersion'];
-    expect(generatorForPlan(legacy)).toBe(HALF_MARATHON_GENERATOR);
+    expect(generatorForPlan(legacy)).toBeNull();
+    expect(preparationForPlan(legacy)).toBeNull();
     for (const version of ['hm-v2.0.0', 'hm-v2.2.1', 'hm-v2.99.0', undefined]) {
       if (version === VERSION) continue;
       const p = withMeta({ policyVersion: version });
@@ -401,26 +363,9 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     }
     for (const raceDistM of [5000, 10000, 42195])
       expect(generatorForPlan(withMeta({ raceDistM })), String(raceDistM)).toBeNull();
-    // Prekidač ne prebacuje postojeći v1 plan (izbor ne čita prekidač); lični plan vlasnika ostaje HM v1.
-    const input = toGenerationInput(
-      {
-        ...initialWizard(),
-        raceDist: 21097.5,
-        raceDate: '2027-04-04',
-        pbDist: 10000,
-        pbMin: '46',
-        pbSec: '0',
-        weeklyKm: '45',
-        runDays: 5,
-        runDows: [1, 2, 4, 6, 7]
-      },
-      '2026-11-02'
-    )!;
-    const v1 = stampForStorage(
-      HALF_MARATHON_GENERATOR.adaptGeneratedPlan(HALF_MARATHON_GENERATOR.generatePlan(input))!
-    );
-    for (const p of [v1, personalPlan(48)]) {
-      expect(generatorForPlan(p)).toBe(HALF_MARATHON_GENERATOR);
+    // Lični plan vlasnika ostaje zamrznut HM v1; stari plan nema generator.
+    expect(generatorForPlan(personalPlan(48))).toBe(LEGACY_PERSONAL_GENERATOR);
+    for (const p of [legacy, personalPlan(48)]) {
       expect(isHmV2Plan(p)).toBe(false);
       expect(tracksOffPlanRuns(p)).toBe(false);
     }
@@ -428,7 +373,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
   });
 
   it('KNOWN_VERSIONS = sve verzije sačuvane posle HM-05 (hm-v2.3.0, hm-v2.4.0) i tekuća', () => {
-    expect(hm.hmV2.KNOWN_VERSIONS).toEqual([
+    expect(hmV2.KNOWN_VERSIONS).toEqual([
       ...new Set([
         'hm-v2.3.0',
         'hm-v2.4.0',
@@ -439,6 +384,13 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'hm-v2.6.2',
         'hm-v2.7.0',
         'hm-v2.7.1',
+        'hm-v2.8.0',
+        'hm-v2.9.0',
+        'hm-v2.10.0',
+        'hm-v2.11.0',
+        'hm-v2.12.0',
+        'hm-v2.13.0',
+        'hm-v2.14.0',
         VERSION
       ])
     ]);
@@ -669,15 +621,10 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad HM v1), (c)
     expect(keys).toHaveLength(55);
     expect(B).toHaveLength(26);
     expect([...A, ...B, ...C].sort()).toEqual(keys);
-    expect(Object.keys(HALF_MARATHON_GENERATOR).sort()).toEqual(keys);
+    expect(Object.keys(OLD).sort()).toEqual(keys);
     const g = HALF_MARATHON_V2_GENERATOR as unknown as Record<string, unknown>;
-    const old = HALF_MARATHON_GENERATOR as unknown as Record<string, unknown>;
-    const v1 = new Set<unknown>(Object.values(hm).filter((x) => typeof x === 'function'));
-    for (const k of keys)
-      if (typeof g[k] === 'function') {
-        expect(g[k], k).not.toBe(old[k]);
-        expect(v1.has(g[k]), k).toBe(false);
-      }
+    const old = OLD as unknown as Record<string, unknown>;
+    for (const k of keys) if (typeof g[k] === 'function') expect(g[k], k).not.toBe(old[k]);
     for (const k of B) expect(MEMBERS[k]!.reason.length, k).toBeGreaterThan(10);
   });
 
@@ -802,7 +749,7 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad HM v1), (c)
       }
     };
     const g = HALF_MARATHON_V2_GENERATOR;
-    const o = HALF_MARATHON_GENERATOR;
+    const o = OLD;
     for (const day of ['2026-11-23', '2026-11-26', '2026-12-10'] as IsoDate[]) {
       expect(g.painStatus(pain, day)).toEqual(o.painStatus(pain, day));
       expect(g.acwrNow(ctx, day)).toEqual(o.acwrNow(ctx, day));

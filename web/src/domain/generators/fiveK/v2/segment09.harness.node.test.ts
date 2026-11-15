@@ -19,11 +19,13 @@ export interface Ref09 {
   changed: Record<string, { h: string; why: Why09 }>;
 }
 
-/** 5K-10 (krug T, 5k-v2.12.0): otisci prema b9c4728 (segment10.<mreža>-b9c4728.json, fixes/5K/fixture10.ts) zamenjuju
+/** P8-5K (5k-v2.15.0): otisci prema 9055e5b (segment15.<mreža>-9055e5b.json, docs/generators-v2/perfection/P8-5K/fixture15.ts;
+    razlog P8 ili CH) zamenjuju otiske prema 8e87fd4. Ranije — P5 (5k-v2.14.0): otisci prema 8e87fd4 (segment14.<mreža>-8e87fd4.json, docs/generators-v2/perfection/P5-5K/fixture14.ts;
+    razlog P5 ili CH) zamenjuju otiske prema a859ca7 (P4, razlog P4). Ranije — 5K-10 (krug T, 5k-v2.12.0): otisci prema b9c4728 zamenjuju
     otiske prema c13c258; razlozi promene Why09 T1/T2/T4/T5/C3/C5/C11 (testInputs.mark10). */
 export const ref09 = (net: 'g07' | 'n08d' | 'e08e' | 'x08g'): Ref09 =>
   JSON.parse(
-    readFileSync(new URL(`./segment10.${net}-b9c4728.json`, import.meta.url), 'utf8')
+    readFileSync(new URL(`./segment15.${net}-9055e5b.json`, import.meta.url), 'utf8')
   ) as Ref09;
 
 export const hash09 = (r: unknown): string =>
@@ -79,6 +81,6 @@ export function regressGroup09(
   }
   if (ref.plans![group] === undefined) bad.push(`${group}: nema u otisku`);
   else if (digest09(same) !== ref.plans![group])
-    bad.push(`${group}: nepromenjeni tokovi nisu bajt-isti prema b9c4728`);
+    bad.push(`${group}: nepromenjeni tokovi nisu bajt-isti prema 9055e5b`);
   return bad;
 }

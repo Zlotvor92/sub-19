@@ -1,0 +1,514 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P8-5K/sabotage.json",
+ "head": "58741f51",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 138.5,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P8-G1 rast bez raspodele do kraja razvoja",
+   "files": [
+    "src/domain/generators/fiveK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > G1: ne-rasteretna nedelja razvoja ≤ poslednji + (vrh − poslednji) / preostale nedelje razvoja",
+    "message": "AssertionError: r-d3-6w-25km-v38-1 ned 2: expected 27 to be less than or equal to 26.800001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "20999346c1f56a31af70efeafba18c2bf62c67b94db2ef038dae2d82617787ea",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 2,
+   "name": "P8-G2 bez prvog nivoa lestvice (sa rezultatom)",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (c) prvi I posle R faze ≤ 70 % budžeta I (ili prvi nivo lestvice)",
+    "message": "AssertionError: r-d3-8w-12km-v58-0 ned 4: expected 1.4 to be less than or equal to 1.2000009999999999"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "b83d8b9a52a854427014b62a6cf93d17858887a93e8444e3c30c114c7537ca72",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.1
+  },
+  {
+   "index": 3,
+   "name": "P8-G2 bez prvog nivoa lestvice (po osećaju)",
+   "files": [
+    "src/domain/generators/fiveK/v2/feel.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (b) rasterećenje: rad zone ≤ max(0,6 × poslednja doza, prvi nivo); taper ≤ max(0,7 ×, prvi nivo); dugi ≤ 0,8 ×",
+    "message": "AssertionError: f-d4-6w-15km-e300-1 ned 5 T: expected 1.2 to be less than or equal to 0.89"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "1cc4adb7e5ec65dc580c4fa5b3de9f1287cb36c5da98717558dfcdcc1dd19aca",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 4,
+   "name": "P8-a budžet I 12 % od 40 km",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: pojedinačna pravila > (a) budžet I/RP 10 % za svaki cilj",
+    "message": "AssertionError: expected 0.12 to be 0.1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "c6c675973da7a7ae8bdb140f3b8712d5d0e92b44873d4179da2360268513eb99",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 5,
+   "name": "P8-b rasterećenje bez granice kvaliteta",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (b) rasterećenje: rad zone ≤ max(0,6 × poslednja doza, prvi nivo); taper ≤ max(0,7 ×, prvi nivo); dugi ≤ 0,8 ×",
+    "message": "AssertionError: r-d3-9w-12km-v32-0 ned 5 I: expected 1 to be less than or equal to 0.8500000000000001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "56795aff5b57f675efd45a134eed03f531ea5d9770509fe0fa9a2293c2f3426d",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.1
+  },
+  {
+   "index": 6,
+   "name": "P8-b taper bez granice kvaliteta",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (b) rasterećenje: rad zone ≤ max(0,6 × poslednja doza, prvi nivo); taper ≤ max(0,7 ×, prvi nivo); dugi ≤ 0,8 ×",
+    "message": "AssertionError: f-d4-6w-30km-e480-0 ned 5 T: expected 1.62 to be less than or equal to 1.534"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "e6a828313c70e052394acb21e08fcebbbd92fd2d0810e6f72db92c745f1d65e1",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 7,
+   "name": "P8-b dugi rasterećenja bez granice",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (b) rasterećenje: rad zone ≤ max(0,6 × poslednja doza, prvi nivo); taper ≤ max(0,7 ×, prvi nivo); dugi ≤ 0,8 ×",
+    "message": "AssertionError: b-d3-8w-16km-e480-0 ned 4 dugi: expected 6.3 to be less than or equal to 5.600001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0b85dc0c0f1ffe8cb99e18c621fbb35be8d9462e7ee9cd0d869407c625c4834a",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 8,
+   "name": "P8-c prvi I bez smanjenog budžeta",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (c) prvi I posle R faze ≤ 70 % budžeta I (ili prvi nivo lestvice)",
+    "message": "AssertionError: r-d3-6w-12km-v32-0 ned 3: expected 1.2 to be less than or equal to 0.970001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "aa817b88fa7550ab0422111ffa678e40441f4e5025ec104922d695f28fb00eb8",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.7
+  },
+  {
+   "index": 9,
+   "name": "P8-d trka uvek 2,0 / 1,5 km",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > (d) trkački dan: WU/CD = raceWarmup(vrh, najduži trening); nije najduži dan plana kad se može izbeći",
+    "message": "AssertionError: expected 3.5 to be less than or equal to 2.5"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "8718fc7834019d7721766238f3369823173752eb451e46fb476284249b1aadae",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 10,
+   "name": "P8-e početnik spušten na kapacitet početnika",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: pojedinačna pravila > (e) početnik iznad kapaciteta plana početnika → plan bez oznake početnika, uz napomenu; u kapacitetu ostaje početnik",
+    "message": "AssertionError: expected 'beginner' to be 'regular' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "7fac9a31e332e8a3464d29890c7a4988054e8d0e46e827e9efcc48d940520f2c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 11,
+   "name": "P8-G3 upozorenja nisu zbirna",
+   "files": [
+    "src/domain/generators/fiveK/v2/text.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: pojedinačna pravila > G3: isto upozorenje jednom po planu (zbirno), tekst bez internih izraza",
+    "message": "AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "1297201eacecb42facd69f67788c8f5555a6bcb6e02e1fb4fd6377a48caa23ae",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 12,
+   "name": "P8-G3 „obim ne dozvoljava\" i na kraju ponude",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: pojedinačna pravila > G3: „ista količina … (obim ne dozvoljava više)\" samo kad veća doza postoji u ponudi; inače „najveća doza\"",
+    "message": "AssertionError: expected 'obim nedelje ne dozvoljava više' to be 'to je najveća doza ovog treninga u pl…' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0d00800887cc789ea9f69e632c4f15ea4678663fa2fdfc3ca12bee6d72e0a4e9",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.2
+  },
+  {
+   "index": 13,
+   "name": "P8-G6 lagan 0,8 × dugi i za 4+ dana",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G6: redovan plan sa 4+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (3 dana i početnik 0,8); uvodne nedelje početnika lagan ≤ dugi",
+    "message": "AssertionError: r-d4-6w-15km-v45-0 ned 2: expected 3.6 to be less than or equal to 3.2000010000000003"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0fac089b48dca270770f5e5ad414eaab8d8348d355afed8c5f6f9bde2f53556c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 14,
+   "name": "P8-G7 test sme u nedelji 3",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G7: u nedelji kontrolnog testa test je jedini kvalitet i nedelja nije pre 4.",
+    "message": "AssertionError: f-d3-6w-12km-e480-0: expected 3 to be greater than or equal to 4"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "6e3f52804c67289857cf4f3d06c4107635ea1fc46ed7f1e0f07896503ab686bf",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 15,
+   "name": "P8-G1a vrh 1,5 × start za svaku dužinu",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G1a: vrh ≤ start × 1,30 (≤ 12 ned) / 1,35 (13–15) / 1,40 (≥ 16) i ≤ satni plafon 6 / 7 / 8 h (ili start)",
+    "message": "AssertionError: r-d3-8w-12km-v32-0: expected 16.2 to be less than or equal to 15.600001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "b0e4502cf8e5dbb25d8742ef0eb0583191072d8fdf2ef3f0df57a4acfa17e673",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 16,
+   "name": "P8-G1b korak ispod 3 % se primenjuje",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > G1: ne-rasteretna nedelja razvoja ≤ poslednji + (vrh − poslednji) / preostale nedelje razvoja",
+    "message": "AssertionError: f-d4-6w-30km-e480-0 ned 3 korak: expected 0.9000000010000021 to be greater than or equal to 0.9269999999999999"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "019343d99bf1f8ae18a6f42784a45259da2fde1bb26a1c2a62103907c80f305e",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 17,
+   "name": "P8-završetak odluka 2: I skače na prag 80 % budžeta",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > odluka 2: I u vrhuncu posle prethodnog I raste najviše do 1,25 × prethodnog rada (najmanje jedan nivo lestvice)",
+    "message": "AssertionError: r-d3-6w-12km-v32-0 ned 4: 80 → 120: expected 120 to be less than or equal to 100.000001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "8a78b3d2d2ba86c883cd6b80930d22b658503ad2a9befc29647705c6ee6d43eb",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.3
+  },
+  {
+   "index": 18,
+   "name": "P8-G6 početnik sa 4 dana na 0,70",
+   "files": [
+    "src/domain/generators/fiveK/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G6: redovan plan sa 4+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (3 dana i početnik 0,8); uvodne nedelje početnika lagan ≤ dugi",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "7439eea517d7828a5da75801c75479ed9004ac14efc60ac3b0ecc2d8543e0a30",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.3
+  },
+  {
+   "index": 19,
+   "name": "P8-završetak odluka 2: korak I najsitniji (bez 1,25)",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > odluka 2: I u vrhuncu posle prethodnog I raste najviše do 1,25 × prethodnog rada (najmanje jedan nivo lestvice)",
+    "message": "AssertionError: expected 0 to be greater than 20"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "8e17100bebc515d557a88f33b4b4ef0858736ab40daf154622bac7ace83ccc7c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 20,
+   "name": "P8-G3/G6 napomena laganog u svakoj nedelji",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G3/G6: napomena „Lagan trk najviše …\" samo u prvoj takvoj nedelji plana; upozorenja ostaju po nedelji",
+    "message": "AssertionError: r-d3-6w-12km-v58-0: expected 3 to be less than or equal to 1"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "67ee2058cb5319aaeb7a80a5370fdd33a6b890ddb16749fb86b72164e6fe2c74",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  }
+ ]
+}

@@ -29,7 +29,10 @@ with ocekivano_def as (
                       'check_and_bump_bug_usage','check_and_bump_endpoint',
                       -- Bez `security definer` ova puca sa „infinite recursion
                       -- detected in policy" i Zajednica postane nečitljiva.
-                      'zajednica_vidljiv_ja','user_state_zapamti']) as ime
+                      'zajednica_vidljiv_ja','user_state_zapamti',
+                      -- V4, v4.sql: okidač verzija piše u plan_v4_verzija (kroz
+                      -- RLS niko ne upisuje); v4_iskljuci upisuje v4_pristup
+                      'plan_v4_zapamti','v4_iskljuci']) as ime
 ),
 ocekivano_obicno as (
   -- Funkcije koje NE TREBA da budu `security definer`. Okidači `dodirni` i
@@ -40,7 +43,9 @@ ocekivano_obicno as (
   -- bez obzira ko je radi, i korisnik ga ne može isključiti (`ALTER TABLE …
   -- DISABLE TRIGGER` traži vlasništvo nad tabelom).
   select unnest(array['ai_posao_dodirni','ai_posao_prelaz',
-                      'push_pretplata_dodirni','zajednica_profil_dodirni']) as ime
+                      'push_pretplata_dodirni','zajednica_profil_dodirni',
+                      -- V4, v4.sql: samo postavlja rev i updated_at u NEW
+                      'plan_v4_rev']) as ime
 )
 
 -- 1. OKIDAČI nad ai_posao — bez njih se dnevni limit zaobilazi
@@ -69,6 +74,33 @@ select 'okidač · user_state_zapamti_trg',
 
 union all
 
+-- 1b. OKIDAČI nad plan_v4 (V4) — bez `plan_v4_rev_trg` `rev` ne raste i uslovni
+--     upis ne hvata sukob dva uređaja; bez `plan_v4_zapamti_trg` nema prethodnih
+--     verzija plana (dopuna 15. 11. 2026, v. supabase/v4.sql).
+select 'okidač · plan_v4_zapamti_trg',
+       coalesce(case when t.tgenabled = 'O' then 'aktivan' else 'isključen' end, '—'),
+       case when t.tgname is null then 'NEDOSTAJE — pusti v4.sql'
+            when t.tgenabled <> 'O' then 'STARO — okidač je isključen'
+            else 'OK' end
+  from (select 1) x
+  left join pg_trigger t
+    on t.tgname = 'plan_v4_zapamti_trg' and t.tgrelid = to_regclass('public.plan_v4')
+   and not t.tgisinternal
+
+union all
+
+select 'okidač · plan_v4_rev_trg',
+       coalesce(case when t.tgenabled = 'O' then 'aktivan' else 'isključen' end, '—'),
+       case when t.tgname is null then 'NEDOSTAJE — pusti v4.sql'
+            when t.tgenabled <> 'O' then 'STARO — okidač je isključen'
+            else 'OK' end
+  from (select 1) x
+  left join pg_trigger t
+    on t.tgname = 'plan_v4_rev_trg' and t.tgrelid = to_regclass('public.plan_v4')
+   and not t.tgisinternal
+
+union all
+
 -- 2. TABELE i RLS
 select 'tabela · ' || o.ime,
        coalesce(case when c.relrowsecurity then 'RLS uključen' else 'RLS ISKLJUČEN' end, '—'),
@@ -78,7 +110,9 @@ select 'tabela · ' || o.ime,
   from (select unnest(array['ai_posao','api_usage','bug_report_usage',
                             'endpoint_usage','push_pretplata','user_state',
                             'zajednica_profil','zajednica_izazov','user_state_istorija',
-                            'nalog_za_brisanje']) as ime) o
+                            'nalog_za_brisanje',
+                            'aktivnost','plan_v4','plan_v4_verzija','plan_v4_dogadjaj',
+                            'v4_pristup']) as ime) o
   left join pg_class c on c.oid = to_regclass('public.' || o.ime)
 
 union all
@@ -166,7 +200,8 @@ select 'politika · ' || tablename || '.' || policyname,
  where schemaname = 'public'
    and tablename in ('ai_posao','zajednica_profil','user_state','push_pretplata',
                      'user_state_istorija','zajednica_izazov','nalog_za_brisanje',
-                     'api_usage','bug_report_usage','endpoint_usage')
+                     'api_usage','bug_report_usage','endpoint_usage',
+                     'aktivnost','plan_v4','plan_v4_verzija','plan_v4_dogadjaj','v4_pristup')
 
 union all
 
@@ -220,7 +255,9 @@ select 'anon · ' || o.ime,
             else 'OK' end
   from (select unnest(array['user_state','user_state_istorija','zajednica_profil',
                             'push_pretplata','ai_posao','nalog_za_brisanje',
-                            'endpoint_usage','api_usage','bug_report_usage']) as ime) o
+                            'endpoint_usage','api_usage','bug_report_usage',
+                            'aktivnost','plan_v4','plan_v4_verzija','plan_v4_dogadjaj',
+                            'v4_pristup']) as ime) o
 
 union all
 
@@ -240,6 +277,24 @@ select 'izazov · nijedna politika za upis',
                  samo politiku koju sam pravi, po imenu. Tuđu treba obrisati
                  rukom: `drop policy <ime> on public.zajednica_izazov`. */
               then 'STARO — neko sme da menja izazov kroz RLS; obriši tu politiku rukom'
+            else 'OK' end
+
+union all
+
+-- 6v4. VERZIJE PLANA V4: korisnik čita i briše svoje (aplikacija zadržava 3
+--      najnovije), a NE upisuje ni menja — piše samo okidač plan_v4_zapamti.
+select 'plan_v4_verzija · politike samo SELECT i DELETE',
+       coalesce((select string_agg(distinct cmd, ', ' order by cmd) from pg_policies
+                  where schemaname = 'public' and tablename = 'plan_v4_verzija'), 'nema'),
+       case when to_regclass('public.plan_v4_verzija') is null then 'NEDOSTAJE'
+            when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'plan_v4_verzija'
+                            and cmd not in ('SELECT', 'DELETE'))
+              then 'STARO — neko sme da upisuje verzije kroz RLS; obriši tu politiku rukom'
+            when not exists (select 1 from pg_policies
+                              where schemaname = 'public' and tablename = 'plan_v4_verzija'
+                                and policyname = 'plan_v4_verzija_ukloni' and cmd = 'DELETE')
+              then 'NEDOSTAJE plan_v4_verzija_ukloni — pusti v4.sql'
             else 'OK' end
 
 union all

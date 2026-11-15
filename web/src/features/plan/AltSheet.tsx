@@ -12,7 +12,9 @@ import {
 } from '../../domain/plan';
 import { fmtClock, parseTimeStr } from '../../domain/format';
 import { confirmAction } from '../../app/confirm';
-import { useResolvedPlan, useTrainingStore } from '../../stores';
+import { useResolvedPlan, useTrainingStore, useV4Doc } from '../../stores';
+import { applyEdit, undoEdit, workoutFromAlt } from '../../integrations/v4';
+import { commitV4Edit } from './v4Edit';
 import { predRowsForDay, storedRows } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
 import { dowShort, fmtDayMonthYear } from '../../domain/format';
@@ -72,7 +74,13 @@ function TypeButton({
 export function AltSheet({ id }: { id: string }) {
   const plan = useResolvedPlan();
   const day = plan?.byId.get(id);
-  const existing = useTrainingStore((s) => s.alts[id]);
+  /* F9 korak 7: plan iz V4 → izmena je `applyEdit` nad planom V4 (ne `alts`). */
+  const v4Doc = useV4Doc();
+  const storedAlt = useTrainingStore((s) => s.alts[id]);
+  const existing = v4Doc ? undefined : storedAlt;
+  const v4Edited = !!v4Doc?.weeks.some((wk) =>
+    wk.days.some((d) => d.id === id && d.base !== undefined)
+  );
   const setAlt = useTrainingStore((s) => s.setAlt);
   const clearAlt = useTrainingStore((s) => s.clearAlt);
   const closeSheet = useUIStore((s) => s.closeSheet);
@@ -120,6 +128,19 @@ export function AltSheet({ id }: { id: string }) {
   );
 
   const save = (): void => {
+    if (v4Doc) {
+      const workout = workoutFromAlt({
+        tag: cur.tag,
+        km: cur.km ?? null,
+        desc: cur.desc,
+        pace: paceText != null ? parseTimeStr(paceText) : (cur.pace ?? null)
+      });
+      void commitV4Edit(v4Doc, (doc, ctx) => applyEdit(doc, id, workout, ctx)).then((e) => {
+        if (e === null) closeSheet();
+        else setErr(`Izmena nije moguća: ${e}`);
+      });
+      return;
+    }
     const r = setAlt(id, {
       tag: cur.tag,
       km: cur.km,
@@ -136,7 +157,7 @@ export function AltSheet({ id }: { id: string }) {
       <div className="sh-t">Izmeni trening</div>
       <div className="sh-s">
         N{day.w} · {dowShort(day.date)} {fmtDayMonthYear(day.date)}
-        {existing ? ' · izmenjen' : ''}
+        {existing || v4Edited ? ' · izmenjen' : ''}
       </div>
       {err ? (
         <div role="alert" className="note-src err">
@@ -250,7 +271,7 @@ export function AltSheet({ id }: { id: string }) {
           Sačuvaj
         </button>
       </div>
-      {existing ? (
+      {existing || v4Edited ? (
         <div className="btnrow">
           <button
             type="button"
@@ -258,6 +279,13 @@ export function AltSheet({ id }: { id: string }) {
             onClick={() => {
               void confirmAction('Vratiti ovaj dan na originalni trening iz plana?').then((ok) => {
                 if (!ok) return;
+                if (v4Doc) {
+                  void commitV4Edit(v4Doc, (doc, ctx) => undoEdit(doc, id, ctx)).then((e) => {
+                    if (e === null) closeSheet();
+                    else setErr(`Vraćanje nije uspelo: ${e}`);
+                  });
+                  return;
+                }
                 clearAlt(id);
                 closeSheet();
               });

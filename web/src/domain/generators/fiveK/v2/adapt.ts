@@ -27,6 +27,7 @@ import type {
   RunWalkAdaptResult
 } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { SHORT_REST_PLAN_NOTE, shortRestWeek } from './week.ts';
 import { capacityKm } from './volume.ts';
 import { type Written, writtenWeeks } from './written.ts';
 
@@ -213,6 +214,10 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
     ...applied.map((x) => `Adaptacija ${at}: ${x.message}`),
     ...(orientation && !plan.notes.includes(P.adapt.orientationMessage)
       ? [P.adapt.orientationMessage]
+      : []),
+    // 5k-v2.17.0 (K4-B): nedelje malog obima (week.shortRestWeek) → rečenica u napomeni plana.
+    ...(weeks.some(shortRestWeek) && !plan.notes.includes(SHORT_REST_PLAN_NOTE)
+      ? [SHORT_REST_PLAN_NOTE]
       : [])
   ];
   const out: FiveKV2Plan = {

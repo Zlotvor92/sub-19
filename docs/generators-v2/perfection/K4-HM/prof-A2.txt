@@ -1,0 +1,12 @@
+p01 peak 56 | longest 22.4 | longs3  | nBlock 2 | blocks 4/4 | blockSum 8 | easyLong 0.51 | topRun 5 | atTop 5 | shortEasy 0 | minEasy 2356 | planned 558.49
+p02 peak 53.5 | longest 21.4 | longs3  | nBlock 2 | blocks 4/4 | blockSum 8 | easyLong 0.47 | topRun 4 | atTop 4 | shortEasy 0 | minEasy 1876 | planned 439.51
+p03 peak 34.9 | longest 15.7 | longs3 11.2/11.9/12.6/10/13.4/14.1/14.9/11.9/15.7/13.3/15.7/12.5/13.3/15.7/9.4 | nBlock 2 | blocks 4/4 | blockSum 8 | easyLong 0.8 | topRun 1 | atTop 3 | shortEasy 0 | minEasy 3773 | planned 341.77
+p04 peak 63.1 | longest 20 | longs3  | nBlock 2 | blocks 4/6 | blockSum 10 | easyLong 0.61 | topRun 5 | atTop 5 | shortEasy 0 | minEasy 3808 | planned 822.84
+p05 peak 100 | longest 24 | longs3  | nBlock 2 | blocks 6/8 | blockSum 14 | easyLong 0.62 | topRun 11 | atTop 11 | shortEasy 0 | minEasy 3240 | planned 1050.12
+p06 peak 44.2 | longest 14.1 | longs3  | nBlock 1 | blocks 4 | blockSum 4 | easyLong 0.46 | topRun 2 | atTop 2 | shortEasy 6 | minEasy 1152 | planned 285.72
+p07 peak 71.5 | longest 22.8 | longs3  | nBlock 2 | blocks 4/6 | blockSum 10 | easyLong 0.54 | topRun 2 | atTop 2 | shortEasy 0 | minEasy 3197 | planned 452.98
+p08 peak 54.3 | longest 24 | longs3 20.2/20.2/20.2/16.1/20.8/21.5/21.5/22.3/17.8/23.1/23.9/24/19.2/20.4/24/20.4/16.3/24/14.4 | nBlock 2 | blocks 4/6 | blockSum 10 | easyLong 0.8 | topRun 1 | atTop 3 | shortEasy 0 | minEasy 5092 | planned 691.06
+p09 peak 63 | longest 24 | longs3  | nBlock 2 | blocks 4/6 | blockSum 10 | easyLong 0.65 | topRun 5 | atTop 5 | shortEasy 0 | minEasy 3565 | planned 628.43
+p10 peak 34.9 | longest 15.7 | longs3 11.2/11.7/12.2/9.7/12.7/13.2/13.7/14.2/11.3/14.7/15.2/15.7/12.5/13.3/15.7/13.3/10.6/15.7/9.4 | nBlock 2 | blocks 4/4 | blockSum 8 | easyLong 0.8 | topRun 1 | atTop 3 | shortEasy 0 | minEasy 3797 | planned 431.94
+p11 peak 29.2 | longest 13.6 | longs3  | nBlock 0 | blocks  | blockSum 0 | easyLong 0.5 | topRun 1 | atTop 1 | shortEasy 14 | minEasy 1710 | planned 356.26
+p12 peak 59 | longest 18.6 | longs3  | nBlock 0 | blocks  | blockSum 0 | easyLong 0.6 | topRun 4 | atTop 4 | shortEasy 0 | minEasy 3024 | planned 592.92

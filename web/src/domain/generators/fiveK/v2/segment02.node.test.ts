@@ -1,17 +1,25 @@
 /* Segment 02 (5k-v2.1.0, ažurirano za 2.2.0): trenerske odluke 1–4 i Uslov 8 (upotrebljivost plana). */
 
 import { belowTargetShown } from './text.ts';
+import { shortRestWeek } from './week.ts';
 import { easyCapKm } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { periodize, phaseCounts } from './periodize.ts';
+import { firstPeakIWeek, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
-import { inputOf, PROFILES, START, type Profile } from './testInputs.ts';
-import type { FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
+import { inputOf, k3ILoMin, PROFILES, START, type Profile } from './testInputs.ts';
+import type { FiveKV2Plan, Paces, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { planVolume } from './volume.ts';
-import { chooseProgressiveReps, easyRun, longRun, roundRecoverySec } from './workouts.ts';
+import {
+  chooseProgressiveReps,
+  easyRun,
+  firstIPeakBudget,
+  iPeakBudget,
+  longRun,
+  roundRecoverySec
+} from './workouts.ts';
 
 function planOf(p: Profile): FiveKV2Plan {
   const r = generateFiveKV2(inputOf(p));
@@ -25,8 +33,9 @@ const errorsOf = (p: FiveKV2Plan): string[] =>
     .map((v) => v.rule);
 const roleDay = (w: PlanWeek, role: PlanDay['role']): PlanDay =>
   w.days.find((d) => d.role === role)!;
+// 5k-v2.14.0 (P5 F1): nedelja kontrolnog trčanja (plan sa rezultatom ≥ 10 ned) nije nedelja progresije doze.
 const isSteadyBuild = (w: PlanWeek): boolean =>
-  !w.deload && (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen');
+  !w.deload && !w.test && (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen');
 const mainWork = (w: PlanWeek): number => {
   const k = roleDay(w, 'q1').workout.workKm;
   return w.phase === 'sharpen' ? k.RP : k.I;
@@ -44,7 +53,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.12.0');
+    expect(plan.policyVersion).toBe(P.version);
   });
 });
 
@@ -67,7 +76,10 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     for (const w of plan.weeks.filter((x) => x.easyCappedAtLong)) {
       const long = roleDay(w, 'long').workout.km;
       for (const d of w.days.filter((x) => x.role === 'easy'))
-        expect(d.workout.km).toBeCloseTo(easyCapKm(long, w.phase, w.deload), 6);
+        expect(d.workout.km).toBeCloseTo(
+          easyCapKm(long, w.phase, w.deload, plan.input.runDays.length, false, w.index),
+          6
+        );
       expect(w.plannedKm).toBeLessThan(w.targetKm);
     }
     // Ciljevi su i dalje odluka volume.ts; 2.3.0: trkačka nedelja = planirano ≤ granica iz volume.ts.
@@ -80,18 +92,20 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     expect(plan.weeks.slice(0, -1).map((w) => w.targetKm)).toEqual(targets.slice(0, -1));
     expect(plan.weeks[plan.weeks.length - 1]!.targetKm).toBeLessThanOrEqual(targets.at(-1)!);
     expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toHaveLength(
-      plan.weeks.filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
-        .length
+      plan.weeks.filter(
+        (w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w)
+      ).length
     );
   });
 
   it('validator: „lagan = dugi" uz oznaku → upozorenje; bez oznake → greška; lažna oznaka → greška', () => {
     const p = planOf(CAPPED);
     const w = p.weeks.find((x) => x.phase === 'base' && !x.deload)!;
-    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,8 × dugi (5k-v2.12.0, T1).
+    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,75 × dugi (4 dana; 5k-v2.16.0, K3-B; nedelja 1:
+    // 0,80).
     w.days = w.days.map((d) =>
       d.role === 'easy'
-        ? { ...d, workout: easyRun(4.8, p.paces, false) }
+        ? { ...d, workout: easyRun(w.index === 1 ? 4.8 : 4.5, p.paces, false) }
         : d.role === 'long'
           ? { ...d, workout: longRun(6, p.paces) }
           : d
@@ -113,11 +127,48 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     const steady = plan.weeks.filter(isSteadyBuild);
+    // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget.
+    const first = firstPeakIWeek(plan.weeks);
+    // 5k-v2.15.1 (P8 završetak, odluka 2): donji prag budžeta važi za prvi I vrhunca i za oštrenje; posle prvog I doza
+    // raste najviše do 1,25 × prethodnog rada, a najmanje jedan nivo (nezavisna lestvica iz ponude politike, ne iz workouts.iStepUp).
+    const q = P.quality;
+    const paceI = (plan.paces as Paces).I;
+    const ladder = [
+      ...new Set(
+        q.repOptionsKm.I.filter(
+          (km) => km * paceI <= q.iRepMaxSec + 1e-9 && km * paceI >= q.iRepMinSec - 1e-9
+        ).flatMap((km) =>
+          Array.from({ length: q.maxReps.I - q.minReps.I + 1 }, (_, i) =>
+            Math.round((q.minReps.I + i) * km * 100)
+          )
+        )
+      )
+    ].sort((x, y) => x - y);
+    let prevI: number | null = null;
+    // 5k-v2.16.0 (K3-A): budžet I vrhunca iz opsega minuta po cilju nedelje (iPeakBudget, firstIPeakBudget).
+    const pc = plan.paces as Paces;
+    const bI = (w: PlanWeek): number =>
+      w.phase === 'peak' ? iPeakBudget(w.budgets.I, w.targetKm, pc) : w.budgets.I;
     for (const w of steady.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
-      expect(mainWork(w)).toBeGreaterThanOrEqual(
-        w.budgets.I * P.quality.mainMinShareOfBudget - 1e-9
-      );
-      expect(mainWork(w)).toBeLessThanOrEqual(w.budgets.I + 1e-9);
+      if (w.phase === 'sharpen' || prevI === null)
+        expect(mainWork(w)).toBeGreaterThanOrEqual(
+          (w.index === first ? firstIPeakBudget(bI(w), w.targetKm, pc) : bI(w)) *
+            P.quality.mainMinShareOfBudget -
+            1e-9
+        );
+      else {
+        const next = ladder.find((x) => x > Math.round(prevI! * 100));
+        // 5k-v2.15.3: najveći nivo ≤ 1,25 × prethodni rad, a najmanje sledeći veći nivo.
+        // 5k-v2.16.0 (K3-A): ispod donje granice opsega minuta korak sme do najmanjeg nivoa ≥ donja granica.
+        const loKm = (k3ILoMin(pc.vdot, w.targetKm) * 60) / paceI;
+        const toLo = loKm > 0 ? (ladder.find((x) => x + 1e-6 >= loKm * 100) ?? 0) : 0;
+        if (next !== undefined)
+          expect(Math.round(mainWork(w) * 100)).toBeLessThanOrEqual(
+            Math.max(next, Math.round(prevI * 100) * 1.25 + 1e-6, toLo)
+          );
+      }
+      expect(mainWork(w)).toBeLessThanOrEqual(bI(w) + 1e-9);
+      if (w.phase === 'peak') prevI = mainWork(w);
     }
     for (let i = 1; i < steady.length; i++) {
       const a = steady[i - 1]!;

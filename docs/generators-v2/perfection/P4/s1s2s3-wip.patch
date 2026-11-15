@@ -1,0 +1,140 @@
+diff --git a/web/src/domain/generators/fiveK/v2/feel.ts b/web/src/domain/generators/fiveK/v2/feel.ts
+index 7d2441d..fcd9279 100644
+--- a/web/src/domain/generators/fiveK/v2/feel.ts
++++ b/web/src/domain/generators/fiveK/v2/feel.ts
+@@ -506,3 +506,24 @@ export function simpleWeekQuality(
+         }
+   };
+ }
++
++/**
++ * P4 (S3, samo merenje — ne bira ništa): zašto doza `d` vrste `kind` nije veća. Ista ponuda i procena kao `choose`
++ * ('up': veći procenjeni rad I duže ukupno trajanje). 'step' = veća doza staje u budžet (≤ 1 korak nedeljno / kraj
++ * faze); 'budget' = veća postoji samo uz veći budžet (plafon udela zone); 'offer' = veće nema u ponudi (kraj ponude:
++ * maxReps / bouts / plafon T bloka faze).
++ */
++export function feelDoseHeld(
++  kind: FeelKind,
++  phase: Phase,
++  budgetKm: number,
++  p: PaceModel,
++  d: FeelDose
++): 'step' | 'budget' | 'offer' {
++  const s = SPEC[kind];
++  const w = s.est(d, p);
++  const t = d.reps * d.len;
++  const up = s.cands(phase).filter((c) => s.est(c, p) > w + 1e-9 && c.reps * c.len > t + 1e-9);
++  if (up.some((c) => s.est(c, p) <= budgetKm + 1e-9)) return 'step';
++  return up.length > 0 ? 'budget' : 'offer';
++}
+diff --git a/web/src/domain/generators/fiveK/v2/policy.ts b/web/src/domain/generators/fiveK/v2/policy.ts
+index 54b61df..71b24d5 100644
+--- a/web/src/domain/generators/fiveK/v2/policy.ts
++++ b/web/src/domain/generators/fiveK/v2/policy.ts
+@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
+ export const FIVE_K_V2_POLICY = {
+   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
+   id: '5k-v2',
+-  version: '5k-v2.12.0',
++  version: '5k-v2.13.0',
+ 
+   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
+       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
+@@ -62,8 +62,10 @@ export const FIVE_K_V2_POLICY = {
+       'ispod 12 km na 3 dana nema prostora za kvalitet; počni laganim trčanjem ili izaberi 4 dana',
+     /** Distance rezultata iz kojih se računa VDOT. */
+     resultDistancesM: [3000, 5000, 10000] as const,
+-    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena). */
+-    vdot: { min: 30, max: 60 },
++    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena).
++        5k-v2.13.0 (P4 S2, heuristika): gornja granica 60 → 70 — tempo, deonice, WU/CD i dugi provereni na VDOT 62/65/68/70
++        (docs/generators-v2/perfection/reports/P4-REPORT.md). */
++    vdot: { min: 30, max: 70 },
+     /** Trajanje plana u celim nedeljama (heuristika opsega). 2.3.0: od 6 (kratka priprema). */
+     planWeeks: { min: 6, max: 16 },
+     /** Cilj [s] mora da odgovara VDOT-u u ovom opsegu da bi uopšte bio procenjen (sanity granica). */
+@@ -147,8 +149,13 @@ export const FIVE_K_V2_POLICY = {
+   },
+ 
+   quality: {
+-    /** I (uključujući RP) ≤ 8% nedeljnog obima; ponavljanje ≤ 5 min (Daniels-ova heuristika). */
+-    iMaxShare: 0.08,
++    /** 5k-v2.13.0 (P4 S1, heuristika): JEDAN plafon I (uključujući RP) = udeo cilja nedelje po tabeli — poslednji red
++        čiji je `fromKm` ≤ cilj: cilj < 40 km → 10 %, cilj ≥ 40 km → 12 % (do 5k-v2.12.0 8 % za sve). Jedino mesto
++        čitanja: workouts.iMaxShareOf (budžet konstruktora i validator I_SHARE). Ponavljanje ≤ 5 min (iRepMaxSec). */
++    iMaxShareByTargetKm: [
++      { fromKm: 0, share: 0.1 },
++      { fromKm: 40, share: 0.12 }
++    ],
+     iRepMaxSec: 300,
+     /** T ≤ 10% nedeljnog obima (heuristika). */
+     tMaxShare: 0.1,
+diff --git a/web/src/domain/generators/fiveK/v2/segment05.node.test.ts b/web/src/domain/generators/fiveK/v2/segment05.node.test.ts
+index 21311f2..582ec3f 100644
+--- a/web/src/domain/generators/fiveK/v2/segment05.node.test.ts
++++ b/web/src/domain/generators/fiveK/v2/segment05.node.test.ts
+@@ -11,6 +11,7 @@ import * as policy from './policy.ts';
+ import { inputOf, START, type Profile } from './testInputs.ts';
+ import type { FiveKV2Plan, Paces, PlanDay, PlanWeek, ReasonCode, Weekday } from './types.ts';
+ import { validatePlan } from './validate.ts';
++import { iMaxShareOf } from './workouts.ts';
+ 
+ const P = policy.FIVE_K_V2_POLICY;
+ const D3: Weekday[] = ['tue', 'thu', 'sun'];
+@@ -337,7 +338,7 @@ describe('Odluka 7: isti procentualni budžeti, bez donjeg praga 70%', () => {
+         sum.T += d.workout.workKm.T;
+         sum.R += d.workout.workKm.R;
+       }
+-      expect(sum.I).toBeLessThanOrEqual(w.targetKm * P.quality.iMaxShare + 1e-6);
++      expect(sum.I).toBeLessThanOrEqual(w.targetKm * iMaxShareOf(w.targetKm) + 1e-6);
+       expect(sum.T).toBeLessThanOrEqual(w.targetKm * P.quality.tMaxShare + 1e-6);
+       expect(sum.R).toBeLessThanOrEqual(w.targetKm * P.quality.rMaxShare + 1e-6);
+     }
+diff --git a/web/src/domain/generators/fiveK/v2/validate.ts b/web/src/domain/generators/fiveK/v2/validate.ts
+index cacd515..dd5304a 100644
+--- a/web/src/domain/generators/fiveK/v2/validate.ts
++++ b/web/src/domain/generators/fiveK/v2/validate.ts
+@@ -53,7 +53,7 @@ import {
+   returnBaseKm,
+   returnLevelAt
+ } from './volume.ts';
+-import { qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
++import { iMaxShareOf, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
+ 
+ const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
+ /** 2.4.0: + treninzi po osećaju (feel.ts) i kontrolno trčanje (samo nedelja testa, v. TEST_WEEK). */
+@@ -929,8 +929,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
+       // Ubrzanja (stride) su R tempo, ali ih ne računamo u R udeo; trajanje im se ipak proverava.
+       bout.R = Math.max(bout.R, b.R);
+     }
+-    if (sum.I > base * q.iMaxShare + EPS)
+-      err('I_SHARE', `I/RP ${sum.I.toFixed(2)} km > ${q.iMaxShare * 100}% od ${base} km.`, w.index);
++    if (sum.I > base * iMaxShareOf(base) + EPS)
++      err('I_SHARE', `I/RP ${sum.I.toFixed(2)} km > ${Math.round(iMaxShareOf(base) * 100)}% od ${base} km.`, w.index);
+     if (sum.T > base * q.tMaxShare + EPS)
+       err('T_SHARE', `T ${sum.T.toFixed(2)} km > ${q.tMaxShare * 100}% od ${base} km.`, w.index);
+     if (sum.R > base * q.rMaxShare + EPS)
+diff --git a/web/src/domain/generators/fiveK/v2/workouts.ts b/web/src/domain/generators/fiveK/v2/workouts.ts
+index 4c61009..6444e14 100644
+--- a/web/src/domain/generators/fiveK/v2/workouts.ts
++++ b/web/src/domain/generators/fiveK/v2/workouts.ts
+@@ -172,11 +172,18 @@ export function buildWorkout(
+ 
+ /* ---------- Budžeti i veličine ---------- */
+ 
++/** 5k-v2.13.0 (P4 S1): udeo I (uključujući RP) za cilj nedelje — poslednji red `iMaxShareByTargetKm` sa fromKm ≤ cilj. */
++export function iMaxShareOf(targetKm: number): number {
++  let share: number = P.quality.iMaxShareByTargetKm[0].share;
++  for (const r of P.quality.iMaxShareByTargetKm) if (targetKm + 1e-9 >= r.fromKm) share = r.share;
++  return share;
++}
++
+ /** Budžet [km] = udeo × cilj nedelje, zaokružen NANIŽE na 10 m (zaokruživanje ne sme da probije udeo). */
+ export function qualityBudgets(targetKm: number): QualityBudgets {
+   const floor2 = (x: number): number => Math.floor(x * 100 + 1e-9) / 100;
+   return {
+-    I: floor2(targetKm * P.quality.iMaxShare),
++    I: floor2(targetKm * iMaxShareOf(targetKm)),
+     T: floor2(targetKm * P.quality.tMaxShare),
+     R: floor2(targetKm * P.quality.rMaxShare)
+   };

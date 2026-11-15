@@ -255,7 +255,8 @@ describe('HM-09 C7: taper posle smanjenja bez ne-rasteretne izgradnje', () => {
 
 describe('HM-09 C3: zaštićen test ostaje činjenica i u sledećem koraku (pouka 38)', () => {
   it('test zaključan u koraku umora (nedelja testa postaje rasterećenje), pa prošao → jedan test, prihvaćeno', () => {
-    const b = adaptBases().find((x) => x.id.includes('-f-') && x.id.startsWith('d6'))!;
+    // P8 G7: plan od 10 nedelja po osećaju nema test — osnova od 14 nedelja.
+    const b = adaptBases().find((x) => x.id === 'd6-f-14w')!;
     const g = ok(generateHmV2(b.input));
     const td = g.weeks.flatMap((w) => w.days).find((d) => d.role === 'test')!.date;
     const wk = g.weeks.find((w) => w.days.some((d) => d.date === td))!;

@@ -36,6 +36,11 @@ const steady = (p: MarathonV2Plan): PlanWeek[] =>
   p.weeks.filter((w) => !w.deload && ['base', 'development', 'specific'].includes(w.phase));
 const dayOf = (w: PlanWeek, role: string): PlanDay => w.days.find((d) => d.role === role)!;
 const N = BASE.weeks.length;
+/** Poslednja ne-rasteretna nedelja izgradnje sa MP treningom na Q1 (M19: nedelja B nema Q1). */
+const withQ1 = (p: MarathonV2Plan): PlanWeek =>
+  steady(p)
+    .filter((w) => w.days.some((d) => d.role === 'q1'))
+    .at(-1)!;
 
 describe('validator samo prijavljuje', () => {
   it('ispravan plan: 0 grešaka; validator ne menja plan', () => {
@@ -128,11 +133,7 @@ describe('svaka odluka ima proveru (mutacija → greška)', () => {
         e.segments[0]!.km = 25;
       }
     ],
-    [
-      'M11 plafon MP 20 %',
-      'ZONE_CAP',
-      (p) => (dayOf(steady(p).at(-1)!, 'q1').workout.workKm.MP = 20)
-    ],
+    ['M11 plafon MP 20 %', 'ZONE_CAP', (p) => (dayOf(withQ1(p), 'q1').workout.workKm.MP = 20)],
     [
       'M10 tip po fazi',
       'PHASE_QUALITY',
@@ -150,7 +151,7 @@ describe('svaka odluka ima proveru (mutacija → greška)', () => {
       'M10 najmanja deonica MP',
       'REP_MIN',
       (p) => {
-        const d = dayOf(steady(p).at(-1)!, 'q1').workout.dose!;
+        const d = dayOf(withQ1(p), 'q1').workout.dose!;
         d.structure = { form: 'reps', reps: 6, repM: 2000 };
       }
     ],
@@ -310,8 +311,12 @@ describe('3/5/6 dana (M15) i M13a: mutacija → greška', () => {
 
   it('ispravni planovi 3/5/6 dana: 0 grešaka; 3 dana jedan kvalitet bez I/R, 5/6 dana lagani jednaki', () => {
     for (const p of [D3, D5, D6]) expect(errors(p)).toEqual([]);
-    for (const w of steady(D3))
-      expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual(['q1']);
+    // P5-F1: nedelja testa (plan sa rezultatom) nema kvalitet na danu Q1.
+    // K4-A: nedelja B (blok MP u dugom) nema kvalitet usred nedelje.
+    for (const w of steady(D3).filter((x) => !x.test))
+      expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual(
+        w.days.some((d) => d.role === 'long' && d.workout.workKm.MP > 0) ? [] : ['q1']
+      );
     expect(
       D3.weeks.some((w) => w.days.some((d) => d.workout.workKm.I + d.workout.workKm.R > 0))
     ).toBe(false);
@@ -393,9 +398,12 @@ describe('3/5/6 dana (M15) i M13a: mutacija → greška', () => {
 
 describe('upozorenja (plan ostaje ispravan)', () => {
   it('MARATHON_LONG_SHORT, RESULT_5K, GOAL_UNREALISTIC', () => {
-    // N11: BASE (VDOT 45) — najduži dugi na 150 min: napomena plana, ne upozorenje; VDOT 70 — udeo dugog: upozorenje.
-    expect(warnings(BASE)).not.toContain('MARATHON_LONG_SHORT');
-    expect(BASE.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
+    // N11: VDOT 32 — najduži dugi na 180 min (P2-S2): napomena plana, ne upozorenje; VDOT 70 — udeo dugog: upozorenje.
+    // P8-G1a: uz 40 km vrh je 54,3 km (satni plafon) i dugi je na udelu nedelje; primer plafona trajanja: 50 km.
+    const capped = plan({ weeks: 16, km: 50, vdot: 32 });
+    expect(warnings(capped)).not.toContain('MARATHON_LONG_SHORT');
+    // K3-A: dugi na 180 min dostiže cilj najdužeg po trajanju (≥ 165 min) — bez rečenice plana.
+    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     expect(warnings(plan({ weeks: 16, km: 35, vdot: 70 }))).toContain('MARATHON_LONG_SHORT');
     const five = plan({
       result: { distanceM: 5000, timeSec: timeForVdot(45, 5000) },
@@ -416,35 +424,36 @@ describe('upozorenja (plan ostaje ispravan)', () => {
     for (const wk of drops) expect(r.plan.weeks[wk! - 1]!.fitted).toBe('down');
   });
 
-  it('M7a + MAR-11 T2: 12 ned / 35 km — MP N−1 skraćen do trajanja dugog (5,0 km), oštrenje 2 × 2000 m', () => {
+  it('P8-G5: 12 ned / 35 km — MP N−1 = 40 % najvećeg MP rada (3,0 km kontinuirano), dan ≤ dugi; oštrenje ≤ 10 min (2 × 900 m)', () => {
     const p = plan({ weeks: 12, km: 35, vdot: 45 });
     const t1 = p.weeks.at(-2)!;
-    expect(t1.targetKm).toBe(29.8);
+    // P8-G1a: vrh ≤ 35 × 1,30 (priprema ≤ 12 nedelja).
+    expect(t1.targetKm).toBe(26.5);
     // MAR-11 (T2): 2 × 3000 m bi trajao duže od dugog N−1 → MP 5,0 km kontinuirano (ispod plafona, bez upozorenja).
     const q1 = t1.days.find((d) => d.role === 'q1')!;
-    expect(q1.workout.dose!.doseM).toBe(5000);
+    expect(q1.workout.dose!.doseM).toBe(3000);
+    expect(q1.workout.km).toBeLessThanOrEqual(t1.days.find((d) => d.role === 'long')!.workout.km);
     expect(q1.workout.sec).toBeLessThanOrEqual(t1.days.find((d) => d.role === 'long')!.workout.sec);
     expect(warnings(p)).not.toContain('TAPER_MP_OVER_CAP');
     expect(errors(p)).toEqual([]);
     const s = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
-    expect(s.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 2000 });
+    expect(s.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 900 });
     // MAR-11 (T2): MP ispod plafona — napomena M7a (MP iznad plafona) se ne traži.
     // MP izgradnje i dalje pod plafonom 20 %.
-    expect(mutate((q) => (dayOf(steady(q).at(-1)!, 'q1').workout.workKm.MP = 20), p)).toContain(
-      'ZONE_CAP'
-    );
+    expect(mutate((q) => (dayOf(withQ1(q), 'q1').workout.workKm.MP = 20), p)).toContain('ZONE_CAP');
   });
 
-  it('MARATHON_LONG_SHORT: tekst navodi najduži dugi i ograničenje (40 % nedelje); 150 min → napomena plana (N11)', () => {
+  it('MARATHON_LONG_SHORT: tekst navodi najduži dugi i ograničenje (K3-A: 45 % nedelje u vrhu, X km/ned); 180 min = cilj (K3-A)', () => {
     const slow = plan({ weeks: 16, km: 55, vdot: 30 });
     expect(slow.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    const m1 = slow.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
-    expect(m1).toMatch(/^Najduže dugo trčanje je \d+,\d km: ograničava ga trajanje/);
-    expect(m1).toMatch(/150 min laganim tempom/);
+    expect(slow.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     const fast = plan({ weeks: 16, km: 35, vdot: 70 });
     const m2 = fast.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')!.message;
-    expect(m2).toMatch(
-      /40 % nedelje sa 4 dana\): veći nedeljni obim \(više dana trčanja nose veći obim\)/
+    expect(m2).toMatch(/Ograničava ga postepen rast dugog trčanja/);
+    const small = plan({ weeks: 24, km: 35, vdot: 45 });
+    const m4 = small.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')!.message;
+    expect(m4).toMatch(
+      /45 % nedelje sa 4 dana\): veći nedeljni obim \(više dana trčanja nose veći obim\) daje duže dugo trčanje\. Za maraton treba oko 58 km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema\./
     );
     const six = plan({ weeks: 16, km: 50, vdot: 70, days: SCHEDULES_BY_DAYS[6].A.days });
     const m3 = six.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')?.message ?? '';

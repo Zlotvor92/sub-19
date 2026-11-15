@@ -1,0 +1,34 @@
+{
+  "round": "V4-MAR-02", "date": "2026-11-13", "judge": "glavni trener (Opus)", "source": "fb2c1a3; poredjenje sa 02e06e1",
+  "plan": {
+    "p01": { "prev": 78, "now": 79.5 }, "p02": { "prev": 78.5, "now": 81 }, "p03": { "prev": 74, "now": 75.5 },
+    "p04": { "prev": 75, "now": 73.5 }, "p05": { "prev": 80.5, "now": 81.5 }, "p06": { "prev": 71, "now": 72 },
+    "p07": { "prev": 79, "now": 79.5 }, "p08": { "prev": 76.5, "now": 78, "withChecks": 76.5 },
+    "p09": { "prev": 80, "now": 81, "withChecks": 78 }, "p10": { "prev": 74, "now": 75.5 }, "p11": { "prev": 76, "now": 77.5 },
+    "p12": { "prev": 79, "now": 80 }, "p13": { "prev": 69.5, "now": 70 }, "p14": { "prev": 81.5, "now": 82 },
+    "p15": { "prev": 76.5, "now": 77.5 }, "p16": { "prev": 77, "now": 78.5 }, "p17": { "prev": 80, "now": 80.5 },
+    "p18": { "prev": 70, "now": 73 }, "p19": { "prev": 71, "now": 71 },
+    "average": 77.2, "atLeast80": 6, "profiles": 19
+  },
+  "adaptation": {
+    "E1": { "score": 83.5, "s01": 85, "s02": 84, "s03": 84, "s04": 81 },
+    "E2": { "score": 80.3, "s05": 82, "s06": 80, "s07": 79, "s08": 80 },
+    "E3": { "score": 79.8 }, "E4": { "score": 77.8 },
+    "E5": { "score": 84.0 }, "E6": { "score": 89.8 },
+    "E7": { "score": 77.0, "s25": 74, "s26": 77, "s27": 80 },
+    "MAR": { "score": 76, "s28": 72, "s29": 80 },
+    "partB": 81.0, "previousPartB": 77.8
+  },
+  "personalization": { "P1": 84, "P2": 78.5, "P3": 79, "partC": 80.5 },
+  "composite": 79.0, "previousComposite": 77.5,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "pravilo 4 dana zaredom ne brise kvalitet kad ga od dugog deli lagan dan (p04)" },
+    { "n": 2, "kind": "motor", "text": "propusten najduzi dugi u N-3: N-2 dugi 24-26 km lagano (s28)" },
+    { "n": 3, "kind": "motor", "text": "upozorenje 'forma trazi vise brzog rada' samo kad je nivo visi od obima (p04)" },
+    { "n": 4, "kind": "podatak", "text": "najduzi dugi >= 26 km kad je vrh >= 52 km (p01, p06); p07 30-32 km" },
+    { "n": 5, "kind": "podatak", "text": "dugi ne stoji (p17, p05, p04)" },
+    { "n": 6, "kind": "podatak", "text": "P2 B predlog krace distance" }
+  ],
+  "verdict": "B i C prolaze; Plan 77,2 ne prolazi",
+  "ownerReview": ["s05", "p02", "p04"]
+}

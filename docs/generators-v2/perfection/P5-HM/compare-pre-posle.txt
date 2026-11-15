@@ -1,0 +1,77 @@
+ulaza 192; odbijeno pre 0, posle 0; nova odbijanja 0
+promenjenih planova 192/192; nedelja bajt-istih 211/2896
+
+## R (n 144 / 144)   | metrika | pre | posle |
+| testova po planu | 0 [0–0] | 1 [0–1] |
+| ned. od testa do trke | — | 7 [6–8] |
+| T rad prvi [min] | 11.3 [6.9–23.2] | 13.7 [6.9–39.7] |
+| I rad prvi [min] | 10.9 [6.3–20.9] | 15.7 [6.3–31.3] |
+| udeo rada prvog kval. dana [%] | 13 [8–31] | 13 [8–33] |
+| T rad najveći [min] | 22 [8.6–45.3] | 22.7 [8.6–45.3] |
+| I rad najveći [min] | 15.7 [6.3–31.3] | 17.3 [6.3–31.3] |
+| laganih dana sa ubrzanjima | 0 [0–0] | 14 [9–19] |
+| % brzih: baza (sa ubrz.) | 9.5 [3.1–12.3] | 11.6 [3.6–13.5] |
+| % brzih: baza (bez ubrz.) | 9.5 [3.1–12.3] | 11.1 [3.3–12.3] |
+| % brzih: razvoj (sa) | 9.8 [3.5–13.5] | 12.3 [5.4–16.6] |
+| % brzih: specifična (sa) | 18.7 [10.5–23.5] | 19.8 [11.8–25.2] |
+| % brzih: taper (sa) | 16.4 [0–24.8] | 18.7 [1.7–25.7] |
+| nedelja izgradnje > 25 % brzih | 0 [0–2] | 0 [0–3] |
+| vrh obima [km] | 59.5 [35–100] | 59.5 [35–100] |
+| WEEK_FITTED po planu | 0 [0–1] | 0 [0–1] |
+| ukupno RP [km] | 45 [14–79] | 45 [14–79] |
+| planova sa WEEK_FITTED | 26 | 24 |
+| planova sa ned. 1 < trenutni obim | 12 | 6 |
+| planova sa promenjenim vrhom | — | 3 |
+
+## F (n 32 / 32)   | metrika | pre | posle |
+| testova po planu | 1 [1–1] | 1 [1–1] |
+| ned. od testa do trke | 10 [7–13] | 10 [7–13] |
+| T rad prvi [min] | 12.5 [9.1–22.8] | 13.1 [9.1–32] |
+| I rad prvi [min] | 12.7 [8.4–23.1] | 17.4 [8.4–34.7] |
+| udeo rada prvog kval. dana [%] | 16.5 [11–33] | 16.5 [11–35] |
+| T rad najveći [min] | 20.1 [11.4–41.1] | 22.4 [11.4–56.4] |
+| I rad najveći [min] | 17.2 [8.4–34.7] | 17.4 [8.4–34.7] |
+| laganih dana sa ubrzanjima | 0 [0–0] | 14 [9–19] |
+| % brzih: baza (sa ubrz.) | 10.4 [3.6–15.6] | 12.4 [3.8–16.6] |
+| % brzih: baza (bez ubrz.) | 10.4 [3.6–15.6] | 11.7 [3.6–15.6] |
+| % brzih: razvoj (sa) | 8.5 [3.6–13.3] | 11.1 [5.1–14.9] |
+| % brzih: specifična (sa) | 19.6 [11.3–23.5] | 20.8 [12.4–24.7] |
+| % brzih: taper (sa) | 15.5 [0–21.8] | 17.1 [1.5–23.4] |
+| nedelja izgradnje > 25 % brzih | 0 [0–2] | 0 [0–2] |
+| vrh obima [km] | 55.5 [35–100] | 55.5 [35–100] |
+| WEEK_FITTED po planu | 0 [0–1] | 0 [0–1] |
+| ukupno RP [km] | 45 [14–77] | 45 [14–77] |
+| planova sa WEEK_FITTED | 11 | 10 |
+| planova sa ned. 1 < trenutni obim | 6 | 6 |
+| planova sa promenjenim vrhom | — | 0 |
+
+## B (n 16 / 16)   | metrika | pre | posle |
+| testova po planu | 0 [0–0] | 0 [0–0] |
+| ned. od testa do trke | — | — |
+| T rad prvi [min] | 8.7 [8.5–8.8] | 8.7 [8.5–8.8] |
+| I rad prvi [min] | — | — |
+| udeo rada prvog kval. dana [%] | 25.5 [25–26] | 25.5 [25–26] |
+| T rad najveći [min] | 17.5 [14.2–28] | 17.5 [14.2–28] |
+| I rad najveći [min] | — | — |
+| laganih dana sa ubrzanjima | 0 [0–0] | 13 [9–17] |
+| % brzih: baza (sa ubrz.) | 2.8 [1.1–6.2] | 3.2 [1.3–7.1] |
+| % brzih: baza (bez ubrz.) | 2.8 [1.1–6.2] | 2.8 [1.1–6.2] |
+| % brzih: razvoj (sa) | 7.2 [4.8–8.9] | 7.9 [5.3–10.2] |
+| % brzih: specifična (sa) | 11.7 [7.6–13] | 12.5 [8.1–14.1] |
+| % brzih: taper (sa) | 8.7 [6.1–13] | 9.8 [7.3–13.7] |
+| nedelja izgradnje > 25 % brzih | 0 [0–0] | 0 [0–0] |
+| vrh obima [km] | 44.5 [28–60] | 44.5 [28–60] |
+| WEEK_FITTED po planu | 0 [0–1] | 0 [0–1] |
+| ukupno RP [km] | 21 [8–37] | 21 [8–37] |
+| planova sa WEEK_FITTED | 1 | 1 |
+| planova sa ned. 1 < trenutni obim | 0 | 0 |
+| planova sa promenjenim vrhom | — | 0 |
+
+## test po dužini pripreme (R, posle): nedelja testa / do trke / faza
+  10 ned: testova 0 [0–0], ned. testa —, do trke —, faze 
+  12 ned: testova —, ned. testa —, do trke —, faze 
+  15 ned: testova 1 [1–1], ned. testa 9 [9–9], do trke 6 [6–6], faze development
+  20 ned: testova 1 [1–1], ned. testa 12 [12–12], do trke 8 [8–8], faze development
+
+nedelje izgradnje > 25 %: pre 81, posle 115; nove: R-d4-30km-15w-v55#11 specific 25.3% (bez ubrz. 23.8%); R-d4-30km-15w-v65#11 specific 25.4% (bez ubrz. 23.8%); R-d4-30km-20w-v55#15 specific 25.2% (bez ubrz. 23.8%); R-d4-30km-20w-v65#15 specific 25.4% (bez ubrz. 23.8%); R-d4-60km-20w-v55#16 specific 25.1% (bez ubrz. 24.3%); R-d4-60km-20w-v65#16 specific 25.2% (bez ubrz. 24.3%); R-d5-75km-10w-v35#8 specific 25.2% (bez ubrz. 24.7%); R-d5-75km-10w-v45#8 specific 25.3% (bez ubrz. 24.7%); R-d5-75km-10w-v55#8 specific 25.4% (bez ubrz. 24.7%); R-d5-75km-10w-v65#8 specific 25.5% (bez ubrz. 24.7%); F-d5-75km-10w-e330#8 specific 25.3% (bez ubrz. 24.7%); R-d5-75km-15w-v45#13 specific 25.3% (bez ubrz. 24.7%); R-d5-75km-15w-v55#13 specific 25.4% (bez ubrz. 24.7%); R-d5-75km-15w-v65#13 specific 25.5% (bez ubrz. 24.7%); R-d5-75km-20w-v35#18 specific 25.2% (bez ubrz. 24.7%); R-d5-75km-20w-v45#18 specific 25.3% (bez ubrz. 24.7%); R-d5-75km-20w-v55#18 specific 25.4% (bez ubrz. 24.7%); R-d5-75km-20w-v65#18 specific 25.5% (bez ubrz. 24.7%); F-d5-75km-20w-e330#18 specific 25.3% (bez ubrz. 24.7%); R-d6-40km-15w-v65#13 specific 26.2% (bez ubrz. 25%); R-d6-40km-20w-v35#16 specific 25.8% (bez ubrz. 25%); R-d6-40km-20w-v45#16 specific 25.8% (bez ubrz. 25%); R-d6-40km-20w-v55#16 specific 26.1% (bez ubrz. 25%); R-d6-40km-20w-v65#18 specific 26.2% (bez ubrz. 25%); F-d6-40km-20w-e330#16 specific 25.8% (bez ubrz. 25%); F-d6-40km-20w-e450#16 specific 25.6% (bez ubrz. 25%); R-d6-65km-15w-v35#13 specific 25.2% (bez ubrz. 24.7%); R-d6-65km-15w-v45#13 specific 25.3% (bez ubrz. 24.7%); R-d6-65km-15w-v55#13 specific 25.4% (bez ubrz. 24.7%); R-d6-65km-15w-v65#13 specific 25.5% (bez ubrz. 24.7%)
+nedelje izgradnje > 25 % brzih BEZ ubrzanja: pre 81, posle 81; > 30 %: pre 16, posle 18

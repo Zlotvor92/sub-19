@@ -1,0 +1,38 @@
+{
+  "round": "V4-10K-03",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus)",
+  "source": "02e06e1; poredjenje sa 12651ae",
+  "plan": {
+    "p01": { "prev": 81.5, "now": 81.5 }, "p02": { "prev": 70.5, "now": 71 }, "p03": { "prev": 78, "now": 78 },
+    "p04": { "prev": 79, "now": 79 }, "p05": { "prev": 81, "now": 81 }, "p06": { "prev": 66, "now": 66 },
+    "p07": { "prev": 80, "now": 80 }, "p08": { "prev": 74, "now": 75 }, "p09": { "prev": 81, "now": 81 },
+    "p10": { "prev": 76.5, "now": 77 }, "p11": { "prev": 79, "now": 79, "withChecks": 76 }, "p12": { "prev": 76, "now": 76.5 },
+    "average": 77.1, "averageWithChecks": 76.8, "atLeast80": 4
+  },
+  "adaptation": {
+    "E1": { "score": 82.3, "s01": 85, "s02": 77, "s03": 85, "s04": 82 },
+    "E2": { "score": 74.9, "s05": 76.5, "s06": 67, "s07": 77, "s08": 79 },
+    "E3": { "score": 82.0, "s09": 81, "s10": 84, "s11": 82, "s12": 81 },
+    "E4": { "score": 76.4, "s13": 76.5, "s14": 80, "s15": 72, "s16": 77 },
+    "E5": { "score": 84.0, "s17": 84, "s18": 84, "s19": 84, "s20": 84 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 75.7, "s25": 80, "s26": 70, "s27": 77 },
+    "partB": 80.7, "previousPartB": 79.1
+  },
+  "personalization": { "P1": 84, "P2": 83, "P3": 82, "partC": 83.0 },
+  "composite": 79.4, "previousComposite": 78.8,
+  "s06Verdict": "nije ispravno (preoprezno): 30,8 / 36,8 / 37,1 km i dugi 65-70 min; treba ~45 km u ned 15 i 16 uz tempo trke u nedelji -2",
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "povratak 4-6 nedelja pred trku: druga nedelja 75-80 %, nedelja -2 zadrzava glavni RP trening (s06)" },
+    { "n": 2, "kind": "motor", "text": "izmena posle rezultata uvek ima recenicu (s02)" },
+    { "n": 3, "kind": "motor", "text": "3 dana posle trke dugi ne raste (s26)" },
+    { "n": 4, "kind": "motor", "text": "prozor bola: lagan <= 65 % dugog, prvi RP <= 70 % (s13)" },
+    { "n": 5, "kind": "motor", "text": "tekst: put/bolest (s27), prag/tempo trke (s09)" },
+    { "n": 6, "kind": "podatak", "text": "p06 dugi >= 45 min; upozorenje u skladu sa planom" },
+    { "n": 7, "kind": "podatak", "text": "p08 nedelja 1 = 41 km, rast do x1,2" },
+    { "n": 8, "kind": "podatak", "text": "p11 ned 7 bez +12,8 %" }
+  ],
+  "verdict": "B i C prolaze; Plan 77,1 ne prolazi (p02/p06 plafon ulaza, p06/p08 popravljivo)",
+  "ownerReview": ["s06", "p06", "s27"]
+}

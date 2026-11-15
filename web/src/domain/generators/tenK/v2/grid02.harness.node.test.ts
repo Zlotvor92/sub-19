@@ -26,7 +26,7 @@ import {
   expectByDays,
   GRID_TIMEOUT,
   missingParts,
-  CHANGED_08,
+  changed08Gen,
   P35_PLANS,
   p08Errors,
   sumOf
@@ -68,6 +68,19 @@ const LOWER_49_SET = ['d3-17w-30km-v35: 35.6 → 35.2', 'd3-18w-30km-v35: 35.6 �
 const isLower49 = (id: string): boolean => /^d3-1[78]w-30km-v35-[ABC]-(sat|sun)$/.test(id);
 
 /** D30a marker u NOVOM planu: RP deonica < 1000 m (10k-v2.2.1 ih nije imao, D22b). */
+/** P3 (10k-v2.11.0): stanje 38fd091 planova mreže 02 koje menja samo P3 (segmentP3.grid02-38fd091.json):
+    id → [planHashes21 pun, bez RACE_WEEK_SHORT, RP deonica < 1000 m]. */
+const P3_GRID02 = (
+  JSON.parse(
+    readFileSync(fileURLToPath(new URL('./segmentP3.grid02-38fd091.json', import.meta.url)), 'utf8')
+  ) as { plans: Record<string, [number, number, boolean]> }
+).plans;
+/** P5 (10k-v2.12.0): stanje 72003c1 planova mreže 02 koje menja P5, a ne 10K-08 ni P3 (segmentP5.grid02-72003c1.json). */
+const P5_GRID02 = (
+  JSON.parse(
+    readFileSync(fileURLToPath(new URL('./segmentP5.grid02-72003c1.json', import.meta.url)), 'utf8')
+  ) as { plans: Record<string, [number, number, boolean]> }
+).plans;
 const rpBelow1000 = (p: TenKV2Plan): boolean =>
   p.weeks.some((w) =>
     w.days.some((d) => {
@@ -107,10 +120,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         throw new Error('TEN_K_V2_WRITE_BASELINE: samo ceo skup (TEST_FULL=1, glavni fajl)');
       all = DAYS.flatMap((n) => grid02Inputs(n));
       g = runPlanGrid(grid02Cases(days), (c, plan, r) => {
+        // P3: plan promenjen samo prema 38fd091 — heševi 21c03f1 i RP < 1000 m su stanja 38fd091 (fixture).
+        // P5: plan promenjen samo prema 72003c1 — stanja 72003c1 (= b9c4728).
+        const b = P3_GRID02[c.id] ?? P5_GRID02[c.id];
         reg[c.id] = {
           days: c.days as Days,
-          h: planHashes21(r),
-          rp800: rpBelow1000(plan),
+          h: b ? [b[0], b[1]] : planHashes21(r),
+          rp800: b ? b[2] : rpBelow1000(plan),
           capacity: plan.warnings.some((x) => x.rule === 'CAPACITY_LIMITED'),
           rws: plan.warnings.some((x) => x.rule === 'RACE_WEEK_SHORT')
         };
@@ -147,7 +163,10 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
 
     it('D30a: ponavljanje slota 1224 / 192 / 144 / 144 → 240 / 48 / 0 / 0 nedelja (organizator na 21c03f1: isto)', () => {
       // 10K-08 (T1): 240 / 48 / 0 / 0 → 456 / 42 / 0 / 0.
-      byDays((n) => g.stats[n].repeats, [456, 42, 0, 0]);
+      // P8 (10k-v2.13.0, G1 sporiji rast → plafon zone kasnije raste; G4 minuti): 456 / 42 / 0 / 0 → 264 / 174 / 0 / 0.
+      // K3-A (10k-v2.15.0, opseg rada I): 264 / 174 / 0 / 0 → 264 / 390 / 198 / 216 (I 5 × 1000 m nema drugu strukturu).
+      // K3-B (4 dana lagan ≤ 0,75 × dugi): 390 → 324 (4 dana).
+      byDays((n) => g.stats[n].repeats, [264, 324, 198, 216]);
     });
 
     it('D30b: RACE_WEEK_SHORT 6 + 90 → 0 (trkačka + trka 10 km ≥ minimum nedelje)', () => {
@@ -157,22 +176,39 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
 
     it('bez promene od 21c03f1: ned 1 ispod obima samo uz 105 min, trkačka ≤ taper (lagan u km), D25, DOSE_DROPPED', () => {
       // 10K-08 (T1, lagan ≤ 0,8 × dugi): ned 1 ispod obima 330 / 660 / 264 / 264 → nove brojke; ispod obima i uz udeo D17.
-      byDays((n) => g.stats[n].belowTime, [396, 0, 660, 660]);
+      // P5 (10k-v2.12.0, D37: veća T/I doza nosi lagane u granici T1): 396 / 0 / 660 / 660 → 396 / 0 / 528 / 594.
+      // P8 (G6: lagan ≤ 0,70 × dugi za 4+ dana): 396 / 0 / 528 / 594 → 396 / 0 / 660 / 858.
+      byDays((n) => g.stats[n].belowTime, [396, 0, 660, 858]);
       // 02b: ned 1 ispod obima i DOSE_DROPPED SAMO uz dugi na 105 min (nikad samo na udelu D17); 10K-08 (T1): i uz udeo.
       byDays(
         (n) => [g.stats[n].belowShare, g.stats[n].doseDroppedShare],
         [
           [132, 0],
-          [1518, 168],
-          [0, 0],
-          [0, 0]
+          // P5: 1518 / 168 → 1254 / 186. P8 (G6): 1254 / 186 → 1782 / 174; 5 i 6 dana 0 → 66 (ned 1 ispod obima uz udeo).
+          // K3-A (10k-v2.15.0): DOSE_DROPPED uz udeo 174 → 120. K3-B (4 dana lagan ≤ 0,75 × dugi): ned 1 ispod obima uz
+          // udeo 1782 → 1518, DOSE_DROPPED uz udeo 120 → 156.
+          [1518, 156],
+          [66, 0],
+          [66, 0]
         ]
       );
-      byDays((n) => g.stats[n].raceKmEasy, [636, 1470, 2004, 2538]);
+      // P3 (10k-v2.11.0): lagan trkačke nedelje u km 636 / 1470 / 2004 / 2538 → 672 / 1584 / 2148 / 2718 (drugi taper).
+      // P5 (D35/D37, drugi taper): 672 / 1584 / 2148 / 2718 → 672 / 1656 / 2208 / 2748.
+      // P8 (G4/G5 drugi taper i oštrenje): 672 / 1656 / 2208 / 2748 → 786 / 2172 / 2280 / 3000.
+      // K3-A (10k-v2.15.0, veći RP → drugi taper): 786 / 2172 / 2280 / 3000 → 786 / 2154 / 2364 / 3030.
+      // K3-B (4 dana 0,75): 2154 → 1902.
+      byDays((n) => g.stats[n].raceKmEasy, [786, 1902, 2364, 3030]);
       // 06f (pouka 35): D25 0 / 132 / 132 / 330 → 0 / 0 / 0 / 132 planova (drugi dan kvaliteta lagan, dugi raste).
-      byDays((n) => g.stats[n].longShorter, [0, 0, 0, 132]);
+      // P8 (G1 sporiji rast dugog, G6): 0 / 0 / 0 / 132 → 0 / 0 / 12 / 138.
+      // K3-A (10k-v2.15.0, duži dan I/RP): 0 / 0 / 12 / 138 → 0 / 6 / 24 / 186.
+      byDays((n) => g.stats[n].longShorter, [0, 6, 24, 186]);
       // 10K-08 (T1): DOSE_DROPPED 0 / 162 / 0 / 0 → 84 / 432 / 24 / 258.
-      byDays((n) => g.stats[n].doseDropped, [84, 432, 24, 258]);
+      // P3 (10k-v2.11.0, D33: plafon RP 15 % od 40 km): 84 / 432 / 24 / 258 → 84 / 294 / 0 / 0.
+      // P5 (D37: veći početni nivo T/I, kasnije cilj spušten kapacitetom → D11 ispred D12): 84 / 294 / 0 / 0 → 36 / 534 / 90 / 0.
+      // P8 (G1/G4/G6): 36 / 534 / 90 / 0 → 36 / 372 / 0 / 0.
+      // K3-A (10k-v2.15.0, plafon I ≤ plafon RP iste nedelje): 36 / 372 / 0 / 0 → 36 / 330 / 0 / 0.
+      // K3-B (4 dana 0,75, veći cilj — kasnija nedelja nižeg cilja češće spušta dozu): 330 → 396.
+      byDays((n) => g.stats[n].doseDropped, [36, 396, 0, 0]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja', () => {
@@ -180,10 +216,20 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       // [4224, 810, 144, 1.279, …], [5280, 732, 144, 1.25, 0, 6, 0, 90].
       const table = [
         // 10K-08 (T1): CAPACITY_LIMITED 828 / 1320 / 810 / 732 → 1056 / 2106 / 1302 / 1326, vrh/start niži, D25 (kolona 5).
-        [2640, 1056, 456, 1.225, 528, 0, 48, 0],
-        [3696, 2106, 42, 1.208, 0, 96, 0, 0],
-        [4224, 1302, 0, 1.254, 0, 222, 0, 0],
-        [5280, 1326, 0, 1.228, 0, 450, 0, 0]
+        // P3 (10k-v2.11.0, D33/D34): CAPACITY_LIMITED 1056 / 2106 / 1302 / 1326 → 1050 / 2142 / 1260 / 1266, taper samo RP
+        // (kolona 5) 0 / 96 / 222 / 450 → 0 / 132 / 282 / 522 (veći RP dan tapera, D7), vrh/start.
+        // P5 (10k-v2.12.0, D35–D37): CAPACITY_LIMITED 1050 / 2142 / 1260 / 1266 → 1044 / 1968 / 1188 / 1248, taper samo RP
+        // (kolona 5) 0 / 132 / 282 / 522 → 0 / 132 / 318 / 570, vrh/start.
+        // P8 (10k-v2.13.0, G1–G8): CAPACITY_LIMITED 1044 / 1968 / 1188 / 1248 → 1002 / 2382 / 1308 / 1272, ponavljanja
+        // 456 / 42 → 264 / 174, vrh/start 1,235 / 1,217 / 1,264 / 1,236 → 1,209 / 1,160 / 1,210 / 1,162 (G1a), rasterećenje
+        // bez kvaliteta (3 dana) 528 → 0 i taper bez kvaliteta 48 → 0 (G2), taper samo RP 0 / 132 / 318 / 570 → 0 / 216 / 396 / 642.
+        // K3-A (10k-v2.15.0, opseg rada I/RP): CAPACITY_LIMITED 2382 / 1308 / 1272 → 2160 / 1260 / 1302, ponavljanja
+        // 174 / 0 / 0 → 390 / 198 / 216, vrh/start 1,160 / 1,162 → 1,169 / 1,161, taper samo RP 216 / 396 / 642 → 456 / 528 / 708.
+        [2640, 1002, 264, 1.209, 0, 0, 0, 0],
+        // K3-B (4 dana 0,75): CAPACITY_LIMITED 2160 → 1896, ponavljanja 390 → 324, vrh/start 1,169 → 1,189.
+        [3696, 1896, 324, 1.189, 0, 456, 0, 0],
+        [4224, 1260, 198, 1.21, 0, 528, 0, 0],
+        [5280, 1302, 216, 1.161, 0, 708, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -294,7 +340,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         // 06f (pouka 35): uzrok na 7ba9717 (plan se menja, p35.node.test.ts).
         const p35 = P35_CAUSE21[id];
         // 10K-08: plan promenjen prema b9c4728 (T1/C11) — svoj razred (stanje b9c4728 su proverile ove regresije).
-        if (CHANGED_08.gen[id]) c['10K-08'] = (c['10K-08'] ?? 0) + 1;
+        // P3 (10k-v2.11.0): plan promenjen samo prema 38fd091 razvrstava se po stanju 38fd091 (= b9c4728, fixture P3).
+        if (changed08Gen(id)) c['10K-08'] = (c['10K-08'] ?? 0) + 1;
         else if (p35) c[p35]!++;
         // D30b uklanja samo upozorenje RACE_WEEK_SHORT; D30a daje RP deonicu < 1000 m.
         else if (x.h[0] === h0) c['same']!++;

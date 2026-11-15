@@ -94,22 +94,39 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         (n) => [g.stats[n].testDeload, g.stats[n].testDeloadLong, g.stats[n].testDeloadUp],
         [
           // 10K-08 (T1): duži dugi izgradnje (za stvaran broj laganih dana) → češće skraćen dugi rasterećenja sa testom.
+          // P8 (10k-v2.13.0, G1 sporiji rast dugog, G6): 144 / 72 / 36 / 36 → 144 / 114 / 18 / 36.
+          // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): 114 → 78 (4 dana).
           [540, 144, 0],
-          [756, 72, 0],
-          [864, 36, 0],
+          [756, 78, 0],
+          [864, 18, 0],
           [1080, 36, 0]
         ]
       );
-      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 72, 36, 36]);
+      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 78, 18, 36]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima (105 min / udeo), D25, DOSE_DROPPED (od toga udeo)', () => {
       const table = [
         // 10K-08 (T1): CAPACITY_LIMITED 864 / 1350 / 930 / 846 → 1128 / 2046 / 1398 / 1404, vrh/start niži.
-        [1980, 1128, 384, 1.186, 288, 0, 36, 0],
-        [2772, 2046, 96, 1.155, 0, 18, 0, 0],
-        [3168, 1398, 0, 1.224, 0, 18, 0, 0],
-        [3960, 1404, 0, 1.204, 0, 180, 0, 0]
+        // P3 (10k-v2.11.0, D33/D34): CAPACITY_LIMITED 1128 / 2046 / 1398 / 1404 → 1122 / 2010 / 1398 / 1362, taper samo RP
+        // 0 / 18 / 18 / 180 → 0 / 18 / 54 / 216, vrh/start.
+        // P5 (10k-v2.12.0, D36/D37): CAPACITY_LIMITED 1122 / 2010 / 1398 / 1362 → 1104 / 1884 / 1314 / 1266, ponavljanja
+        // (kolona 2) 384 / 96 / 0 / 0 → 384 / 96 / 126 / 240, taper samo RP 0 / 18 / 54 / 216 → 0 / 18 / 54 / 252, vrh/start.
+        // P8 (10k-v2.13.0, G1–G8): CAPACITY_LIMITED 1104 / 1884 / 1314 / 1266 → 1014 / 2160 / 1224 / 1116, ponavljanja
+        // 384 / 96 / 126 / 240 → 432 / 342 / 132 / 240, vrh/start 1,188 / 1,163 / 1,237 / 1,216 → 1,164 / 1,098 / 1,163 / 1,102
+        // (G1a), rasterećenje bez kvaliteta 288 → 0 i taper bez kvaliteta 36 → 0 (G2), taper samo RP 0 / 18 / 54 / 252 →
+        // 0 / 84 / 120 / 312.
+        // P9b (10k-v2.14.0, D52: planovi od 9–11 nedelja dobijaju test u prvoj nedelji razvoja ≥ 4): CAPACITY_LIMITED
+        // 1014 / 2160 / 1224 / 1116 → 1014 / 2166 / 1230 / 1104, ponavljanja 432 / 342 → 456 / 288 (3 / 4 dana), vrh/start
+        // 1,164 / 1,098 → 1,169 / 1,097, taper samo RP 84 / 120 / 312 → 84 / 114 / 306.
+        // K3-A (10k-v2.15.0, opseg rada I/RP): CAPACITY_LIMITED 2166 / 1230 → 2004 / 1194 (4 / 5 dana), ponavljanja
+        // 288 / 132 / 240 → 546 / 288 / 426 (I 5 × 1000 m nema drugu strukturu), vrh/start 1,097 → 1,099, taper samo RP
+        // 84 / 114 / 306 → 90 / 258 / 372 (veći RP specifične faze).
+        [1980, 1014, 456, 1.169, 0, 0, 0, 0],
+        // K3-B (4 dana lagan ≤ 0,75 × dugi): CAPACITY_LIMITED 2004 → 1812, ponavljanja 546 → 462, vrh/start 1,099 → 1,120.
+        [2772, 1812, 462, 1.12, 0, 90, 0, 0],
+        [3168, 1194, 288, 1.163, 0, 258, 0, 0],
+        [3960, 1104, 426, 1.102, 0, 372, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -128,10 +145,18 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // testa → 144 / 228 / 204 / 294.
         [
           // 10K-08 (T1): ned 1 ispod obima i uz udeo D17 (lagan ≤ 0,8 × dugi).
-          [462, 132, 108, 84, 0],
-          [0, 1518, 222, 276, 186],
-          [660, 66, 156, 42, 0],
-          [792, 0, 270, 0, 0]
+          // P3 (10k-v2.11.0, D33): DOSE_DROPPED (kolona 4) 84 / 276 / 42 / 0 → 84 / 258 / 0 / 0.
+          // P5 (D37): ned 1 ispod obima (udeo) 1518 → 1386 (4 d), 660 → 594 (5 d); DOSE_DROPPED 258 / 0 / 0 → 444 / 210 / 72.
+          // P8 (G6 lagan ≤ 0,70 × dugi za 4+ dana, G1, G4): ned 1 ispod obima (udeo) 1386 → 1782 (4 d), uz 105 min 594 → 858
+          // (5 d), 792 → 1056 (6 d); DOSE_DROPPED 84 / 444 / 210 / 72 → 96 / 672 / 0 / 0.
+          // P9b (D52, test u prvoj nedelji razvoja planova od 9–11 nedelja): DOSE_DROPPED 96 / 672 → 84 / 588 (3 / 4 dana),
+          // od toga udeo (4 dana) 444 → 378.
+          // K3-A (10k-v2.15.0): DOSE_DROPPED (4 dana) 588 → 522, od toga udeo 378 → 354; D25 (6 dana) 264 → 342.
+          [462, 132, 114, 84, 0],
+          // K3-B (4 dana 0,75): ned 1 ispod obima uz udeo 1782 → 1518, D25 270 → 216, DOSE_DROPPED 522 → 192 (udeo 354 → 108).
+          [0, 1518, 216, 192, 108],
+          [858, 0, 144, 0, 0],
+          [1056, 0, 342, 0, 0]
         ]
       );
     });

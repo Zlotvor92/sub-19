@@ -673,3 +673,32 @@ export function earlyGridBases(rk = 91, fk = 39, bk = 21): AdaptBase[] {
     ...every(beginnerInputs(), bk).map((c) => ({ id: c.id, family: 'B' as const, input: c.input }))
   ];
 }
+
+/** W1 (bilo koja dužina plana): osnovni profili — redovan sa rezultatom (VDOT 45), po osećaju (6:00/km), početnik
+    (7:00/km); 3–6 dana (početnik 4–5); najmanji i najveći obim reda; rasporedi A i C. */
+export interface W1Profile extends Profile {
+  id: string;
+}
+export function w1Profiles(): W1Profile[] {
+  const out: W1Profile[] = [];
+  for (const kind of ['res', 'feel', 'beg'] as const) {
+    const counts: readonly RunDaysCount[] = kind === 'beg' ? [4, 5] : RUN_DAYS_COUNTS;
+    for (const d of counts) {
+      const row = kind === 'beg' ? P.beginner.days[d as 4 | 5] : P.days[d];
+      for (const km of [row.kmMin, row.kmMax])
+        for (const s of ['A', 'C'] as const) {
+          const sch = SCHEDULES_BY_DAYS[d][s];
+          out.push({
+            id: `${kind}-d${d}-${km}km-${s}`,
+            weeks: 0,
+            km,
+            days: sch.days,
+            long: sch.long,
+            ...(kind === 'res' ? { vdot: 45 } : { easyPace: kind === 'feel' ? 360 : 420 }),
+            ...(kind === 'beg' ? { experience: 'beginner' as const } : {})
+          });
+        }
+    }
+  }
+  return out;
+}

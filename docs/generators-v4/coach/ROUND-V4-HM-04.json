@@ -1,0 +1,74 @@
+{
+  "round": "V4-HM-04",
+  "date": "2026-11-13",
+  "source": "origin/claude/v4 @ 1c34d98a (kandidat 8197da5)",
+  "weights": { "plan": 0.5, "adaptation": 0.3, "personalization": 0.2 },
+  "summary": {
+    "plan": 78.8,
+    "adaptation": 84.5,
+    "personalization": 81.8,
+    "combined": 81.1,
+    "previous": { "k3Plan": 78.7, "k3Adaptation": 81.9, "k3Personalization": 82.5, "k3Combined": 80.4 },
+    "profilesAtOrAbove80": ["p01", "p02", "p07", "p09", "p11", "p12"]
+  },
+  "plans": {
+    "p01": { "k3": 82.0, "total": 82.0 },
+    "p02": { "k3": 81.0, "total": 81.0 },
+    "p03": { "k3": 76.5, "total": 77.0 },
+    "p04": { "k3": 79.0, "total": 78.5, "note": "dugi 2 h 26 – 2 h 30 u ned 9–15" },
+    "p05": { "k3": 81.5, "total": 79.5, "note": "prag ispao iz ned 3, 6, 7, 11" },
+    "p06": { "k3": 73.5, "total": 74.5 },
+    "p07": { "k3": 80.5, "total": 80.5 },
+    "p08": { "k3": 74.0, "total": 75.5 },
+    "p09": { "k3": 80.5, "total": 80.5 },
+    "p10": { "k3": 75.0, "total": 76.0 },
+    "p11": { "k3": 80.0, "total": 80.0 },
+    "p12": { "k3": 81.0, "total": 81.0 }
+  },
+  "scenarios": {
+    "s01": 87, "s02": 87, "s03": 84.5, "s04": 81.5,
+    "s05": 77, "s06": 76, "s07": 80, "s08": 85,
+    "s09": 86, "s10": 84, "s11": 84, "s12": 85.5,
+    "s13": 82, "s14": 81, "s15": 83, "s16": 82,
+    "s17": 85, "s18": 84, "s19": 85, "s20": 85,
+    "s21": 91, "s22": 91, "s23": 91, "s24": 91
+  },
+  "eventAverages": { "E1": 85.0, "E2": 79.5, "E3": 84.9, "E4": 82.0, "E5": 84.8, "E6": 91.0 },
+  "eventAveragesK3": { "E1": 82.1, "E2": 75.0, "E3": 84.9, "E4": 73.5, "E5": 84.8, "E6": 91.0 },
+  "pairs": {
+    "P1": { "k3": 81, "total": 85 },
+    "P2": { "k3": 83.5, "total": 77.5, "note": "prognoza B identična A, tekst tvrdi suprotno" },
+    "P3": { "k3": 83, "total": 83 }
+  },
+  "fixes": [
+    "podatak: prag otpada samo u nedelji sa tempom trke usred nedelje (p05)",
+    "podatak: dugi ≤ vreme trke + 10 min za sporije od 1:55 (p04)",
+    "motor: ostatak tempa trke < 15 min → prag pune doze (p01, p09, p04)",
+    "motor: pocetnik-nov i dugi-za-distancu menjaju broj prognoze, ne samo tekst (P2 B)",
+    "motor: provera forme posle bolesti se pomera u prvo rasterećenje posle prozora (s05)",
+    "podatak: polazni dugi = najduže trčanje poslednje 4 nedelje kad je istorija stabilna",
+    "podatak: posle bolesti u poslednjih 6 nedelja poslednji dugi zadržava najmanji blok (s06)",
+    "motor: najkraće lagano po nivou (p06); p04 usponi najviše 2 od 3 nedelje"
+  ],
+  "readyForOtherDistances": {
+    "verdict": "da, uz uslov da se ispravke 1, 3 i 4 reše pre prenosa",
+    "engineRules": [
+      "brz rad kao udeo vremena, sa tempom trke i blokom, bez trke/testa",
+      "polazni obim iz poslednje 3 nedelje, korak nedelje i dugog, lestvica vrha",
+      "udeo dugog u km, dugi prema vremenu trke, talas samo na plafonu",
+      "doza = udeo × vrh, plafon po nivou, prva doza ≤ 70 %, plafon minuta po zoni sa zamenom",
+      "silazak intenziteta i oštrenje van budžeta",
+      "3 dana bez brzog posle trke/testa",
+      "prozor izmene = rampa + 14 dana, najteža nedelja netaknuta, srazmerno skraćenje dugog",
+      "forma: tempa samo na signal, nikad uz bol/bolest",
+      "nivoi personalizacije i upozorenja sa predlogom"
+    ],
+    "distanceData": [
+      "plafoni brzog rada i minuta po zoni",
+      "lestvica vrha, oblik i dužina tapera",
+      "granice dugog i distanca provere forme",
+      "maraton: množilac opterećenja za dugi > 2 h 30"
+    ]
+  },
+  "ownerReview": ["vlasnik-v2", "p05", "scenarios/s06"]
+}

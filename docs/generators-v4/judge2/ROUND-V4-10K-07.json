@@ -1,0 +1,178 @@
+{
+  "round": "ROUND-V4-10K-07",
+  "commit": "b8ad0bb6",
+  "date": "2026-11-14",
+  "distance": "10K",
+  "plans": [
+    {
+      "id": "p02",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 7,
+        "q2": 8,
+        "q3": 7,
+        "q4": 7,
+        "q5": 8,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 75.0,
+      "constrained_extra": null,
+      "would_give": "da",
+      "top_issues": []
+    },
+    {
+      "id": "p03",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 7,
+        "q2": 8,
+        "q3": 6,
+        "q4": 7,
+        "q5": 8,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 73.0,
+      "constrained_extra": null,
+      "would_give": "da uz izmenu",
+      "top_issues": [
+        "Tempo trke tek od 7. nedelje i najviše 4 × 1 km + 11 min na kraju dugog; nijedan duži komad u tempu trke",
+        "Intervali 3 × 3 i 4 × 3 min (ned. 5–6) su simbolična doza",
+        "Dugi nosi 41–43 % svake nedelje, a jedini kvalitetni trening (čet) je najkraći"
+      ]
+    },
+    {
+      "id": "p06",
+      "input_allows_good_plan": false,
+      "scores": {
+        "q1": 6,
+        "q2": 8,
+        "q3": 5,
+        "q4": 6,
+        "q5": 8,
+        "q6": 7,
+        "q7": 6
+      },
+      "total": 65.0,
+      "constrained_extra": 6,
+      "would_give": "da uz izmenu",
+      "top_issues": [
+        "Ned. 1–3: tražio 5 dana, dobio 4 — lagan dan izbačen zbog drugog brzog treninga, a plan sam kaže da fali obima (vrh 38 od 45 km)",
+        "Tempo trke najviše 4 × 1 km, deonice do 1,2 km, dugi 9–11 km — mršavo za 36:24",
+        "Vršna nedelja je nedelja provere forme (10 % brzog rada); sužavanje 3 od 8 nedelja; 30 vs 31 km u tekstu"
+      ]
+    },
+    {
+      "id": "p08",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 7,
+        "q2": 8,
+        "q3": 8,
+        "q4": 6,
+        "q5": 8,
+        "q6": 5,
+        "q7": 8
+      },
+      "total": 73.0,
+      "constrained_extra": null,
+      "would_give": "da uz izmenu",
+      "top_issues": [
+        "Prognoza bez napretka za 18 nedelja ozbiljnog rada samo zbog 3 dana — netačno i demotivišuće",
+        "Predlog 4. dana od 70 min diže nedelju na 57,2 km (+12 km odjednom) umesto preraspodele",
+        "18 nedelja gotovo iste nedelje, obim 41 → 48 km; deo nedelja popunjava kalendar"
+      ]
+    },
+    {
+      "id": "p09",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 7,
+        "q2": 7,
+        "q3": 8,
+        "q4": 8,
+        "q5": 7,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 75.0,
+      "constrained_extra": null,
+      "would_give": "da",
+      "top_issues": []
+    },
+    {
+      "id": "p10",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 7,
+        "q2": 7,
+        "q3": 6,
+        "q4": 6,
+        "q5": 7,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 69.0,
+      "constrained_extra": null,
+      "would_give": "da uz izmenu",
+      "top_issues": [
+        "Ned. 10 čet: intervali 7 × 3 min posle 4 × 3 min (12 → 21 min teškog rada), pa 6 × 3 u ned. 14",
+        "Ned. 2 usponi 11 × 45 s snažno i provera 5 km punim naporom u ned. 4 na 20 km nedeljno — rano",
+        "18 nedelja a obim samo 20 → 29 km, tempo trke najviše 4,8 km; vršna nedelja sa 8 % brzog rada"
+      ]
+    },
+    {
+      "id": "p11",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 8,
+        "q2": 8,
+        "q3": 7,
+        "q4": 7,
+        "q5": 8,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 77.0,
+      "constrained_extra": null,
+      "would_give": "da",
+      "top_issues": []
+    },
+    {
+      "id": "p12",
+      "input_allows_good_plan": true,
+      "scores": {
+        "q1": 8,
+        "q2": 8,
+        "q3": 7,
+        "q4": 7,
+        "q5": 7,
+        "q6": 8,
+        "q7": 8
+      },
+      "total": 76.0,
+      "constrained_extra": null,
+      "would_give": "da",
+      "top_issues": []
+    }
+  ],
+  "below_75": [
+    "p03",
+    "p06",
+    "p08",
+    "p10"
+  ],
+  "below_65": [],
+  "min": {
+    "id": "p06",
+    "total": 65.0
+  },
+  "generator_changes": [
+    "Doza u tempu trke za 10 km: do vrha 6–8 km ukupno, deonice 1,6–2 km",
+    "Ne izbacivati traženi dan zbog drugog brzog treninga; kod malog obima prvo dodati lagane minute",
+    "Oznaka vršne nedelje ne sme pasti na nedelju provere forme ni na nedelju sa 8–10 % brzog rada",
+    "Glatka progresija intervala i bez izolovanih skokova (7 × 3 min u p10, fartlek 54 min u p11 ned. 5)",
+    "Tvrdnju 'bez napretka' ne vezivati samo za 3 dana; predlog 4. dana bez skoka obima"
+  ]
+}

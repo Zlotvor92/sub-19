@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
+import { adaptGeneratedPlan, generatePlan } from '@/test/legacyPlans';
 import { act, cleanup, render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -86,6 +86,7 @@ function injected(root: ParentNode): string[] {
   return found;
 }
 
+/* V1b: plan starog (v1) formata iz zamrznute fiksture — takvi planovi postoje u bazi i prikazuju se; tekst u svakom polju. */
 function poisoned(p: string): PersistedState {
   const s = JSON.parse(JSON.stringify(seedState())) as PersistedState;
   const gen = generatePlan({

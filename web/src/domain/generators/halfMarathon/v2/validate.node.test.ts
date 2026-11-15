@@ -123,7 +123,8 @@ describe('validator', () => {
   it('H11: jedan plafon po zoni', () => {
     const a = clone(base());
     const w = week(a, 8);
-    dayOf(w, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 3, repM: 3000 });
+    // P1-S2: RP do 20 % cilja ≥ 40 km — 3 × 4000 m je iznad plafona nedelje 8.
+    dayOf(w, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 3, repM: 4000 });
     expect(errors(a)).toEqual(expect.arrayContaining(['ZONE_CAP']));
   });
 
@@ -139,12 +140,13 @@ describe('validator', () => {
 
   it('H12 (pouka 3): plato u bazi / ista doza dok sledeći nivo staje; skok > 1 nivo; početni nivo', () => {
     const a = clone(base());
-    dayOf(week(a, 3), 'q2').workout = structuredClone(dayOf(week(a, 2), 'q2').workout);
+    // P5-F4: Q2 baze kreće od 3,0 km (T 4,0 → 5,0 km ne staje); stall na Q1 (R 1200 → 1600 m staje).
+    dayOf(week(a, 2), 'q1').workout = structuredClone(dayOf(week(a, 1), 'q1').workout);
     expect(errors(a)).toEqual(expect.arrayContaining(['DOSE_STALL']));
     const b = clone(base());
     dayOf(week(b, 2), 'q2').workout = quality(b, 'T_continuous', 'T', {
       form: 'continuous',
-      km: 4
+      km: 5 // P5-F4: nedelja 1 T 3,0 km → sledeći nivo 4,0 km
     });
     expect(errors(b)).toEqual(expect.arrayContaining(['DOSE_JUMP']));
     const c = clone(base());
@@ -164,7 +166,13 @@ describe('validator', () => {
   it('H7 taper: doza, dugi, dani', () => {
     const a = clone(base());
     const t = a.weeks.find((w) => w.phase === 'taper')!;
-    dayOf(t, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 2, repM: 2500 });
+    // Doza RP tapera različita od ≈ 60 % poslednje (P1-S2: poslednja RP doza je veća).
+    const rpT = dayOf(t, 'q1').workout.dose!.doseM;
+    dayOf(t, 'q1').workout = quality(a, 'RP', 'RP', {
+      form: 'reps',
+      reps: 2,
+      repM: rpT === 5000 ? 3000 : 2500
+    });
     expect(errors(a)).toContain('TAPER_QUALITY');
     const b = clone(base());
     const tb = b.weeks.find((w) => w.phase === 'taper')!;
@@ -252,10 +260,10 @@ describe('validator', () => {
     expect(errors(r.plan)).toEqual([]);
     const a = clone(r.plan);
     delete a.input.recentLongRunKm;
-    // HM-10 (T1): bez skorašnjeg najdužeg nedelja 1 je ispod obima i zbog laganih ≤ 0,8 × dugi (lagan na 0,8 × dugi)
+    // HM-10 (T1) + P8 G6: bez skorašnjeg najdužeg nedelja 1 je ispod obima i zbog laganih ≤ 0,7 × dugi (4 dana)
     // — ispravno; bez oba razloga (lagan ispod 0,8 × dugi) → WEEK1_BELOW_START.
     const w1 = a.weeks[0]!;
-    const cap = Math.floor(0.8 * dayOf(w1, 'long').workout.km * 10 + 1e-9) / 10;
+    const cap = Math.floor(0.7 * dayOf(w1, 'long').workout.km * 10 + 1e-9) / 10;
     expect(w1.days.some((d) => d.role === 'easy' && d.workout.km === cap)).toBe(true);
     expect(errors(a)).not.toContain('WEEK1_BELOW_START');
     for (const d of w1.days)
@@ -288,7 +296,10 @@ describe('validator', () => {
   it('H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km)', () => {
     const a = clone(base('d6-12w-60km-v50-B-sun'));
     const w = week(a, 2);
-    const e = w.days.filter((d) => d.role === 'easy');
+    // P5-F3: dan sa ubrzanjima se ne dira (inače i STRIDES).
+    const e = w.days.filter(
+      (d) => d.role === 'easy' && !d.workout.segments.some((x) => x.kind === 'stride')
+    );
     e[0]!.workout = easyWorkout(e[0]!.workout.km + 0.5, a.paces);
     e[1]!.workout = easyWorkout(e[1]!.workout.km - 0.5, a.paces);
     expect(errors(a)).toEqual(['EASY_UNEQUAL']);
@@ -303,7 +314,11 @@ describe('validator', () => {
     // Ned 8: Q2 T iznad najnižeg nivoa staje (hm-v2.3.0: 2 × 1600 m; hm-v2.4.0, pouka 35 u ranijim nedeljama: duži
     // dugi → viši nivo); spuštanje na 2 × 1200 m (najniži) sa napomenom nije najviši nivo.
     const a = clone(p.plan);
-    const w = week(a, 8);
+    // P1-S1: nedelja 8 je sada tip B (Q2 lagan) — uzima se prva nedelja od 7 sa Q2 iznad najnižeg nivoa.
+    const wi = a.weeks.findIndex(
+      (x, i) => i >= 6 && (x.days.find((d) => d.role === 'q2')?.workout.dose?.doseM ?? 0) > 2400
+    );
+    const w = a.weeks[wi]!;
     const q2 = dayOf(w, 'q2');
     expect(q2.workout.dose!.doseM).toBeGreaterThan(2400);
     q2.workout.dose = {
@@ -318,7 +333,7 @@ describe('validator', () => {
     expect(errors(a)).toContain('DOSE_DROP');
     // Dan iznad najnižeg nivoa duži od dugog: dugi ned 8 skraćen na 8 km.
     const b = clone(p.plan);
-    dayOf(week(b, 8), 'long').workout = longWorkout(8, b.paces);
+    dayOf(b.weeks[wi]!, 'long').workout = longWorkout(8, b.paces);
     expect(errors(b)).toContain('QUALITY_OVER_LONG');
   });
 

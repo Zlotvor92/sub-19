@@ -2,14 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { sessionCore } from '../day/planView';
 import { resolvePlan as appResolve } from '../plan/resolve';
 import type { AltRecord, StoredWeek } from '../state';
-import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
-import * as marathon from './marathon';
-import * as tenK from './tenK';
 
 /* NALAZ 4: ručna izmena dana sa sesijom („intervali → lagano") mora da prikaže VAŽEĆI propis, ne stari trening.
    `session` = važeći propis (nema ga kad izmena nema strukturu), `originSession` = original (istorija i spajanje sa
-   predikcijom). Odluku donosi samo `resolvePlan`; ista pravila važe za zajednički i za svaku kopiju u generatoru. */
+   predikcijom). Odluku donosi samo `resolvePlan`; ista pravila važe za zajednički i za svaku kopiju u generatoru.
+   V1b: kopije 5K/10K/maraton v1 su obrisane; ostaje zajednički i zamrznut HM v1 (lični plan). */
 
 const intervals = {
   type: 'int' as const,
@@ -57,10 +55,7 @@ const alt = (a: Partial<AltRecord>): Record<string, AltRecord> => ({
 
 const resolvers = {
   app: appResolve,
-  '5k': fiveK.resolvePlan,
-  '10k': tenK.resolvePlan,
-  hm: halfMarathon.resolvePlan,
-  marathon: marathon.resolvePlan
+  hm: halfMarathon.resolvePlan
 } as const;
 
 describe.each(Object.entries(resolvers))('važeći i originalni propis (%s)', (_name, resolve) => {

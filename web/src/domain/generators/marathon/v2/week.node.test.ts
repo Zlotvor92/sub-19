@@ -18,26 +18,41 @@ function plan(pr: Partial<Profile> = {}): MarathonV2Plan {
 }
 const to10 = (km: number): number => Math.round(km * 10);
 const role = (w: PlanWeek, r: string) => w.days.filter((d) => d.role === r);
+/** K3-A (nezavisno od lengths.ts): plafon udela dugog [0,1 km] — u 3 nedelje vrha (ne rasterećenje) redovnog plana
+    udeo do 45 % (4+ dana) / 50 % (3 dana), ali najviše do min(26 km; 165 min sporim E). */
+function shareCap10(p: MarathonV2Plan, w: PlanWeek, share: number): number {
+  const base = Math.floor(share * to10(w.targetKm) + 1e-9);
+  const taper = p.weeks.find((x) => x.phase === 'taper')!.index;
+  const peak = !w.deload && w.phase !== 'taper' && w.index >= taper - 3 && w.index < taper;
+  if (!peak || p.input.experience === 'beginner') return base;
+  const k = p.input.runDays.length >= 4 ? 0.45 : 0.5;
+  const goal10 = Math.min(260, Math.floor((9900 / p.paces.E.slow) * 10 + 1e-9));
+  return Math.max(base, Math.min(Math.floor(k * to10(w.targetKm) + 1e-9), goal10));
+}
 
 describe('izgradnja (M10, M13, M14)', () => {
   let p: MarathonV2Plan;
   beforeAll(() => {
     p = plan();
   });
-  it('uloge po šablonu, dugi = min(40 % cilja, 150 min) i ≥ lagan, lagan ≥ 5 km, planirano = cilj', () => {
+  it('uloge po šablonu, dugi = min(40 % cilja, 180 min, 32 km) i ≥ lagan, lagan ≥ 5 km, planirano = cilj', () => {
     for (const w of p.weeks.filter(
       (x) => !x.deload && ['base', 'development', 'specific'].includes(x.phase)
     )) {
+      // M19: nedelja B — dan MP treninga (Q1) je lagan, dugi nosi blok MP.
+      const b = role(w, 'long')[0]!.workout.workKm.MP > 0;
       expect(w.days.map((d) => `${d.weekday}:${d.role}`)).toEqual([
-        'tue:q1',
-        'thu:q2',
+        // P5-F1: nedelja testa plana sa rezultatom — test na danu Q1.
+        b ? 'tue:easy' : w.test ? 'tue:test' : 'tue:q1',
+        // P8-G7: u nedelji testa test je jedini kvalitet.
+        w.test ? 'thu:easy' : 'thu:q2',
         'sat:easy',
         'sun:long'
       ]);
       const long = role(w, 'long')[0]!;
       const easy = role(w, 'easy')[0]!;
       expect(to10(long.workout.km)).toBe(
-        Math.min(Math.floor(0.4 * to10(w.targetKm) + 1e-9), longTimeCap10(p.paces))
+        Math.min(shareCap10(p, w, 0.4), longTimeCap10(p.paces), 320)
       );
       expect(long.workout.km).toBeGreaterThanOrEqual(easy.workout.km);
       expect(easy.workout.km).toBeGreaterThanOrEqual(5);
@@ -69,7 +84,11 @@ describe('izgradnja (M10, M13, M14)', () => {
               .map((d) => `${d.role}:${d.workout.qualityType}`)
           )
       );
-    expect([...types('base')].sort()).toEqual(['q1:R', 'q2:T_continuous']);
+    // Ista doza druge strukture (M10) kad sledeći nivo ne staje u plafon: T kontinuirano → deonice iste doze.
+    expect([...types('base')].filter((t) => t !== 'q2:T_cruise').sort()).toEqual([
+      'q1:R',
+      'q2:T_continuous'
+    ]);
     expect([...types('development')].every((t) => /^q1:I$|^q2:T_/.test(t))).toBe(true);
     expect([...types('specific')].every((t) => /^q1:MP$|^q2:T_/.test(t))).toBe(true);
   });
@@ -92,8 +111,12 @@ describe('M5 rasterećenje', () => {
           .filter((d) => d.workout.kind === 'quality')
           .map((d) => `${d.role}:${d.workout.dose!.zone}`)
       ).toEqual(['q2:T']);
+      // K3-A: posle dužeg dugog vrha važi i udeo nedelje rasterećenja (M13: ≤ 40 % cilja).
       expect(to10(role(w, 'long')[0]!.workout.km)).toBe(
-        Math.floor(0.8 * to10(role(prev, 'long')[0]!.workout.km) + 1e-9)
+        Math.min(
+          Math.floor(0.8 * to10(role(prev, 'long')[0]!.workout.km) + 1e-9),
+          Math.floor(0.4 * to10(w.targetKm) + 1e-9)
+        )
       );
       expect(role(w, 'easy')).toHaveLength(2);
     }
@@ -127,7 +150,7 @@ describe('M7 taper (2 nedelje)', () => {
 });
 
 describe('M8 trkačka nedelja', () => {
-  it('trka zamenjuje dugi; oštrenje 2 × 2000 m MP (2:00) ≥ 3 dana pre trke; dan pred trku 20 min + 4 × 20 s; trka 42,2 km + WU 5 min van obima', () => {
+  it('trka zamenjuje dugi; oštrenje ≤ 10 min rada (P8-G5: VDOT 45 → 2 × 900 m MP, 2:00) ≥ 3 dana pre trke; dan pred trku 20 min + 4 × 20 s; trka 42,2 km + WU 5 min van obima', () => {
     const p = plan();
     const w = p.weeks.at(-1)!;
     expect(w.days.map((d) => `${d.weekday}:${d.role}`)).toEqual([
@@ -137,7 +160,8 @@ describe('M8 trkačka nedelja', () => {
       'sun:race'
     ]);
     const s = role(w, 'sharpener')[0]!;
-    expect(s.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 2000 });
+    expect(s.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 900 });
+    expect((s.workout.dose!.doseM / 1000) * p.paces.MP).toBeLessThanOrEqual(600);
     expect(s.workout.segments.filter((x) => x.kind === 'recovery').map((x) => x.sec)).toEqual([
       120
     ]);
@@ -185,12 +209,15 @@ describe('M8 trkačka nedelja', () => {
 
 describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
   it('najduži dugi < 26 km → upozorenje; ≥ 26 km → bez upozorenja', () => {
-    // N11 (MAR-07): upozorenje samo kad dugi NIJE na 150 min (VDOT 40: 150 min → napomena plana; VDOT 70: udeo).
+    // N11 (MAR-07): upozorenje samo kad dugi NIJE na plafonu trajanja (P2-S2: 180 min; VDOT 32: 180 min → napomena
+    // plana; VDOT 70: udeo).
     const short = plan({ km: 40, vdot: 70 });
     expect(short.warnings.map((w) => w.rule)).toContain('MARATHON_LONG_SHORT');
-    const capped = plan({ km: 40, vdot: 40 });
+    // P8-G1a: uz 40 km vrh je 54,3 km (satni plafon) i dugi je na udelu nedelje; primer plafona trajanja: 50 km.
+    const capped = plan({ km: 50, vdot: 32 });
     expect(capped.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
-    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
+    // K3-A: 180 min ≥ cilj 165 min — bez rečenice plana.
+    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     const long = plan({ weeks: 20, km: 65, vdot: 60 });
     const longest = Math.max(
       ...long.weeks.flatMap((w) => role(w, 'long').map((d) => d.workout.km))
@@ -247,7 +274,7 @@ describe('3/5/6 dana (M15)', () => {
         expect(e).toEqual([...e].sort((a, b) => b - a));
         const l = to10(role(w, 'long')[0]!.workout.km);
         expect(Math.max(...e)).toBeLessThanOrEqual(l);
-        expect(l).toBeLessThanOrEqual(Math.floor(share * to10(w.targetKm) + 1e-9));
+        expect(l).toBeLessThanOrEqual(shareCap10(p, w, share));
       }
     }
   });

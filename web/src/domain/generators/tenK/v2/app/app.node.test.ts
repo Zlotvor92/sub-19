@@ -22,20 +22,19 @@ import {
   type PersistedState
 } from '../../../../state';
 import type { TenKV2PlanInput } from '../../../contract';
-import { generatorFlags, tenKV2Enabled, tenKV2ToggleVisible } from '../../../flags';
-import { regeneratorForDistance } from '../../../handoff';
 import {
-  FIVE_K_GENERATOR,
   FIVE_K_V2_GENERATOR,
-  HALF_MARATHON_GENERATOR,
-  MARATHON_GENERATOR,
-  TEN_K_GENERATOR,
+  HALF_MARATHON_V2_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
+  LEGACY_PLAN,
+  MARATHON_V2_GENERATOR,
   TEN_K_V2_GENERATOR,
   UNKNOWN_POLICY,
   generateTenKV2Plan,
   generatorForNewPlan,
   generatorForPlan,
   isFiveKV2Plan,
+  isLegacyPlan,
   isTenKV2Plan,
   phaseReaderFor,
   tracksOffPlanRuns,
@@ -44,7 +43,9 @@ import {
   unsupportedPlanReason,
   type PlanGenerator
 } from '../../../select';
-import * as tenK from '../../index';
+/* V1b: 10K v1 je obrisan. Poređenja „ista vrednost kao stari 10K" idu na zamrznut HM v1 (`LEGACY_PERSONAL_GENERATOR`):
+   kod procene stanja, vremena i sata bio je bajt-isti u sva četiri v1 generatora (osim imena), a ključevi ugovora isti. */
+const OLD = LEGACY_PERSONAL_GENERATOR;
 import { midEasy, pacesFromVdot } from '../paces.ts';
 import { TEN_K_V2_POLICY } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
@@ -131,7 +132,7 @@ describe('generisanje kroz adapter', () => {
       const v2 = v2Of(p);
       expect(p.meta).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.10.0',
+        policyVersion: '10k-v2.16.0',
         raceDistM: 10000,
         raceDate: RACE,
         start: START,
@@ -259,7 +260,19 @@ describe('generisanje kroz adapter', () => {
       for (const b of d.structure!.blocks)
         if (b.step.kind === 'work') expect(b.step.paceSec).toBeGreaterThan(0);
     }
-    expect(res.dated.some((d) => d.tag === 'test')).toBe(false);
+    // D35 (P5 F1): plan sa rezultatom od 12 nedelja ima jedan kontrolni test; napomena traži unos rezultata.
+    const ctl = res.dated.filter((d) => d.tag === 'test');
+    expect(ctl).toHaveLength(1);
+    expect(ctl[0]!.structure!.kind).toBe('Test');
+    // D36 (P5 F3): lagan dan sa ubrzanjima — struktura lagan deo + ubrzanja, propisan tempo (plan sa rezultatom).
+    const st = res.dated.filter((d) => d.structure?.blocks.some((b) => b.step.kind === 'stride'));
+    expect(st.length).toBeGreaterThan(5);
+    for (const d of st.filter((x) => x.tag === 'lako')) {
+      expect(d.structure!.blocks[0]!.step.kind).toBe('easy');
+      const b = d.structure!.blocks.find((x) => x.step.kind === 'stride')!;
+      expect([4, 6]).toContain(b.reps);
+      expect(b.step.paceSec).toBeGreaterThan(0);
+    }
   });
 
   it('degenerisan ulaz → odbijanje sa razlozima v2 doslovno, bez plana', () => {
@@ -298,48 +311,15 @@ describe('generisanje kroz adapter', () => {
   });
 });
 
-describe('prekidač i rutiranje po oznaci politike', () => {
-  it('flags: podrazumevano isključen; override 1/true i 0/false nadjačavaju podešavanje; vidljivost', () => {
-    const off = { setting: undefined, devOverride: undefined };
-    expect(tenKV2Enabled(off)).toBe(false);
-    expect(tenKV2Enabled({ setting: 'true', devOverride: undefined })).toBe(false);
-    expect(tenKV2Enabled({ setting: true, devOverride: undefined })).toBe(true);
-    expect(tenKV2Enabled({ setting: false, devOverride: '1' })).toBe(true);
-    expect(tenKV2Enabled({ setting: false, devOverride: 'TRUE' })).toBe(true);
-    expect(tenKV2Enabled({ setting: true, devOverride: '0' })).toBe(false);
-    expect(tenKV2Enabled({ setting: true, devOverride: 'false' })).toBe(false);
-    expect(tenKV2Enabled({ setting: true, devOverride: 'x' })).toBe(true);
-    // Bez izvora 10K prekidača polje izostaje (= isključen); 5K prekidač se ne meša.
-    expect(generatorFlags(off)).toEqual({ fiveKV2: false });
-    expect(generatorFlags(off, { setting: true, devOverride: undefined })).toEqual({
-      fiveKV2: false,
-      tenKV2: true
-    });
-    expect(generatorFlags({ setting: true, devOverride: undefined }, off)).toEqual({
-      fiveKV2: true,
-      tenKV2: false
-    });
-    expect(tenKV2ToggleVisible({ devOverride: undefined, isAdmin: false })).toBe(false);
-    expect(tenKV2ToggleVisible({ devOverride: ' ', isAdmin: false })).toBe(false);
-    expect(tenKV2ToggleVisible({ devOverride: '0', isAdmin: false })).toBe(true);
-    expect(tenKV2ToggleVisible({ devOverride: undefined, isAdmin: true })).toBe(true);
+describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
+  it('nov plan: 10K → 10K v2; ostale distance → v2 te distance', () => {
+    expect(generatorForNewPlan(10000)).toBe(TEN_K_V2_GENERATOR);
+    expect(generatorForNewPlan(5000)).toBe(FIVE_K_V2_GENERATOR);
+    expect(generatorForNewPlan(21097.5)).toBe(HALF_MARATHON_V2_GENERATOR);
+    expect(generatorForNewPlan(42195)).toBe(MARATHON_V2_GENERATOR);
   });
 
-  it('nov plan: uključen prekidač menja SAMO 10K; isključen = kao do sada; HM/maraton → 10K ostaje v1', () => {
-    expect(generatorForNewPlan(10000, { fiveKV2: false })).toBe(TEN_K_GENERATOR);
-    expect(generatorForNewPlan(10000, { fiveKV2: true, tenKV2: false })).toBe(TEN_K_GENERATOR);
-    expect(generatorForNewPlan(10000, { fiveKV2: false, tenKV2: true })).toBe(TEN_K_V2_GENERATOR);
-    expect(generatorForNewPlan(5000, { fiveKV2: false, tenKV2: true })).toBe(FIVE_K_GENERATOR);
-    expect(generatorForNewPlan(5000, { fiveKV2: true, tenKV2: true })).toBe(FIVE_K_V2_GENERATOR);
-    expect(generatorForNewPlan(21097.5, { fiveKV2: true, tenKV2: true })).toBe(
-      HALF_MARATHON_GENERATOR
-    );
-    expect(generatorForNewPlan(42195, { fiveKV2: true, tenKV2: true })).toBe(MARATHON_GENERATOR);
-    // Predaja „kraća distanca" (HM/maraton → 10K) ide 10K v1 (segment 06 je predaja v2).
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-  });
-
-  it('postojeći planovi: 10k-v1 i legacy-10k ostaju na tenK; 10k-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
+  it('postojeći planovi: 10k-v1 i bez oznake → stari plan (bez generatora); 10k-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
     const v2 = stampForStorage(planOf(WITH_RESULT));
     expect(generatorForPlan(v2)).toBe(TEN_K_V2_GENERATOR);
     expect(isTenKV2Plan(v2)).toBe(true);
@@ -349,13 +329,14 @@ describe('prekidač i rutiranje po oznaci politike', () => {
       ...v2,
       meta: { ...meta, ...m }
     });
-    expect(generatorForPlan(withMeta({ policyId: '10k-v1', policyVersion: '10k-v1.0.0' }))).toBe(
-      TEN_K_GENERATOR
-    );
+    const v1 = withMeta({ policyId: '10k-v1', policyVersion: '10k-v1.0.0' });
+    expect(generatorForPlan(v1)).toBeNull();
+    expect(unsupportedPlanReason(v1)).toBe(LEGACY_PLAN);
     const legacy = { ...v2, meta: { ...meta } };
     delete legacy.meta['policyId'];
     delete legacy.meta['policyVersion'];
-    expect(generatorForPlan(legacy)).toBe(TEN_K_GENERATOR);
+    expect(generatorForPlan(legacy)).toBeNull();
+    expect(isLegacyPlan(legacy)).toBe(true);
     for (const version of ['10k-v2.3.1', '10k-v2.5.3', undefined]) {
       const p = withMeta({ policyVersion: version });
       expect(generatorForPlan(p), String(version)).toBeNull();
@@ -363,24 +344,9 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     }
     for (const raceDistM of [5000, 21097.5, 42195])
       expect(generatorForPlan(withMeta({ raceDistM })), String(raceDistM)).toBeNull();
-    // Prekidač ne prebacuje postojeći v1 plan (izbor ne čita prekidač).
-    const v1 = stampForStorage(
-      TEN_K_GENERATOR.adaptGeneratedPlan(
-        TEN_K_GENERATOR.generatePlan({
-          startDate: TODAY,
-          raceDate: RACE,
-          raceDistM: 10000,
-          pb: { distM: 10000, sec: 2700 },
-          weeklyKm: 40,
-          runDays: 4,
-          quality: 2,
-          intensity: 'std'
-        })
-      )!
-    );
-    expect(generatorForPlan(v1)).toBe(TEN_K_GENERATOR);
-    expect(isTenKV2Plan(v1)).toBe(false);
-    expect(tracksOffPlanRuns(v1)).toBe(false);
+    // Stari plan nema generator i ne beleži trčanja van plana kao plan v2.
+    expect(isTenKV2Plan(legacy)).toBe(false);
+    expect(tracksOffPlanRuns(legacy)).toBe(false);
     expect(tracksOffPlanRuns(v2)).toBe(true);
   });
 
@@ -539,9 +505,19 @@ describe('izvoz na sat iz strukture', () => {
     const quality = plan.dated.filter(
       (d) => d.date <= '2026-11-23' && (d.tag === 'tempo' || d.tag === 'int')
     );
-    expect(b.skipped).toBe(quality.length);
-    expect(b.skippedReasons).toHaveLength(quality.length);
-    for (const r of b.skippedReasons!) expect(r).toContain(SKIP_FEEL);
+    // D36 (P5 F3): lagan dan sa ubrzanjima u planu po osećaju — tempo ubrzanja je procena (kao dan pred trku), dan se ne
+    // šalje (razlog: procena), lagani dani bez ubrzanja se šalju.
+    const strides = plan.dated.filter(
+      (d) =>
+        d.date >= START &&
+        d.date <= '2026-11-23' &&
+        d.tag === 'lako' &&
+        d.structure?.blocks.some((x) => x.step.kind === 'stride')
+    );
+    expect(strides.length).toBeGreaterThan(0);
+    expect(b.skipped).toBe(quality.length + strides.length);
+    expect(b.skippedReasons).toHaveLength(quality.length + strides.length);
+    expect(b.skippedReasons!.filter((r) => r.includes(SKIP_FEEL))).toHaveLength(quality.length);
     expect(b.events.every((e) => !/RPE/.test(e.description))).toBe(true);
     expect(b.events.some((e) => plan.byId.get(e.externalId.slice(6))?.tag === 'test')).toBe(false);
   });
@@ -631,15 +607,10 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad 10K v1), (c
     expect(keys).toHaveLength(55);
     expect(B).toHaveLength(26);
     expect([...A, ...B, ...C].sort()).toEqual(keys);
-    expect(Object.keys(TEN_K_GENERATOR).sort()).toEqual(keys);
+    expect(Object.keys(OLD).sort()).toEqual(keys);
     const g = TEN_K_V2_GENERATOR as unknown as Record<string, unknown>;
-    const old = TEN_K_GENERATOR as unknown as Record<string, unknown>;
-    const v1 = new Set<unknown>(Object.values(tenK).filter((x) => typeof x === 'function'));
-    for (const k of keys)
-      if (typeof g[k] === 'function') {
-        expect(g[k], k).not.toBe(old[k]);
-        expect(v1.has(g[k]), k).toBe(false);
-      }
+    const old = OLD as unknown as Record<string, unknown>;
+    for (const k of keys) if (typeof g[k] === 'function') expect(g[k], k).not.toBe(old[k]);
   });
 
   it('(b) adapter članova (b) uvozi samo iz 10K v2 (jezgro i adapter): ne može da pozove 10K v1', () => {
@@ -752,7 +723,7 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad 10K v1), (c
       }
     };
     const g = TEN_K_V2_GENERATOR;
-    const o = TEN_K_GENERATOR;
+    const o = OLD;
     for (const day of ['2026-11-23', '2026-11-26', '2026-12-10'] as IsoDate[]) {
       expect(g.painStatus(pain, day)).toEqual(o.painStatus(pain, day));
       expect(g.acwrNow(ctx, day)).toEqual(o.acwrNow(ctx, day));

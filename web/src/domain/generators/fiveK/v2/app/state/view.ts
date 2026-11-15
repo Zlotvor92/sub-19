@@ -2,7 +2,7 @@
    5K v2 je vlasnik); dalje se razvija samo ovde. */
 /* PROCENA OPORAVKA: jutarnja merenja sa sopstvenom osnovom i tonovi signala, pojas opterećenja. Čiste funkcije. */
 
-import type { WellnessRecord } from '../../../exchange.ts';
+import type { WellnessRecord } from '../exchange.ts';
 import { ACWR_MAX, ACWR_RETURN } from './constants.ts';
 
 /* ------------------------------ jutarnja merenja ------------------------------ */

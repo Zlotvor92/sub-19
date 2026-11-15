@@ -1,0 +1,224 @@
+{
+ "distanca": "5K",
+ "krug": 5,
+ "stanje": "e1136a16",
+ "prethodno": "21d4b070",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p03": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 79,
+   "plan_stara": 80.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 65.5,
+   "plan_stara": 65.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 78.5,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p08": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 74.5,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 78.5,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p10": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76,
+   "plan_stara": 76.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "nepromenjen",
+   "prolazi": true
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p13": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": 74,
+   "plan_za_ulaz": 76,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p14": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 76,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": 73.5,
+   "plan_za_ulaz": 78,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p15": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75.5,
+   "plan_stara": 75.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p16": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  }
+ },
+ "plan_za_ulaz_kriterijumi": {
+  "p13": [
+   8.5,
+   6.5,
+   7.5,
+   8
+  ],
+  "p14": [
+   8,
+   8,
+   8,
+   6.5
+  ]
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "4/14",
+   "sada": "7/14"
+  },
+  "plafon": {
+   "prethodno": "0/2",
+   "sada": "0/2"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 76.9,
+  "sada": 77.4
+ },
+ "B": {
+  "prethodno": 82.7,
+  "sada": 82.8,
+  "dogadjaji": {
+   "E1": 83.8,
+   "E2": 81.0,
+   "E3": 82,
+   "E4": 80.0,
+   "E5": 82.0,
+   "E6": 89.8,
+   "E7": 80.7
+  },
+  "promenjeni": {
+   "s17": [
+    82,
+    83
+   ],
+   "s20": [
+    79,
+    81
+   ],
+   "s26": [
+    79,
+    80
+   ]
+  }
+ },
+ "C": {
+  "prethodno": 82.7,
+  "sada": 82.2,
+  "parovi": {
+   "P1": 84,
+   "P2": 80.5,
+   "P3": 82
+  }
+ },
+ "zbirna": {
+  "prethodno": 79.8,
+  "sada": 80.0
+ },
+ "regresije": [
+  "P2 B: prognoza sa napretkom i bez početničkog okvira (82 -> 80,5)",
+  "p09 ned 3-5: 18-20 % brzog rada tri nedelje zaredom (bez pada ocene)"
+ ]
+}

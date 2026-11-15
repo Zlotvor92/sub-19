@@ -1,0 +1,245 @@
+{
+ "runda": "ROUND-V4-HM-11",
+ "sudija": "judge2",
+ "stanje": "fb2c1a3",
+ "planovi": {
+  "p01": {
+   "q": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    7,
+    8
+   ],
+   "ukupno": 79.0,
+   "dati": "da uz izmenu"
+  },
+  "p02": {
+   "q": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 80.0,
+   "dati": "da"
+  },
+  "p03": {
+   "q": [
+    7,
+    7,
+    7,
+    8,
+    8,
+    6,
+    7
+   ],
+   "ukupno": 71.0,
+   "dati": "da uz izmenu"
+  },
+  "p04": {
+   "q": [
+    5,
+    7,
+    6,
+    6,
+    7,
+    4,
+    6
+   ],
+   "ukupno": 59.0,
+   "dati": "ne"
+  },
+  "p05": {
+   "q": [
+    7,
+    7,
+    8,
+    7,
+    8,
+    6,
+    8
+   ],
+   "ukupno": 73.0,
+   "dati": "da uz izmenu"
+  },
+  "p06": {
+   "q": [
+    7,
+    8,
+    7,
+    7,
+    8,
+    6,
+    7
+   ],
+   "ukupno": 72.0,
+   "dati": "da uz izmenu"
+  },
+  "p07": {
+   "q": [
+    7,
+    6,
+    8,
+    8,
+    8,
+    7,
+    8
+   ],
+   "ukupno": 73.0,
+   "dati": "da uz izmenu"
+  },
+  "p08": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    8,
+    6,
+    8
+   ],
+   "ukupno": 71.0,
+   "dati": "da uz izmenu"
+  },
+  "p09": {
+   "q": [
+    8,
+    7,
+    8,
+    8,
+    7,
+    8,
+    8
+   ],
+   "ukupno": 77.0,
+   "dati": "da"
+  },
+  "p10": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 69.0,
+   "dati": "da uz izmenu"
+  },
+  "p11": {
+   "q": [
+    8,
+    8,
+    7,
+    8,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 78.0,
+   "dati": "da"
+  },
+  "p12": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    6,
+    8
+   ],
+   "ukupno": 70.0,
+   "dati": "da uz izmenu"
+  },
+  "vlasnik-v1": {
+   "q": [
+    7,
+    8,
+    6,
+    6,
+    8,
+    4,
+    7
+   ],
+   "ukupno": 67.0,
+   "dati": "da uz izmenu"
+  },
+  "vlasnik-v2": {
+   "q": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 79.0,
+   "dati": "da"
+  }
+ },
+ "prosek_planova": 72.7,
+ "scenariji": {
+  "s01": 9,
+  "s02": 9,
+  "s03": 8,
+  "s04": 9,
+  "s05": 7.5,
+  "s06": 8.5,
+  "s07": 7,
+  "s08": 8,
+  "s09": 8.5,
+  "s10": 9,
+  "s11": 9,
+  "s12": 9,
+  "s13": 8,
+  "s14": 8.5,
+  "s15": 6,
+  "s16": 7.5,
+  "s17": 9,
+  "s18": 8.5,
+  "s19": 6,
+  "s20": 8.5,
+  "s21": 10,
+  "s22": 7,
+  "s23": 10,
+  "s24": 9,
+  "s25": 6.5,
+  "s26": 7,
+  "s27": 7.5
+ },
+ "prosek_scenarija": 8.17,
+ "parovi": {
+  "p1": 8,
+  "p2": 7,
+  "p3": 6.5
+ },
+ "prosek_parova": 7.17,
+ "za_pregled_vlasnika": [
+  "p04",
+  "vlasnik-v1",
+  "s15",
+  "s19"
+ ],
+ "top_ispravke": [
+  "upozorenja bez izmišljenih pragova i bez okrivljavanja ulaza (4 dana, 16 km, 40 km, 75 km)",
+  "drugi kvalitet za 5-dnevni plan 55-65 km; upozorenje o utorku usklađeno sa planom",
+  "napomena trke: uslov sa očekivanim vremenom, ne ciljem",
+  "dosledno pravilo povratka posle bolesti/bola",
+  "dugi posle stvarnog prekida kreće od poslednjeg odrađenog",
+  "forma iz sinhronizovanih trčanja (9a)",
+  "tačni brojevi u upozorenjima",
+  "ništa ⇒ nula promena; svaka promena u PROMENE",
+  "pravila koja plan izgovara moraju da važe",
+  "imenovanje (dugi 40 min, vršna nedelja, rasterećenje sa testom)"
+ ],
+ "procitano_van_dozvoljenog": "ništa; zaglavlja parova (red MORA DA SE RAZLIKUJE) viđena posle zapisanih opštih očekivanja"
+}

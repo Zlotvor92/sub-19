@@ -2,13 +2,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
-import { V1_TARGET_NEEDS_RESULT } from '../../domain/generators/handoff';
 import {
   generateHmV2Plan,
   generateMarathonV2Plan,
   hmV2Start,
-  isFiveKV2Plan,
   isHmV2Plan,
+  isTenKV2Plan,
   marathonV2Start,
   RESTORE_OTHER_DISTANCE
 } from '../../domain/generators/select';
@@ -20,8 +19,8 @@ import { collectPersisted, hydratePersisted, useSettingsStore } from '../../stor
 import { useAuthStore } from '../../stores/authStore';
 import {
   commitPlanChange,
-  previewFiveKV2,
   previewHmV2,
+  previewTenKV2,
   storedPreparationDecision
 } from '../../stores/executionActions';
 import { useUIStore } from '../../stores/uiStore';
@@ -31,7 +30,7 @@ import { PlanOverview } from './PlanOverview';
 
 /* FAZA 3, SEGMENT 3g — UI predaje „kraća distanca" za izvore v2 (HM v2, maraton v2). Odluku, opcije, razloge i plan cilja
    daje domen; UI ih prikazuje (pouka 20). Stavke: (1) store prosleđuje plan (`isLimitedLongPreparation(meta, plan)`);
-   (2) store prosleđuje prekidače korisnika (`preparationForPlan(plan, flags)`); (3) pregled adaptacije v2 nosi ponudu
+   (2) store prosleđuje prekidače korisnika (`preparationForPlan(plan)`); (3) pregled adaptacije v2 nosi ponudu
    (`shorterOffer`) i vezu ka odluci, odluka traje dok traje stanje, „Zatvori" je sklanja bez promene plana; (4) odluka:
    izjava, opcija sa vrhom i pokrivenošću, nedostupne opcije sa razlogom doslovno; (5) plan cilja sa nedeljama izvora
    kao prefiksom — broj nedelje `offset + index`, dnevnik na svojim danima; (6) vraćanje verzije druge distance →
@@ -115,18 +114,16 @@ describe('3g store: plan i prekidači korisnika', () => {
     expect(d.conditions[0]).toMatch(/^Zadrži plan v2/);
   });
 
-  it('(2) prekidač 5K v2 korisnika bira cilj 5K v2; bez njega je cilj v1 (traži rezultat)', () => {
+  it('(2) V1b: cilj predaje je uvek v2 te distance — bez ikakvog podešavanja nudi se 10K v2 (prva pokrivena)', () => {
     adaptedSource(FEEL);
-    flags('generatorV2FiveK');
-    const on = storedPreparationDecision(TODAY)!;
-    expect(on.options.map((o) => o.title)).toEqual(['Kraća distanca: 5K istog datuma']);
     flags();
-    const off = storedPreparationDecision(TODAY)!;
-    expect(off.options).toEqual([]);
-    expect(off.unavailable).toEqual([
-      `10K: ${V1_TARGET_NEEDS_RESULT}`,
-      `5K: ${V1_TARGET_NEEDS_RESULT}`
-    ]);
+    const on = storedPreparationDecision(TODAY)!;
+    expect(on.options.map((o) => o.title)).toEqual(['Kraća distanca: 10K istog datuma']);
+    // Podešavanja starih prekidača više ništa ne menjaju.
+    flags('generatorV2FiveK');
+    expect(storedPreparationDecision(TODAY)).toEqual(on);
+    expect(on.unavailable.join(' ')).not.toMatch(/\(v1\)/);
+    expect(on.unavailable).toEqual([]);
   });
 });
 
@@ -170,12 +167,16 @@ describe('3g UI: ponuda, odluka, zatvaranje', () => {
     adaptedSource(FEEL);
     flags();
     const a = render(<AdjustPlan />);
-    const list = within(decisionBox()!).getByRole('list', { name: 'Nedostupne opcije' });
+    // V1b: nedostupne opcije (ako ih ima) su doslovno razlozi domena — cilj v2, nikad v1.
+    const unavailable = storedPreparationDecision(TODAY)!.unavailable;
+    const list = within(decisionBox()!).queryByRole('list', { name: 'Nedostupne opcije' });
     expect(
-      within(list)
-        .getAllByRole('listitem')
-        .map((li) => li.textContent)
-    ).toEqual([`10K: ${V1_TARGET_NEEDS_RESULT}`, `5K: ${V1_TARGET_NEEDS_RESULT}`]);
+      list
+        ? within(list)
+            .getAllByRole('listitem')
+            .map((li) => li.textContent)
+        : []
+    ).toEqual(unavailable);
     a.unmount();
     // Plan sa rezultatom: ponuda posle pauze 35 d u prvoj nedelji (utorak 2026-01-20).
     adaptedSource(WITH_RESULT, {}, '2026-01-20', { from: '2025-12-17', to: '2026-01-20' });
@@ -205,8 +206,8 @@ describe('3g UI: ponuda, odluka, zatvaranje', () => {
 });
 
 describe('3g UI: izbor kraće distance, prefiks, vraćanje', () => {
-  /** HM v2 po osećaju → 5K v2 kroz UI: odluka → pregled opcije (pre → posle) → primena. */
-  async function handoffTo5K() {
+  /** HM v2 po osećaju → 10K v2 kroz UI (V1b: bez prekidača cilj je prva opcija koju v2 pokriva — 10K): odluka → pregled opcije (pre → posle) → primena. */
+  async function handoffTo10K() {
     const source = plan(FEEL);
     const day = resolvePlan(source.weeks, { alts: {}, moves: {} }).dated.find(
       (d) => d.date === '2026-01-20'
@@ -225,20 +226,20 @@ describe('3g UI: izbor kraće distance, prefiks, vraćanje', () => {
     );
     await user.click(
       within(decisionBox()!).getByRole('button', {
-        name: 'Pregledaj opciju: Kraća distanca: 5K istog datuma'
+        name: 'Pregledaj opciju: Kraća distanca: 10K istog datuma'
       })
     );
-    expect(within(preview()).getByText('Kraća distanca: 5K istog datuma')).toBeTruthy();
+    expect(within(preview()).getByText('Kraća distanca: 10K istog datuma')).toBeTruthy();
     const dl = within(preview()).getByLabelText('Promena trke i cilja');
-    expect(dl.textContent).toMatch(/Pre.*Polumaraton.*Posle.*5K.*bez vremenskog cilja/);
+    expect(dl.textContent).toMatch(/Pre.*Polumaraton.*Posle.*10K.*bez vremenskog cilja/);
     expect(stored()).toEqual(before); // pregled ne upisuje
     await user.click(within(preview()).getByRole('button', { name: 'Primeni prikazanu promenu' }));
     const after = stored();
-    expect(isFiveKV2Plan(after)).toBe(true);
-    expect(getPlanRevisions(after).at(-1)?.summary).toBe('Kraća distanca: 5K istog datuma');
-    // Potvrda „primenjeno" na ekranu cilja (prilagođavanje 5K v2), jednom; „U redu" je sklanja.
+    expect(isTenKV2Plan(after)).toBe(true);
+    expect(getPlanRevisions(after).at(-1)?.summary).toBe('Kraća distanca: 10K istog datuma');
+    // Potvrda „primenjeno" na ekranu cilja (prilagođavanje 10K v2), jednom; „U redu" je sklanja.
     expect(screen.getByRole('status').textContent).toBe(
-      'Plan je promenjen: Kraća distanca: 5K istog datuma. Prethodni plan je sačuvan u istoriji (Prethodne verzije plana).'
+      'Plan je promenjen: Kraća distanca: 10K istog datuma. Prethodni plan je sačuvan u istoriji (Prethodne verzije plana).'
     );
     expect(document.getElementById('v2-adapt')).not.toBeNull();
     await user.click(screen.getByRole('button', { name: 'U redu' }));
@@ -247,8 +248,8 @@ describe('3g UI: izbor kraće distance, prefiks, vraćanje', () => {
     return { before, after, day, user };
   }
 
-  it('(5) 5K v2: prefiks izvora (faza i dani), broj nedelje offset + index u kalendaru i pregledu, dnevnik ostaje', async () => {
-    const { before, after, day } = await handoffTo5K();
+  it('(5) 10K v2: prefiks izvora (faza i dani), broj nedelje offset + index u kalendaru i pregledu, dnevnik ostaje', async () => {
+    const { before, after, day } = await handoffTo10K();
     // Prefiks: nedelje izvora pre starta cilja (tekuća uključena) doslovno — faza i dani izvora.
     const offset = after.weeks.findIndex((w) => w.start === '2026-02-02');
     expect(offset).toBe(2);
@@ -269,14 +270,14 @@ describe('3g UI: izbor kraće distance, prefiks, vraćanje', () => {
       expect(screen.getByRole('button', { name: `Nedelja ${w.w}` })).toBeTruthy();
     overview.unmount();
     // Pregled adaptacije cilja: brojevi nedelja posle prefiksa.
-    const pv = previewFiveKV2('2026-02-10', { breaks: [{ from: '2026-02-02', to: '2026-02-10' }] });
-    if (!pv.ok || !pv.fiveKV2) throw new Error('pregled 5K v2');
-    expect(pv.fiveKV2.weeks.length).toBeGreaterThan(0);
-    for (const w of pv.fiveKV2.weeks) expect(w.week).toBeGreaterThan(offset);
+    const pv = previewTenKV2('2026-02-10', { breaks: [{ from: '2026-02-02', to: '2026-02-10' }] });
+    if (!pv.ok || !pv.tenKV2) throw new Error('pregled 10K v2');
+    expect(pv.tenKV2.weeks.length).toBeGreaterThan(0);
+    for (const w of pv.tenKV2.weeks) expect(w.week).toBeGreaterThan(offset);
   });
 
-  it('(6) vraćanje verzije HM (pre predaje) preko plana 5K → razlog domena doslovno, plan isti', async () => {
-    const { after, user } = await handoffTo5K();
+  it('(6) vraćanje verzije HM (pre predaje) preko plana 10K → razlog domena doslovno, plan isti', async () => {
+    const { after, user } = await handoffTo10K();
     render(<AdjustPlan />);
     const hmRevision = getPlanRevisions(after).find((r) => r.summary.startsWith('Prilagođavanje'))!;
     await user.click(

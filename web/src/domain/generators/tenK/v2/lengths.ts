@@ -12,6 +12,8 @@ import type { Paces, PlanDay } from './types.ts';
 export interface LongRule {
   readonly longMaxShare: number;
   readonly longMaxSec: number;
+  /** G6 (P8 dopuna): lagan ≤ udeo dugog (D17 po broju dana). */
+  readonly easyMaxLongShare: number;
 }
 
 const EPS = 1e-9;
@@ -58,10 +60,14 @@ function withEasy(rest100: number, cap10: number, n: number): Lengths | null {
  * T1 (10K-08, organizator; jedna funkcija za konstruktor i validator): granice laganog dana NEDELJE IZGRADNJE (ne
  * rasterećenje, taper, trkačka) [0,1 km] — najkraći max(3 km, 20 min laganim tempom), najduži 0,8 × dugi iste nedelje.
  */
-export function buildEasyBounds10(long10: number, p: Paces): { min10: number; max10: number } {
+export function buildEasyBounds10(
+  long10: number,
+  p: Paces,
+  maxShare: number
+): { min10: number; max10: number } {
   return {
     min10: Math.max(EASY_MIN10, Math.ceil((P.lengths.easyMinSec / midEasy(p)) * 10 - EPS)),
-    max10: Math.floor(P.lengths.easyMaxLongShare * long10 + EPS)
+    max10: Math.floor(maxShare * long10 + EPS)
   };
 }
 
@@ -89,7 +95,7 @@ export function buildLengths(
     // Dugi po D13 za stvaran broj laganih dana (withEasy: ≤ plafon, ostavlja lagane ≥ 3 km) — nikad iznad plafona.
     const len = n === easyDays ? base : withEasy(rest100, cap10, n);
     if (!len) return null;
-    const { min10, max10 } = buildEasyBounds10(len.long10, p);
+    const { min10, max10 } = buildEasyBounds10(len.long10, p, rule.easyMaxLongShare);
     if (len.easy10[0]! > max10) {
       // Dugi na plafonu: sa manje laganih dana lagan je još duži — cilj nije izvodljiv. Inače je dugi skraćen da lagani
       // ostanu ≥ 3 km; sa manje laganih dana dugi raste (do plafona).
@@ -114,7 +120,8 @@ export function easyRestShort(
   p: Paces
 ): boolean {
   const gap100 = target10 * 10 - planned100;
-  return easyCount === 0 && gap100 > 0 && gap100 < buildEasyBounds10(long10, p).min10 * 10;
+  // Samo donja granica (min10 ne zavisi od udela).
+  return easyCount === 0 && gap100 > 0 && gap100 < buildEasyBounds10(long10, p, 1).min10 * 10;
 }
 
 /** T1: koji lagani datumi ostaju kad nedelja izgradnje ima `n` laganih dana od `dates` (rastuće): odmor je prvo dan pre
@@ -190,4 +197,77 @@ export function deloadLengths(
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10 };
+}
+
+/** G8 (P8 dopuna, D48): nedelje dugog do distance — početnik: poslednje `longToRaceWeeks` ne-rasteretne nedelje izgradnje
+    osnovne periodizacije (konstruktor i validator). */
+export function longToRaceWeeks(
+  frames: readonly { index: number; phase: string; deload: boolean }[],
+  beginner: boolean
+): Set<number> {
+  if (!beginner) return new Set();
+  const b = frames.filter(
+    (f) => (f.phase === 'base' || f.phase === 'development' || f.phase === 'specific') && !f.deload
+  );
+  return new Set(b.slice(-P.beginner.longToRaceWeeks).map((f) => f.index));
+}
+
+/** G8 (P8 dopuna, D48): udeo dugog nedelje — u nedeljama dugog do distance max(D17; min(longToRaceShare, distanca / cilj)),
+    inače D17. JEDINO mesto udela dugog (konstruktor i validator). */
+export function longShareOf(rule: LongRule, target10: number, toRace: boolean): number {
+  if (!toRace || target10 <= 0) return rule.longMaxShare;
+  const b = P.beginner;
+  return Math.max(rule.longMaxShare, Math.min(b.longToRaceShare, (b.longToRaceKm * 10) / target10));
+}
+
+/** K4-B (10k-v2.16.0): napomena nedelje sa danom „po želji" (validator je čita kao oznaku). */
+export const OPT_NOTE = 'Kratak lagan dan';
+
+/**
+ * K4-B (JEDNO mesto odluke, oblik HM/MAR): nedelja izgradnje plana sa kratkim laganim danima — najkraći lagan (kraći od
+ * lengths.shortEasyWarnSec, `easySec`) je „odmor ili 20 min lagano po želji": dan šablona bez treninga (oblik T1),
+ * izlazi iz obaveznog obima; njegovi km prelaze u ostale lagane do granice T1 (≤ udeo × dugi, buildEasyBounds10),
+ * ostatak je planirano < cilj; jedini lagan dan nedelje ostaje. `opt` = indeks tog dana u `len.easy10` (među jednakima kasniji); null = nijedan lagan
+ * nije kraći od 30 min ili bi nedelja pala ispod minimuma (`maxShort10` = cilj − minimum nedelje D17).
+ */
+export function optEasy(
+  len: Lengths,
+  max10: number,
+  easySec: (easy10: number) => number,
+  maxShort10: number
+): { len: Lengths; opt: number } | null {
+  const e = len.easy10;
+  if (e.length === 0) return null;
+  const secs = e.map(easySec);
+  const min = Math.min(...secs);
+  if (min + 1e-9 >= P.lengths.shortEasyWarnSec) return null;
+  const opt = secs.lastIndexOf(min);
+  const rest = e.filter((_, i) => i !== opt);
+  // Jedini lagan dan ostaje (oblik MAR): 3/4 dana bi postali 2 trčanja / Q + Q + dugi — km nema gde da pređu.
+  if (rest.length === 0) return null;
+  const all = e.reduce((a, x) => a + x, 0);
+  const total = Math.min(all, rest.length * max10);
+  if (all - total > maxShort10) return null;
+  return { len: { long10: len.long10, easy10: splitEasy(total, rest.length) }, opt };
+}
+
+/** K4-B: plan ima kratke lagane dane — najkraći lagan < 30 min u više od lengths.optWeeks ne-rasteretnih nedelja
+    izgradnje (plan bez pravila; isti uslov kao merenje K3-F). */
+export function shortEasyPlan(
+  weeks: readonly {
+    phase: string;
+    deload: boolean;
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
+  }[]
+): boolean {
+  const n = weeks.filter(
+    (w) =>
+      !w.deload &&
+      (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific') &&
+      w.days.some(
+        (d) =>
+          d.role === 'easy' && d.workout.km > 0 && d.workout.sec + 1e-9 < P.lengths.shortEasyWarnSec
+      )
+  ).length;
+  return n > P.lengths.optWeeks;
 }

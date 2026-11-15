@@ -93,7 +93,8 @@ describe('F1: tekst korisniku', () => {
   });
 
   it('„Vrh X km umesto do X km" se ne prikazuje kad su vrednosti iste', () => {
-    const p = planOf({ weeks: 18, km: 50, days: D4, vdot: 45 });
+    // P2-S2 (dugi do 180 min): VDOT 45 više ne seče kapacitet — VDOT 40.
+    const p = planOf({ weeks: 18, km: 50, days: D4, vdot: 40 });
     const cap = p.notes.find((n) => n.includes('ne nose ovaj obim'))!;
     expect(cap).toBeDefined();
     expect(p.peakKm).toBe(p.peakCapKm);
@@ -118,7 +119,7 @@ describe('F1: tekst korisniku', () => {
 });
 
 describe('F2: najduži dugi početnika', () => {
-  it('poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje): dugi do 50 % i 180 min; ostale nedelje 40 % / 150 min', () => {
+  it('poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje): dugi do 50 % i 180 min; ostale nedelje 40 % / 150 min (P2-S2: početnik bez promene)', () => {
     const input = inputOf({ weeks: 20, km: 30, days: D4, easyPace: 420, experience: 'beginner' });
     const p = planOf({ weeks: 20, km: 30, days: D4, easyPace: 420, experience: 'beginner' });
     const rule = planRule(4, 'beginner')!;
@@ -127,27 +128,37 @@ describe('F2: najduži dugi početnika', () => {
       const r = longRuleOf(rule, true, p.weeks, w.index);
       const peak = w.index >= taper - 3 && w.index < taper && !w.deload;
       expect(r.longMaxShare, `ned ${w.index}`).toBe(peak ? 0.5 : rule.longMaxShare);
-      expect(r.longMaxSec ?? P.lengths.longMaxSec).toBe(peak ? 10800 : P.lengths.longMaxSec);
+      expect(r.longMaxSec).toBe(peak ? 10800 : P.beginner.longMaxSec);
     }
     // Pre: 18,0 km (udeo 40 %); posle: duži, uz skok dugog.
     expect(longest(p)).toBeGreaterThan(18);
     expect(input.experience).toBe('beginner');
     const w = p.warnings.find((x) => x.rule === 'MARATHON_LONG_SHORT')!;
     expect(w.message).toBe(
-      `Najduže dugo trčanje u planu je ${String(longest(p)).replace('.', ',')} km; za maraton se preporučuje bar 26 km — duža priprema ili veći nedeljni obim bi pomogli. Početnik: cilj je završiti maraton.`
+      // K3-A: cilj početnika 24 km; rečenica „za maraton treba X km/ned" (24 / 50 % = 48 km).
+      `Najduže dugo trčanje u planu je ${String(longest(p)).replace('.', ',')} km; za maraton se preporučuje bar 24 km. Za maraton treba oko 48 km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema. Početnik: cilj je završiti maraton.`
     );
   });
 
-  it('kad priprema i obim dozvoljavaju: vrh dugog ≥ 26 km', () => {
-    const p = planOf({ weeks: 20, km: 45, days: D5, easyPace: 360, experience: 'beginner' });
-    expect(longest(p)).toBeGreaterThanOrEqual(26);
+  it('kad priprema i obim dozvoljavaju: vrh dugog ≥ 24 km (K3-A cilj početnika; K3-B: vrh ≤ 1,30 × start)', () => {
+    const p = planOf({ weeks: 20, km: 50, days: D5, easyPace: 360, experience: 'beginner' });
+    expect(longest(p)).toBeGreaterThanOrEqual(24);
     expect(p.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
   });
 
-  it('ne-početnik: pravilo dugog nepromenjeno (isti objekat)', () => {
+  it('ne-početnik: van 3 nedelje vrha pravilo dugog nepromenjeno (isti objekat); u vrhu K3-A (45 % do cilja)', () => {
     const rule = planRule(4)!;
     const p = planOf({ weeks: 18, km: 50, days: D4, vdot: 45 });
-    for (const w of p.weeks) expect(longRuleOf(rule, false, p.weeks, w.index)).toBe(rule);
+    const taper = p.weeks.find((w) => w.phase === 'taper')!.index;
+    for (const w of p.weeks) {
+      const peak = w.index >= taper - 3 && w.index < taper && !w.deload;
+      const r = longRuleOf(rule, false, p.weeks, w.index);
+      if (peak) expect(r.longPeak).toEqual({ share: 0.45, goalKm: 26, goalSec: 9900 });
+      else expect(r).toBe(rule);
+    }
+    // 3 dana: udeo reda je već 50 % — isti objekat i u vrhu.
+    const r3 = planRule(3)!;
+    for (const w of p.weeks) expect(longRuleOf(r3, false, p.weeks, w.index)).toBe(r3);
   });
 });
 

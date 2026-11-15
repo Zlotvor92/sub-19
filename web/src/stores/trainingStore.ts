@@ -29,6 +29,10 @@ import {
   personalVisible
 } from '../domain/personal';
 import { isOwnerNow, useIsOwner } from './owner';
+import { toResolved, warningText } from '../integrations/v4';
+import type { PlanDoc } from '../domain/v4/engine';
+import { useRecoveryStore } from './recoveryStore';
+import { useV4Store, v4DocOf, type V4State } from './v4Store';
 import { pickKnown, requestPersist, TRAINING_KEYS, type PersistMode } from './persistence';
 
 export type TrainingSlice = Pick<PersistedState, (typeof TRAINING_KEYS)[number]>;
@@ -190,18 +194,143 @@ export function useActiveGenPlan(): GenPlanState | null {
   }, [genPlan, owner, entries, baseline]);
 }
 
+/** F9 korak 7: postoji li plan — generisan / ugrađeni lični, ili (SAMO pod zastavicom V4) plan iz `plan_v4`. Sa
+ *  ugašenom zastavicom isto što i `!!useActiveGenPlan()`. */
+export function useHasPlan(): boolean {
+  const gen = useActiveGenPlan();
+  const v4 = useV4Store((s) => s.enabled && s.row !== null);
+  return gen !== null || v4;
+}
+
+/** F9 korak 7: upozorenja zaglavlja V4 plana (`header.warnings` bez napomena nedelja) kao rečenice, kad se prikazuje
+ *  plan iz V4; inače `null` (tada važe upozorenja starog plana). */
+export function useV4Warnings(): string[] | null {
+  const plan = useActiveGenPlan();
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  return useMemo(() => {
+    if (!enabled || row === null) return null;
+    try {
+      const hit = v4DocOf(
+        { enabled, row, today },
+        { plan, log: {}, alts: {}, moves: {}, vanPlana: {}, knee: [] }
+      );
+      if (hit === null) return null;
+      return hit.doc.header.warnings.filter((w) => w.weeks === undefined).map(warningText);
+    } catch {
+      return null;
+    }
+  }, [plan, enabled, row, today]);
+}
+
 /** Izvedeni plan, memoizovan po (aktivni plan, izmene, pomeranja). `null` kad nema plana ili je neispravan. */
 export function useResolvedPlan(): ResolvedPlan | null {
   const plan = useActiveGenPlan();
   const alts = useTrainingStore((s) => s.alts);
   const moves = useTrainingStore((s) => s.moves);
-  return useMemo(() => (plan ? safeResolve(plan, alts, moves) : null), [plan, alts, moves]);
+  const log = useTrainingStore((s) => s.log);
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  const knee = useRecoveryStore((s) => s.knee);
+  const vanPlana = useRecoveryStore((s) => s.vanPlana);
+  const vanPlanaV2 = useRecoveryStore((s) => s.vanPlanaV2);
+  return useMemo(() => {
+    /* F9 korak 7: sa ugašenom zastavicom (podrazumevano) ova grana se ne uzima — prikaz je kao pre. */
+    const v4 = v4ResolvedOf({ enabled, row, today }, plan, {
+      log,
+      alts,
+      moves,
+      knee,
+      vanPlana,
+      vanPlanaV2
+    });
+    if (v4 !== null) return v4;
+    return plan ? safeResolve(plan, alts, moves) : null;
+  }, [plan, alts, moves, log, enabled, row, today, knee, vanPlana, vanPlanaV2]);
+}
+
+/** F9 korak 7: V4 dokument plana koji se upravo prikazuje (`plan_v4` ili preuzet uz isti otisak), ili `null` (stari
+ *  prikaz — i sve izmene idu starim putem). */
+export function useV4Doc(): PlanDoc | null {
+  const plan = useActiveGenPlan();
+  const alts = useTrainingStore((s) => s.alts);
+  const moves = useTrainingStore((s) => s.moves);
+  const log = useTrainingStore((s) => s.log);
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  const knee = useRecoveryStore((s) => s.knee);
+  const vanPlana = useRecoveryStore((s) => s.vanPlana);
+  const vanPlanaV2 = useRecoveryStore((s) => s.vanPlanaV2);
+  return useMemo(() => {
+    if (!enabled) return null;
+    try {
+      return (
+        v4DocOf(
+          { enabled, row, today },
+          {
+            plan,
+            log,
+            alts,
+            moves,
+            vanPlana,
+            ...(vanPlanaV2 !== undefined ? { vanPlanaV2 } : {}),
+            knee
+          }
+        )?.doc ?? null
+      );
+    } catch {
+      return null;
+    }
+  }, [plan, alts, moves, log, enabled, row, today, knee, vanPlana, vanPlanaV2]);
+}
+
+/** V4 grana prikaza (zastavica, `plan_v4` ili preuzimanje uz isti otisak); `null` = stari prikaz. Nikad ne baca. */
+function v4ResolvedOf(
+  v4: Pick<V4State, 'enabled' | 'row' | 'today'>,
+  plan: GenPlanState | null,
+  s: {
+    log: Record<string, unknown>;
+    alts: Record<string, unknown>;
+    moves: Record<string, unknown>;
+    knee: readonly unknown[];
+    vanPlana: Record<string, unknown>;
+    vanPlanaV2: Record<string, unknown> | undefined;
+  }
+): ResolvedPlan | null {
+  if (!v4.enabled) return null;
+  try {
+    const hit = v4DocOf(v4, {
+      plan,
+      log: s.log,
+      alts: s.alts,
+      moves: s.moves,
+      vanPlana: s.vanPlana,
+      ...(s.vanPlanaV2 !== undefined ? { vanPlanaV2: s.vanPlanaV2 } : {}),
+      knee: s.knee
+    });
+    return hit === null ? null : toResolved(hit.doc);
+  } catch {
+    return null; // V4 ne sme da obori ekran: ostaje stari prikaz
+  }
 }
 
 /** Izvedeni plan iz TRENUTNOG stanja (izvan komponenti). `null` kad nema plana ili je neispravan. */
 export function currentPlan(): ResolvedPlan | null {
   const s = useTrainingStore.getState();
   const plan = activeOf(s, isOwnerNow());
+  const r = useRecoveryStore.getState();
+  const v4 = v4ResolvedOf(useV4Store.getState(), plan, {
+    log: s.log,
+    alts: s.alts,
+    moves: s.moves,
+    knee: r.knee,
+    vanPlana: r.vanPlana,
+    vanPlanaV2: r.vanPlanaV2
+  });
+  if (v4 !== null) return v4;
   return plan ? safeResolve(plan, s.alts, s.moves) : null;
 }
 

@@ -23,7 +23,7 @@ import {
   type PainStatus,
   type Tone
 } from './index.ts';
-import type { WellnessRecord } from '../../../exchange.ts';
+import type { WellnessRecord } from '../exchange.ts';
 
 export type SignalKey = 'bol' | 'opterecenje' | 'hrv' | 'puls' | 'san' | 'svezina' | 'zapis';
 

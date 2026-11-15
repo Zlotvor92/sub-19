@@ -1,6 +1,7 @@
 /* D7 taper, D8 + D20 + D23 trkačka nedelja, D13 dužine, D19 lagani dani, D14 WU/CD i oporavci, D15 Uslov 8 —
    nezavisne provere na uzorku mreže 02 (3/4/5/6 dana; brojevi iz odluka, ne iz koda generatora). */
 
+import { OPT_NOTE } from './lengths.ts';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
@@ -33,7 +34,7 @@ const floor10 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
 /** D17 nezavisno: udeo dugog (02b: 3 dana 0,45) i minimum nedelje po broju dana. */
 const SHARE: Record<number, number> = { 3: 0.45, 4: 0.33, 5: 0.3, 6: 0.27 };
 const WEEK_MIN: Record<number, number> = { 3: 9, 4: 12, 5: 15, 6: 18 };
-const RP_LADDER = [2400, 3000, 4000, 4500, 5000, 6000];
+const RP_LADDER = [2400, 3000, 4000, 4500, 5000, 6000, 6400, 8000];
 const T_CRUISE = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000];
 const down = (ladder: number[], last: number, floor: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= floor).pop() ?? floor;
@@ -54,8 +55,10 @@ describe('D7: taper', () => {
       const tt = t.days.find((d) => d.role === 'q2')?.workout.dose;
       const wantRp = down(RP_LADDER, lastRp, 2000);
       if (!rp) {
-        // Odstupanje D7 (D11 ispred D7): ni RP po pravilu ne staje u plafon 10 % cilja.
-        expect(wantRp).toBeGreaterThan(Math.floor(0.1 * t.targetKm * 1000 + 1e-6));
+        // Odstupanje D7 (D11 ispred D7): ni RP po pravilu ne staje u plafon RP cilja (D33: 10 %, od 40 km 15 %).
+        expect(wantRp).toBeGreaterThan(
+          Math.floor((t.targetKm >= 40 ? 0.15 : 0.1) * t.targetKm * 1000 + 1e-6)
+        );
         expect(t.notes.some((x) => x.includes('bez kvaliteta'))).toBe(true);
         seen.none++;
       } else {
@@ -71,7 +74,12 @@ describe('D7: taper', () => {
         );
         if (rp) seen.rpOnly++;
       } else {
-        const lastT = last.days.find((d) => d.role === 'q2')!.workout.dose!.doseM;
+        // D34: poslednja T doza — nedelja B (Q2 I održavanja) je ne menja.
+        const lastT = p.weeks
+          .filter(steady)
+          .map((w) => w.days.find((d) => d.role === 'q2')?.workout.dose)
+          .filter((d) => d && d.ladder !== 'I')
+          .pop()!.doseM;
         expect(tt.zone).toBe('T');
         expect(tt.doseM).toBe(down(T_CRUISE, lastT, 2000));
       }
@@ -83,7 +91,8 @@ describe('D7: taper', () => {
       );
       expect(t.days.length).toBe(n);
     }
-    expect(seen.none).toBeGreaterThan(0);
+    // P8 G2 (D40): taper bez kvaliteta zbog plafona više ne postoji (najniži nivo RP uvek staje).
+    expect(seen.none).toBe(0);
   });
 });
 
@@ -124,7 +133,14 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       const taper = p.weeks[p.weeks.length - 2]!;
       const prevHard = taper.days.filter((d) => d.hard).pop()!.date;
       const taperRp = taper.days.find((d) => d.role === 'q1')?.workout.dose?.doseM ?? 0;
-      const k = taperRp >= 3000 ? 3 : taperRp >= 2000 ? 2 : 0;
+      // P8 G5 (D44) nezavisno: 2 jednake deonice RP, ukupno ≤ 12 min rada, deonica 400–1500 m (100 m), zbir ≤ RP doza
+      // tapera; RP doza tapera < 2,0 km ili deonica < 400 m → bez oštrenja.
+      const repM = Math.min(
+        1500,
+        Math.floor((720 / 2 / p.paces.RP) * 10 + 1e-9) * 100,
+        Math.floor(taperRp / 2 / 100) * 100
+      );
+      const k = taperRp >= 2000 && repM >= 400 ? 2 : 0;
       const latest = days
         .filter((d) => daysBetween(d.date, race) >= 3 && daysBetween(prevHard, d.date) >= 2)
         .map((d) => d.date)
@@ -135,7 +151,7 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       else {
         expect(sharp.length).toBe(1);
         expect(sharp[0]!.date).toBe(latest);
-        expect(sharp[0]!.workout.dose!.structure).toEqual({ form: 'reps', reps: k, repM: 1000 });
+        expect(sharp[0]!.workout.dose!.structure).toEqual({ form: 'reps', reps: k, repM });
         expect(sharp[0]!.workout.dose!.doseM).toBeLessThanOrEqual(taperRp);
         expect(
           sharp[0]!.workout.segments.filter((s) => s.kind === 'recovery').every((s) => s.sec === 90)
@@ -176,8 +192,9 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       // D23 invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera.
       expect(w.plannedKm, p.input.raceDate).toBeLessThanOrEqual(taper.plannedKm);
     }
+    // P8 G5 (D44): oštrenje je uvek 2 deonice (ranije 3 × 1000 m kad je RP doza tapera ≥ 3,0 km).
     expect(reps[2]).toBeGreaterThan(0);
-    expect(reps[3]).toBeGreaterThan(0);
+    expect(reps[3] ?? 0).toBe(0);
     expect(droppedEasy).toBeGreaterThan(0);
     expect(easyKind.km).toBeGreaterThan(0);
     expect(easyKind.time).toBeGreaterThan(0);
@@ -219,7 +236,9 @@ describe('D13 + D19: dužine', () => {
           const p35 = w.notes.some((x) => x.startsWith(P35_DROP));
           // 10K-08 (T1): lagani dani koji su odmor (napomena konstruktora).
           const t1 = w.notes.find((x) => x.includes('odmor — ostatak obima ne staje u lagane'));
-          const all = n === 3 ? 1 : n - 3 + (p35 ? 1 : 0);
+          // P8 G7 (D46): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan.
+          const g7 = n > 3 && w.days.some((d) => d.role === 'test');
+          const all = n === 3 ? 1 : n - 3 + (p35 || g7 ? 1 : 0);
           const t1Rest = !t1
             ? 0
             : t1.startsWith('Svi')
@@ -227,7 +246,9 @@ describe('D13 + D19: dužine', () => {
               : t1.startsWith('Jedan')
                 ? 1
                 : Number(/^(\d+) lagana/.exec(t1)![1]);
-          expect(easy.length).toBe(all - t1Rest);
+          // K4-B: dan „po želji" (jedan lagan bez treninga).
+          const opt = w.notes.some((x) => x.startsWith(OPT_NOTE)) ? 1 : 0;
+          expect(easy.length + opt).toBe(all - t1Rest);
         }
       }
     }

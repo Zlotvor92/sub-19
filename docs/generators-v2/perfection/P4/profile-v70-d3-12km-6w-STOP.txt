@@ -1,0 +1,1 @@
+ODBIJENO [{"code":"VOLUME_LOW_FOR_PACE","message":"VDOT 70: pri ovoj brzini 3 dana i 12 km nedeljno ne daju smislenu nedelju (lagan trening ne staje uz dugi); povećaj obim ili izaberi 4 dana."}]

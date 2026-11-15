@@ -1,0 +1,51 @@
+[
+  {
+    "name": "P5-F1 plan sa rezultatom bez testa",
+    "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+    "find": "  return weeks >= P.test.resultMinWeeks ? 'result' : null;",
+    "replace": "  return weeks >= P.test.resultMinWeeks ? null : null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F1 test u prvoj nedelji razvoja",
+    "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+    "find": "  for (let i = frames.length - 1; i >= 0; i--)\n    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return i + 1;",
+    "replace": "  for (let i = 0; i < frames.length; i++)\n    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return i + 1;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2 nedelja bez rasta ipak uzima sledeći nivo",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);",
+    "replace": "    const next = nextLevel(ladder, prev.doseM, beginner);",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2 prioritet: bol ne nadjačava",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "    const ok = !seenBy && !blocked && canHold;",
+    "replace": "    const ok = !seenBy && canHold;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F3 od razvoja 4 umesto 6 ubrzanja",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "  return frame.phase === 'base' ? q.baseReps : q.laterReps;",
+    "replace": "  return frame.phase === 'base' ? q.baseReps : q.baseReps;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F3 dan ubrzanja: prvi lagan dan umesto najudaljenijeg",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    const gap = before ? daysBetween(before, d.date) : Infinity;",
+    "replace": "    const gap = before ? 0 * daysBetween(before, d.date) : Infinity;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  },
+  {
+    "name": "P5-F4 početni nivo T 60 %",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 }",
+    "replace": "capShare: { R: 0.6, I: 0.8, T: 0.6, RP: 0.6 }",
+    "tests": ["src/domain/generators/halfMarathon/v2/segmentP5.node.test.ts"]
+  }
+]

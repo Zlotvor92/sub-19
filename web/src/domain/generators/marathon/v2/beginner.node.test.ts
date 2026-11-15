@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateMarathonV2 } from './generate.ts';
 import { checkInput } from './input.ts';
+import { pacesFromVdot } from './paces.ts';
 import { planRule } from './policy.ts';
 import { buildLadder, pickDeload, startLevel } from './quality.ts';
 import { inputOf, SCHEDULES_BY_DAYS, START, type Profile } from './testInputs.ts';
 import type { MarathonV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { doseOf, ladderLevels } from './workouts.ts';
+
+/** P8-G4: brz tempo — član plafona u minutima ne veže (testovi udela M11). */
+const FASTP = pacesFromVdot(75, 75);
 
 /* M17: početnik — 4–5 dana, 16–24 ned, obim 25–45 / 30–50 km, uvod 2 ned bez kvaliteta, jedan kvalitet (T kont. →
    T cruise → MP, bez I/R), T kont. od 1,5 km, rast +5 % (1,0–2,5), vrh min(1,5×; +25), WU/CD 15/10, bez testa,
@@ -64,13 +68,14 @@ const B5F = plan(
 );
 
 describe('M17 ulaz', () => {
-  it('4–5 dana (3 i 6 → BEGINNER_DAYS sa preporukom), 16–24 ned (BEGINNER_SHORT), obim 25–45 / 30–50 km', () => {
+  it('4–5 dana (3 i 6 → BEGINNER_DAYS sa preporukom), < 16 ned kratak plan (W1-A), obim 25–45 / 30–50 km', () => {
     expect(codes(begInput())).toEqual([]);
     expect(codes(begInput({ days: SCHEDULES_BY_DAYS[3].A.days }))).toEqual(['BEGINNER_DAYS']);
     expect(message(begInput({ days: SCHEDULES_BY_DAYS[6].A.days }), 'BEGINNER_DAYS')).toMatch(
       /preporuka 4–5 dana/
     );
-    expect(codes(begInput({ weeks: 15 }))).toEqual(['BEGINNER_SHORT']);
+    expect(codes(begInput({ weeks: 15 }))).toEqual([]);
+    expect(codes(begInput({ weeks: 1 }))).toEqual([]);
     expect(codes(begInput({ weeks: 16 }))).toEqual([]);
     expect(codes(begInput({ km: 24.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
     expect(message(begInput({ km: 24.9 }), 'WEEKLY_KM_TOO_LOW')).toMatch(/kraća distanca/);
@@ -132,36 +137,42 @@ describe('M17 plan', () => {
     expect(ladderLevels('T_continuous', true).map((s) => doseOf(s))).toEqual([
       1500, 2000, 3000, 4000, 5000, 6000, 8000
     ]);
-    expect(doseOf(startLevel('T_continuous', 45, true)!)).toBe(1500);
-    expect(doseOf(startLevel('T_continuous', 45)!)).toBe(2000);
+    expect(doseOf(startLevel('T_continuous', 45, FASTP, true)!)).toBe(1500);
+    // P5-F4: redovan plan T ≤ 80 % plafona (4500 m → 3000 m); početnik bez promene.
+    expect(doseOf(startLevel('T_continuous', 45, FASTP)!)).toBe(3000);
     const first = steady(B4).find((w) => w.index === 3)!;
     expect(first.days.find((d) => d.role === 'q1')!.workout.dose!.doseM).toBe(1500);
   });
 
-  it('T kont. umesto lestvice faze kad prvi nivo ne staje u plafon (MP 2 × 3000 m traži cilj ≥ 30 km); bez kvaliteta kad ni 1,5 km ne staje', () => {
+  it('P8-G2: prvi nivo lestvice faze uvek staje u plafon (MP 2 × 3000 m i ispod 30 km; T i pri najmanjem cilju)', () => {
     const rule = planRule(4, 'beginner')!;
-    expect(buildLadder('specific', 30, rule)).toBe('MP');
-    expect(buildLadder('specific', 29.9, rule)).toBe('T_continuous');
-    expect(buildLadder('development', 24, rule)).toBe('T_cruise');
-    expect(buildLadder('development', 23.9, rule)).toBe('T_continuous');
-    expect(buildLadder('base', 14.9, rule)).toBeNull();
-    expect(buildLadder('specific', 29.9, planRule(4)!)).toBe('MP');
+    expect(buildLadder('specific', 30, rule, FASTP)).toBe('MP');
+    expect(buildLadder('specific', 29.9, rule, FASTP)).toBe('MP');
+    expect(buildLadder('development', 24, rule, FASTP)).toBe('T_cruise');
+    expect(buildLadder('development', 23.9, rule, FASTP)).toBe('T_cruise');
+    expect(buildLadder('base', 14.9, rule, FASTP)).toBe('T_continuous');
+    expect(buildLadder('specific', 29.9, planRule(4)!, FASTP)).toBe('MP');
     // Rasterećenje početnika: T ≈ 60 % poslednje T doze, min 1,5 km.
-    const d = pickDeload({ q1: null, q2: null, t: 2000 }, 'base', 25, true)!;
+    const d = pickDeload({ q1: null, q2: null, t: 2000 }, 'base', 25, FASTP, true)!;
     expect(d.doseM).toBe(1500);
   });
 
-  it('rast +5 % (min 1,0, max 2,5 km), vrh min(1,5×; +25; max; kapacitet); WU/CD 15/10 i pri 45–50 km', () => {
+  it('rast najviše +5 % (min 1,0, max 2,5 km; P8-G1: raspoređen do kraja razvoja, korak < 3 % se ne primenjuje), vrh ≤ min(1,5×; +25; max; satni plafon); WU/CD 15/10 i pri 45–50 km', () => {
     for (const p of [B4, B5F]) {
       const s = steady(p);
       for (let i = 1; i < s.length; i++) {
         const a = Math.round(s[i - 1]!.targetKm * 10);
         const nominal = Math.round(s[i]!.nominalKm * 10);
         const g = Math.min(25, Math.max(10, Math.round(a * 0.05)));
-        expect(nominal).toBe(Math.min(a + g, Math.round(p.peakCapKm * 10)));
+        expect(nominal).toBeLessThanOrEqual(Math.min(a + g, Math.round(p.peakCapKm * 10)));
+        expect(nominal).toBeGreaterThanOrEqual(a);
+        if (nominal > a) expect(nominal - a).toBeGreaterThanOrEqual(0.03 * a - 1e-9);
       }
       const s10 = Math.round(p.startKm * 10);
-      expect(Math.round(p.peakCapKm * 10)).toBe(Math.min(Math.floor(s10 * 1.5), s10 + 250, 800));
+      expect(Math.round(p.peakCapKm * 10)).toBeLessThanOrEqual(
+        Math.min(Math.floor(s10 * 1.5), s10 + 250, 800)
+      );
+      expect(Math.round(p.peakCapKm * 10)).toBeGreaterThanOrEqual(s10);
       for (const d of p.weeks.flatMap((w) => w.days).filter((x) => x.workout.kind === 'quality')) {
         const k = d.workout.segments;
         expect([k[0]!.sec, k[k.length - 1]!.sec]).toEqual([900, 600]);
@@ -169,20 +180,18 @@ describe('M17 plan', () => {
     }
   });
 
-  it('bez testa (i po osećaju); najduži dugi < 26 km ograničen trajanjem 180 min (F2) → rečenica plana („cilj: završiti")', () => {
+  it('bez testa (i po osećaju); najduži dugi < 24 km (K3-B: vrh ≤ 1,30 × start) → upozorenje sa X km/ned, bez rečenice trajanja', () => {
     expect(B5F.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
     const longest = Math.max(
       ...B4.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
     );
-    expect(longest).toBeLessThan(26);
-    expect(longest).toBeGreaterThanOrEqual(24);
-    // N11 (MAR-07): najduži dugi početnika na 150 min → rečenica u opisu plana, ne upozorenje.
-    expect(B4.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    const w = B4.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
-    expect(w).toMatch(/preporučenih 26,0 km/);
-    expect(w).toMatch(/≤ 180 min/);
-    expect(w).toMatch(/M17/);
-    expect(w).toMatch(/cilj je završiti maraton/);
+    expect(longest).toBeLessThan(24);
+    expect(longest).toBeGreaterThanOrEqual(22);
+    // K3-A: cilj najdužeg početnika je 24 km (ili 180 min) — nije dostignut: upozorenje (udeo/obim), ne rečenica.
+    expect(B4.warnings.find((x) => x.rule === 'MARATHON_LONG_SHORT')?.message).toMatch(
+      /Za maraton treba oko 48 km nedeljno u vrhu pripreme/
+    );
+    expect(B4.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     expect(B4.notes.some((n) => n.startsWith('Početnik (M17)'))).toBe(true);
   });
 });

@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.11.1`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.14.0`, P5; ranije `5k-v2.13.0`, P4) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -231,3 +231,27 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Pun nivo 5K 790/790; run-all 5K 0 nečistih; lanci odbijeni 1 → 0, IDEMP 40 → 34; sabotaže 11/11; E2E 3/3. Van foldera:
   byteSame 10K/HM/MAR redovi „5K v2“ i `fiveKV2Flow` oznaka — patch `artifacts/segment10/byteSame-5Kv2.patch` primenjen (odobrenje organizatora).
 - Izveštaj: `reports/SEGMENT-10-IMPLEMENTATION.md`.
+
+## P4 — trenerski kvalitet: doza I/RP i brži trkači (5k-v2.13.0, 2026-11-10)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: a859ca7 | zadatak `docs/generators-v2/perfection/briefs/P4-5k-doza.md`
+- S1 jedan plafon I/RP po cilju nedelje (`quality.iMaxShareByTargetKm`, `workouts.iMaxShareOf`): < 40 km 10 %, ≥ 40 km 12 %
+  (bilo 8 %). S2 VDOT 30–70 (bilo 30–60). B2 (odluka organizatora posle STOP 2): 3 dana + obim < 12,1 km + VDOT ≥ 66 →
+  `VOLUME_LOW_FOR_PACE` (`input.lowVolumeForPace`: ulaz, assess A1, validator, Forma). O-d: oštrenje trkačke 2–3 × 300 m
+  RP < 60 s na VDOT ≥ 63 prihvaćeno. S3 samo merenje (`feel.feelDoseHeld`).
+- Otisci regresije prema a859ca7 (`segment13.*-a859ca7.json`, `docs/generators-v2/perfection/P4/fixture13.ts`, razlog P4/CH)
+  zamenjuju `segment10.*-b9c4728.json`. Van foldera: byteSame 10K/HM/MAR — ponovo snimljeni, promenjeni samo ključevi „5K v2".
+- Izveštaj: `docs/generators-v2/perfection/reports/P4-REPORT.md`.
+
+## P5 — trenerski kvalitet: kontrolni test i kvalitet u adaptaciji (5k-v2.14.0, 2026-11-10)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 8e87fd4 | zadatak
+  `docs/generators-v2/perfection/briefs/P5-forma-ubrzanja-pocetna-doza.md` (za 5K samo F1 i F2; F3 i F4 preskočeni).
+- F1: plan sa rezultatom (ne početnik) ≥ 10 nedelja — kontrolno trčanje 3 km (isto kao po osećaju) u poslednjoj
+  ne-rasteretnoj nedelji vrhunca, dan Q1 umesto I (`periodize.testKindOf/resultTestWeekOf`, validator TEST_WEEK).
+- F2 (Odluka 10): dva uzastopna kvaliteta preteška (RPE ≥ 9) ili preskočena u 14 dana → sledeća nedelja izgradnje bez
+  rasta doze (`assess` korak `hard`, `steps.holdWeek`, izbor kvaliteta, validator DOSE_HOLD); ispod bola/pauze/umora/manjka.
+- Otisci regresije prema 8e87fd4 (`segment14.*-8e87fd4.json`, `docs/generators-v2/perfection/P5-5K/fixture14.ts`, razlog
+  P5/CH) zamenjuju `segment13.*-a859ca7.json`. Van foldera: byteSame 10K/HM/MAR (samo ključevi „5K v2") i oznaka verzije
+  u `features/onboarding/fiveKV2Flow.test.tsx`.
+- Izveštaj: `docs/generators-v2/perfection/reports/P5-5K-REPORT.md`.

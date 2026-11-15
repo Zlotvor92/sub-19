@@ -1,0 +1,1235 @@
+{
+ "round": 1,
+ "date": "2026-11-10",
+ "rubric": "P7b",
+ "weights": {
+  "fit": 0.2,
+  "quality": 0.2,
+  "progression": 0.15,
+  "recovery": 0.15,
+  "specificity": 0.1,
+  "taper": 0.1,
+  "clarity": 0.1
+ },
+ "averages": {
+  "5K": 54.7,
+  "10K": 55.0,
+  "HM": 55.3,
+  "MAR": 53.6
+ },
+ "overall": 54.6,
+ "plans": [
+  {
+   "distance": "5K",
+   "profile": "p01",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 70.0,
+   "blind_total": 71.5,
+   "issues": [
+    "dugi 14 km nepromenjen ned 1-10 (11 nedelja)",
+    "subota lagano 11,2 km = 80 % dugog",
+    "trkački dan 8,5 km"
+   ],
+   "good": [
+    "R->I->RP sa testom u ned 7",
+    "rasterećenja zaista lakša (7 i 13 min rada)"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p02",
+   "plan": "B",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 7,
+    "clarity": 8
+   },
+   "total": 65.0,
+   "blind_total": 67,
+   "issues": [
+    "30->39 km (+30 %) za 5 nedelja bez rasterećenja",
+    "I blok samo 2 nedelje po 13-14 min",
+    "RP samo jedna nedelja pre tapera"
+   ],
+   "good": [
+    "čist tekst, bez upozorenja",
+    "dugi raste 10,5->13,6"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p03",
+   "plan": "B",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 59.0,
+   "blind_total": 67.5,
+   "issues": [
+    "test 3 km (22 min rada) = 3x najveća doza plana (7-9 min), ned 6",
+    "R 4x150 m (3 min) i I 2x600 m (7 min) su ispod smislene doze",
+    "trka 8,5 km > najduži dugi 7 km"
+   ],
+   "good": [
+    "RP 3x500 pa kraći oporavak",
+    "ubrzanja svake nedelje"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p04",
+   "plan": "B",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 4,
+    "specificity": 6,
+    "taper": 4,
+    "clarity": 5
+   },
+   "total": 47.0,
+   "blind_total": 53.5,
+   "issues": [
+    "dugi 12 km svih 16 nedelja, isti i u rasterećenju",
+    "rasterećenje ned 12 nosi I 6x800 m (25 min) = najveća I doza",
+    "taper ned 15 RP 6x800 m (26 min) = puna doza",
+    "ned 9: R 12 min -> I 25 min, dan 12,7 km > dugi 12 km"
+   ],
+   "good": [
+    "T 3x1600/4x1200 u osnovi",
+    "test ned 11"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p05",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 5,
+    "specificity": 6,
+    "taper": 4,
+    "clarity": 7
+   },
+   "total": 56.5,
+   "blind_total": 56.5,
+   "issues": [
+    "65 km i dugi 18 km ravno svih 9 nedelja",
+    "I blok: jedna puna nedelja (ned 4) + rasterećenje sa 5x1200 m (20 min)",
+    "taper ned 9 RP 6x1000 m (21 min) = puna doza"
+   ],
+   "good": [
+    "I 6x1200 m primereno za VDOT 60",
+    "T 22-23 min"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p06",
+   "plan": "A",
+   "scores": {
+    "fit": 4,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 53.0,
+   "blind_total": 58,
+   "issues": [
+    "lagani 3,9-4,5 km (18-20 min) za trkača 17:33",
+    "dugi 6,9-8,5 km = kao trkački dan",
+    "I 2x1200 m (8 min) premalo za VDOT 58"
+   ],
+   "good": [
+    "plan sam izbacuje dan u ned 1",
+    "taper smanjuje dozu"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p07",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 5,
+    "specificity": 6,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 50.5,
+   "blind_total": 49.5,
+   "issues": [
+    "45->56,5 km (+26 %) za 4 nedelje u pripremi od 6",
+    "ned 3: R 6 min -> I 6x1000 m (26 min); utorak 14,5 km = dugi",
+    "taper RP 5x1000 m (22 min)"
+   ],
+   "good": [
+    "T 2x2000 m stabilan",
+    "trkačka nedelja laka"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p08",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 2,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 4
+   },
+   "total": 47.5,
+   "blind_total": 55,
+   "issues": [
+    "16 nedelja na 33-35 km, dugi 14,5 km 13 nedelja",
+    "jedan kvalitet nedeljno: R 4x400 m (6 min) u ned 1, 3, 6",
+    "I ukupno 3 treninga po 12-13 min",
+    "8 istih upozorenja; utorak 11,6 km = 80 % dugog"
+   ],
+   "good": [
+    "rasterećenja i taper uredni",
+    "test ned 11"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p09",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 6,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 64.5,
+   "blind_total": 69.5,
+   "issues": [
+    "test u ned 3 koji po napomeni ništa ne menja",
+    "taper: RP 7x2 min (ista doza kao vrh) + tempo 14 min",
+    "RP po osećaju opisan kao RPE 8"
+   ],
+   "good": [
+    "usponi -> fartlek -> RP, jasna lestvica",
+    "rast 30->39 sa rasterećenjem"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p10",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 51.0,
+   "blind_total": 56.5,
+   "issues": [
+    "test 3 km RPE 9-10 u ned 3 pri 13,9 km/ned: 23 min rada, dan duži od dugog",
+    "15,6 km i dugi 7 km 10 nedelja",
+    "trka 8,5 km > dugi 7 km"
+   ],
+   "good": [
+    "doze 8-11 min primerene obimu",
+    "ubrzanja"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p11",
+   "plan": "B",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 6,
+    "specificity": 4,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 52.0,
+   "blind_total": 57.5,
+   "issues": [
+    "vrh +20 % (12->14,4 km) za 16 nedelja; rasterećenje ned 9 i 11 (svaka druga)",
+    "RP 3x300 m / 5x200 m (5 min) kao specifičnost",
+    "dugi najviše 6,4 km"
+   ],
+   "good": [
+    "uvod bez kvaliteta",
+    "usponi pre tempa"
+   ]
+  },
+  {
+   "distance": "5K",
+   "profile": "p12",
+   "plan": "A",
+   "scores": {
+    "fit": 2,
+    "quality": 5,
+    "progression": 3,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 4
+   },
+   "total": 40.0,
+   "blind_total": 44.5,
+   "issues": [
+    "45 km trkač spušten na 29,9 km (-33 %)",
+    "dugi 8 km svih 9 nedelja, i u rasterećenju; lagani 7,3 km",
+    "3 prave nedelje kvaliteta od 10; 2 nedelje tapera"
+   ],
+   "good": [
+    "RP po osećaju 14-15 min",
+    "napomena priznaje spuštanje obima"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p01",
+   "plan": "B",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 64.0,
+   "blind_total": 63.5,
+   "issues": [
+    "plato 52-54 km ned 7-14, dugi 16,8 km od ned 7",
+    "ned 14 (pred taper) najteža: RP 3x2000 + T 5 km = 52 min",
+    "ned 10: test u utorak + T 5 km u četvrtak",
+    "6 upozorenja 'nedelja spuštena'"
+   ],
+   "good": [
+    "T 14->24 min postepeno",
+    "I pa RP, ubrzanja"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p02",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 59.0,
+   "blind_total": 59.5,
+   "issues": [
+    "rasterećenje u ned 4 od 8",
+    "I 2x1000 m (8 min), RP 2x1200 m (10 min) za VDOT 48,6",
+    "taper dva kvaliteta"
+   ],
+   "good": [
+    "dugi 9,9->12,3",
+    "ubrzanja"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p03",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 4,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 56.5,
+   "blind_total": 56.5,
+   "issues": [
+    "T 2,0-2,4 km (12-14 min) ned 1-6, ista doza",
+    "test 5 km (28 min) = 2x najveća doza",
+    "rasterećenje ned 4 bez kvaliteta 'zbog 10 %'",
+    "trkačka nedelja RP 2x1000 = 12 min (16 % vremena)"
+   ],
+   "good": [
+    "dugi 9->12,6 km pokriva distancu",
+    "obim 20->28 sa rasterećenjima"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p04",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 4,
+    "recovery": 5,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 4
+   },
+   "total": 51.5,
+   "blind_total": 58.5,
+   "issues": [
+    "dugi 14 km svih 18 nedelja; 3 lagana po 11,2 km (80 %)",
+    "ned 16 pred taper: RP 4x1600 + T 4x1500 = 70 min rada",
+    "61 km/ned za trkača 56:02 (~7 h)",
+    "11 upozorenja"
+   ],
+   "good": [
+    "I i RP raznovrsni",
+    "test ned 11"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p05",
+   "plan": "B",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 64.5,
+   "blind_total": 70,
+   "issues": [
+    "dugi 21,5 km svih 10 nedelja; nema srednje-dugog",
+    "ned 10 pred taper: RP 4x2000 + I 6x1000",
+    "T 18 min u osnovi nisko za 80 km"
+   ],
+   "good": [
+    "RP 28 min primereno",
+    "test, čist tekst"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p06",
+   "plan": "B",
+   "scores": {
+    "fit": 3,
+    "quality": 4,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 5
+   },
+   "total": 45.5,
+   "blind_total": 43.5,
+   "issues": [
+    "lagani 3,0-5,0 km, dan izbačen ned 1-3",
+    "I 2x1000 m (7 min) za VDOT 58",
+    "taper lagani 3 km"
+   ],
+   "good": [
+    "dugi 9->11,3",
+    "dva kvaliteta drže ritam"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p07",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 7
+   },
+   "total": 66.0,
+   "blind_total": 67.5,
+   "issues": [
+    "50->62 km (+24 %) u 6 nedelja",
+    "rasterećenje u ned 4 od 8",
+    "dugi 17,1 = plafon već u ned 5"
+   ],
+   "good": [
+    "RP 5x1000 pa 3x2000",
+    "čist tekst"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p08",
+   "plan": "B",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 2,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 3
+   },
+   "total": 45.5,
+   "blind_total": 46.5,
+   "issues": [
+    "ista nedelja 13 puta: lagano 13,6 + T 4 km (19 min) + dugi 17,1",
+    "nijedan I trening u 18 nedelja",
+    "13 upozorenja; utorak 80 % dugog"
+   ],
+   "good": [
+    "RP 4x1000->5x1000 na kraju",
+    "test"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p09",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 66.5,
+   "blind_total": 67.5,
+   "issues": [
+    "ned 10 pred taper: RP 5x1000 + I 5x800",
+    "dugi 16,8 od ned 7",
+    "3 upozorenja o obimu"
+   ],
+   "good": [
+    "test u rasterećenju ned 4 - dobro mesto",
+    "rast 40->54 sa talasom"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p10",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 4,
+    "progression": 4,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 53.5,
+   "blind_total": 52.5,
+   "issues": [
+    "T 13-15 min 18 nedelja",
+    "28 km od ned 9 do 16",
+    "test 5 km 30 min rada"
+   ],
+   "good": [
+    "dugi 12,6 km (94 min)",
+    "rasterećenja"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p11",
+   "plan": "A",
+   "scores": {
+    "fit": 4,
+    "quality": 2,
+    "progression": 2,
+    "recovery": 6,
+    "specificity": 2,
+    "taper": 3,
+    "clarity": 2
+   },
+   "total": 31.0,
+   "blind_total": 32.5,
+   "issues": [
+    "T 1,5 km (9 min) 13 puta, nijedan RP",
+    "dugi najviše 8,7 km pred 10 km",
+    "taper i trkačka nedelja bez ičeg brzog",
+    "napomene o 'najviše 10 %' u 12 nedelja"
+   ],
+   "good": [
+    "uvod 2 nedelje",
+    "ubrzanja"
+   ]
+  },
+  {
+   "distance": "10K",
+   "profile": "p12",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 56.0,
+   "blind_total": 53,
+   "issues": [
+    "lagani 9,9 km x2 uz dugi 12,4; dan kvaliteta 5-8 km najkraći",
+    "bez testa; tempa su procena",
+    "5 napomena 'ne može da se sastavi'"
+   ],
+   "good": [
+    "RP 3x1000->4x1000",
+    "uvod bez kvaliteta"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p01",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 68.5,
+   "blind_total": 67,
+   "issues": [
+    "ned 14 (2 ned pred trku): RP 2x5000 + 6 km RP u dugom = 77 min, 25 %",
+    "test ned 9 u nedelji najvećeg obima + T + dugi 22,4",
+    "dugi 22,4 = 40 % nedelje"
+   ],
+   "good": [
+    "RP blok u dugom uz lagan četvrtak",
+    "dugi 15,4->22,4 postepeno"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p02",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 68.5,
+   "blind_total": 67,
+   "issues": [
+    "ned 12 pred taper: RP 3x3000 + 6 km RP u dugom = 67 min, 23 %",
+    "subota 5,8-6,7 km uz dugi 21-22 km",
+    "test + T + dugi 21,4 u ned 7"
+   ],
+   "good": [
+    "isto kao p01",
+    "taper 0,7 pa trkačka"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p03",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 3,
+    "clarity": 4
+   },
+   "total": 52.0,
+   "blind_total": 55,
+   "issues": [
+    "taper i trkačka nedelja bez ičeg brzog",
+    "dugi 15,7 km ned 9-14",
+    "rasterećenje ned 12 bez kvaliteta; '[pravilo] ispred [pravilo]'"
+   ],
+   "good": [
+    "RP 2x2000->5 km kontinuirano",
+    "test ned 9"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p04",
+   "plan": "B",
+   "scores": {
+    "fit": 3,
+    "quality": 3,
+    "progression": 4,
+    "recovery": 3,
+    "specificity": 6,
+    "taper": 5,
+    "clarity": 4
+   },
+   "total": 37.5,
+   "blind_total": 45,
+   "issues": [
+    "75 km/ned za 2:04 trkača: lagani 15 km (1 h 47) x3",
+    "ned 18 RP 3x5000 m = 88 min, dan 20,5 km > dugi; + 6 km RP u dugom = 123 min",
+    "ned 16 RP 3x4000 + T 2x3500 = 111 min",
+    "taper 70 min rada (20 %)",
+    "dugi 20 km ned 5-18"
+   ],
+   "good": [
+    "RP u dugom",
+    "test postoji"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p05",
+   "plan": "B",
+   "scores": {
+    "fit": 7,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 60.0,
+   "blind_total": 63.5,
+   "issues": [
+    "RP 3x5000/5x3000 m (15 km, 56 min) tri puta u 4 nedelje, dan 24,5 > dugi 24",
+    "dugi 24 km 14 nedelja",
+    "ned 13: RP 15 km + T 9 km + dugi 24"
+   ],
+   "good": [
+    "T 26-33 min",
+    "RP u dugom"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p06",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 58.5,
+   "blind_total": 60,
+   "issues": [
+    "lagani 4,3-6,6 km",
+    "ned 8: 25 % (RP 2x4000 + 6 km RP u dugom) pri +40 % obima",
+    "dugi najviše 15,6"
+   ],
+   "good": [
+    "blok u dugom",
+    "taper"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p07",
+   "plan": "B",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 60.0,
+   "blind_total": 63.5,
+   "issues": [
+    "55->75 km (+36 %) za 8 nedelja",
+    "ned 8 vrh obima + RP 2x5000 + 6 km RP u dugom 24 km, pa taper",
+    "ned 7 tri teška dana"
+   ],
+   "good": [
+    "RP u dugom",
+    "čist tekst"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p08",
+   "plan": "A",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 3,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 3
+   },
+   "total": 43.0,
+   "blind_total": 46.5,
+   "issues": [
+    "utorak lagano 19,2 + dugi 24 = dva duga u 3 dana",
+    "dugi 24 km ned 5-18; T 5 km x10",
+    "nema I; 'nije izvodljiv' 6 puta"
+   ],
+   "good": [
+    "RP 2x3000->2x5000",
+    "taper"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p09",
+   "plan": "B",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 59.5,
+   "blind_total": 63.5,
+   "issues": [
+    "test ned 5 + T 2x2500 + dugi 21,4 (16 %)",
+    "dugi 24 km (2 h 24) od ned 7 = 38 %",
+    "ned 14: RP 52 min + 6 km u dugom bez rezultata trke"
+   ],
+   "good": [
+    "blok u dugom",
+    "rast sa rasterećenjima"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p10",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 4,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 3,
+    "clarity": 4
+   },
+   "total": 48.5,
+   "blind_total": 50.5,
+   "issues": [
+    "taper i ned 17 bez kvaliteta; trkačka bez oštrenja",
+    "dugi 15,7 km (1 h 58) ned 10-18; plato 34-35 km od ned 8",
+    "utorak 12,5 km duži od dana kvaliteta 2x"
+   ],
+   "good": [
+    "RP 5 km kontinuirano",
+    "rasterećenja"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p11",
+   "plan": "A",
+   "scores": {
+    "fit": 3,
+    "quality": 5,
+    "progression": 3,
+    "recovery": 7,
+    "specificity": 3,
+    "taper": 5,
+    "clarity": 5
+   },
+   "total": 44.0,
+   "blind_total": 52,
+   "issues": [
+    "najduži dugi 11,2 km (80 min) pred polumaraton",
+    "lagani 4-5,4 km; dugi 4,6 km u ned 4",
+    "28 km 8 nedelja"
+   ],
+   "good": [
+    "RP 4 km 24 min",
+    "uvod"
+   ]
+  },
+  {
+   "distance": "HM",
+   "profile": "p12",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 6,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 5,
+    "taper": 7,
+    "clarity": 5
+   },
+   "total": 64.0,
+   "blind_total": 62.5,
+   "issues": [
+    "RP 2x4000 m (49 min) za početnika u ned 14",
+    "bez testa, tempa su procena",
+    "dugi bez dela u RP"
+   ],
+   "good": [
+    "rast 45->60 ravnomerno",
+    "dugi 14,4->18,6"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p01",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 6
+   },
+   "total": 64.0,
+   "blind_total": 67,
+   "issues": [
+    "40->60 km (+50 %) za 10 nedelja",
+    "najduži dugi 24 km (2 h 20) za maraton 3:35",
+    "ned 13: dugi sa 12 km MP + T = 25 %",
+    "ned 14 lagano 15,2 = dugi 15,6"
+   ],
+   "good": [
+    "MP u dugom 8->12 km",
+    "taper 3 nedelje"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p02",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 7,
+    "clarity": 5
+   },
+   "total": 63.0,
+   "blind_total": 62.5,
+   "issues": [
+    "isto: dugi 24 km, +50 %",
+    "test ned 10 uz lagano 16,8 i dugi 24",
+    "ned 15: 25 %"
+   ],
+   "good": [
+    "MP blok u dugom",
+    "upozorenje o rezultatu 5 km"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p03",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 5,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 5,
+    "clarity": 6
+   },
+   "total": 52.5,
+   "blind_total": 58.5,
+   "issues": [
+    "dugi 22,5 km = 50 % nedelje (2 h 48)",
+    "trkačka nedelja MP 2x2000 = 27 min, 32 % vremena",
+    "taper N-1 MP 40 min (20 %)",
+    "MP nikad u dugom"
+   ],
+   "good": [
+    "dugi 15->22,5 postepeno",
+    "test ned 10"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p04",
+   "plan": "A",
+   "scores": {
+    "fit": 2,
+    "quality": 4,
+    "progression": 3,
+    "recovery": 3,
+    "specificity": 6,
+    "taper": 6,
+    "clarity": 4
+   },
+   "total": 37.0,
+   "blind_total": 46,
+   "issues": [
+    "95 km/ned za VDOT 35: lagani 19,2 km (2 h 17) x3",
+    "dugi 24,1 km 20 nedelja",
+    "MP 2x7000 m = 85 min usred nedelje + T 45 min",
+    "T 45 min 8 nedelja"
+   ],
+   "good": [
+    "MP 12 km u dugom",
+    "rasterećenja"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p05",
+   "plan": "A",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 66.5,
+   "blind_total": 68,
+   "issues": [
+    "120 km 11 nedelja bez talasa; dugi 32 od ned 1",
+    "I/R 10-20 min nisko za VDOT 60",
+    "ned 14 MP 2x8000 + T 2x4800"
+   ],
+   "good": [
+    "MP 16 km u dugom",
+    "taper"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p06",
+   "plan": "A",
+   "scores": {
+    "fit": 4,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 55.0,
+   "blind_total": 58.5,
+   "issues": [
+    "najduži dugi 19,8 km",
+    "lagani 5-8,8 km",
+    "ned 6: 22 %, 8 km MP u dugom 17,6"
+   ],
+   "good": [
+    "test ned 4",
+    "MP u dugom"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p07",
+   "plan": "A",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "total": 63.0,
+   "blind_total": 68,
+   "issues": [
+    "65->91 km (+40 %) za 9 nedelja",
+    "ned 9 vrh obima + 12 km MP u dugom 29,3, pa taper",
+    "taper N-2 lagano 15,6 uz dugi 19"
+   ],
+   "good": [
+    "dugi do 29,3 sa MP",
+    "test ned 4"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p08",
+   "plan": "A",
+   "scores": {
+    "fit": 4,
+    "quality": 4,
+    "progression": 3,
+    "recovery": 4,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 5
+   },
+   "total": 42.5,
+   "blind_total": 55,
+   "issues": [
+    "dugi 29,3 km (49 % nedelje) 14 puta u 17 nedelja + utorak 18-19 km",
+    "T 28 min ista doza 10 nedelja",
+    "MP samo usred nedelje, 12 km kontinuirano 60 min"
+   ],
+   "good": [
+    "dugi dovoljno dug",
+    "taper"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p09",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 6,
+    "progression": 5,
+    "recovery": 4,
+    "specificity": 7,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 54.5,
+   "blind_total": 64.5,
+   "issues": [
+    "50->75 km (+50 %) bez rezultata trke",
+    "subota 19,6 pa nedelja 28,8 km",
+    "ned 15: 25 %, 14 km MP u dugom",
+    "MP 12 km + T 2x3200 u ned 14"
+   ],
+   "good": [
+    "test u ned 5",
+    "MP u dugom"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p10",
+   "plan": "B",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 4,
+    "recovery": 5,
+    "specificity": 4,
+    "taper": 4,
+    "clarity": 5
+   },
+   "total": 44.5,
+   "blind_total": 54,
+   "issues": [
+    "trkačka nedelja MP 2x2000 = 28 min (33 %); N-1 MP 43 min (22 %)",
+    "dugi 22,5 km ned 10-21, 50 % nedelje",
+    "T 25 min 7 nedelja; MP 57 min usred nedelje"
+   ],
+   "good": [
+    "test u rasterećenju ned 8",
+    "rast do ned 10"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p11",
+   "plan": "B",
+   "scores": {
+    "fit": 3,
+    "quality": 5,
+    "progression": 5,
+    "recovery": 7,
+    "specificity": 3,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 49.0,
+   "blind_total": 60,
+   "issues": [
+    "najduži dugi 17,9 km za maraton ~4:45",
+    "lagani 5-8 km",
+    "37 km 9 nedelja"
+   ],
+   "good": [
+    "iskreno upozorenje",
+    "MP 38 min"
+   ]
+  },
+  {
+   "distance": "MAR",
+   "profile": "p12",
+   "plan": "A",
+   "scores": {
+    "fit": 5,
+    "quality": 4,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 5,
+    "taper": 6,
+    "clarity": 6
+   },
+   "total": 51.5,
+   "blind_total": 54,
+   "issues": [
+    "MP 2x7000 m = 90 min i 12 km = 77 min za početnika",
+    "50->75 km (+50 %)",
+    "dugi najviše 24,8 km, bez MP; bez testa"
+   ],
+   "good": [
+    "uvod bez kvaliteta",
+    "rast dugog od ned 12"
+   ]
+  }
+ ]
+}

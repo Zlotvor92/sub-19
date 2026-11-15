@@ -15,6 +15,7 @@ import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, Paces, Phase, PlanDay, TenKV2Plan } from '../types.ts';
+import { userPlanMessages, userWeekNotes } from '../userNotes.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -37,7 +38,7 @@ export const POLICY_VERSION = P.version;
 export const LEGACY_POLICY_ID = 'legacy-10k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0,
  *  10k-v2.5.1, 10k-v2.5.2, 10k-v2.6.0, 10k-v2.6.1, 10k-v2.6.2, 10k-v2.7.0 (3d-10K — plan sa nedeljama izvora predaje,
- *  `PREFIX_KEY`), 10k-v2.8.0 (06i), 10k-v2.8.1 (3i, ulaz `weekOffset`) 10k-v2.9.0 (10K-07) i tekuća 10k-v2.10.0 (10K-08, krug T). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
+ *  `PREFIX_KEY`), 10k-v2.8.0 (06i), 10k-v2.8.1 (3i, ulaz `weekOffset`) 10k-v2.9.0 (10K-07), 10k-v2.10.0 (10K-08, krug T), 10k-v2.11.0 (P3), 10k-v2.12.0 (P5) i tekuća 10k-v2.13.0 (P8). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.4.0',
@@ -52,6 +53,12 @@ export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.8.0',
   '10k-v2.8.1',
   '10k-v2.9.0',
+  '10k-v2.10.0',
+  '10k-v2.11.0',
+  '10k-v2.12.0',
+  '10k-v2.13.0',
+  '10k-v2.14.0',
+  '10k-v2.15.0',
   P.version
 ];
 
@@ -162,7 +169,7 @@ function weeksOf(plan: TenKV2Plan): GeneratedWeek[] {
         (_, i) => byDate.get(addDays(wk.startDate, i)) ?? rest(i + 1)
       ),
       deload: wk.deload,
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.map(userText)]
+      focus: [wk.deload ? 'Rasterećenje.' : '', ...userWeekNotes(wk.notes).map(userText)]
         .filter(Boolean)
         .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
@@ -180,8 +187,8 @@ export function goalOf(plan: TenKV2Plan): GoalAssessmentView | undefined {
 /** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
 function planWarnings(plan: TenKV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
-    if (t && !out.includes(t)) out.push(t);
+  // G3 (P8): tekst za trkača — userNotes.userPlanMessages (zbirno, bez internih oznaka).
+  for (const t of userPlanMessages(plan).map(userText)) if (t && !out.includes(t)) out.push(t);
   return out;
 }
 

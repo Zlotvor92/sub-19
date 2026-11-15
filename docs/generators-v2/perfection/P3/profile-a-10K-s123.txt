@@ -1,0 +1,135 @@
+profil (a) 10K
+ulaz: {"startDate":"2026-11-02","raceDate":"2027-02-21","runDays":["tue","thu","sat","sun"],"currentWeeklyKm":40,"recentResult":{"distanceM":10000,"timeSec":2760,"date":"2026-10-19"},"goalTimeSec":2706,"longRunDay":"sun"}
+politika: 10k-v2.11.0
+policy 10k-v2 10k-v2.11.0; vdot 44.1; nedelja 16
+
+ned 1 2026-11-02…2026-11-08 faza base — cilj 39.4 / plan 39.38 km
+  2026-11-03 q1        8.09 km 46 min, rad 4.9 min — WU 20 min + R 6 × 200 m (oporavak 200 m džog) + CD 15 min [doza R 1200 m, korak start]
+  2026-11-05 q2        7.89 km 44 min, rad 9.4 min — WU 20 min + T 2,0 km kontinuirano + CD 15 min [doza T_continuous 2000 m, korak start]
+  2026-11-07 easy      10.40 km 62 min — Lagano 10,4 km
+  2026-11-08 long      13.00 km 77 min — Dugi 13,0 km lagano
+  napomena: Nedelja ne može da se sastavi na 40,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 39,4 km.
+
+ned 2 2026-11-09…2026-11-15 faza base — cilj 41.8 / plan 41.78 km
+  2026-11-10 q1        8.89 km 50 min, rad 6.5 min — WU 20 min + R 8 × 200 m (oporavak 200 m džog) + CD 15 min [doza R 1600 m, korak next]
+  2026-11-12 q2        8.39 km 47 min, rad 11.8 min — WU 20 min + T 2,5 km kontinuirano + CD 15 min [doza T_continuous 2500 m, korak next]
+  2026-11-14 easy      10.80 km 64 min — Lagano 10,8 km
+  2026-11-15 long      13.70 km 81 min — Dugi 13,7 km lagano
+
+ned 3 2026-11-16…2026-11-22 faza base — cilj 44.3 / plan 44.28 km
+  2026-11-17 q1        9.19 km 51 min, rad 7.4 min — WU 20 min + R 6 × 300 m (oporavak 300 m džog) + CD 15 min [doza R 1800 m, korak next]
+  2026-11-19 q2        8.89 km 49 min, rad 14.1 min — WU 20 min + T 3,0 km kontinuirano + CD 15 min [doza T_continuous 3000 m, korak next]
+  2026-11-21 easy      11.60 km 69 min — Lagano 11,6 km
+  2026-11-22 long      14.60 km 87 min — Dugi 14,6 km lagano
+
+ned 4 2026-11-23…2026-11-29 faza base RASTEREĆENJE — cilj 35.4 / plan 35.39 km
+  2026-11-24 easy      8.00 km 48 min — Lagano 8,0 km
+  2026-11-26 q2        7.89 km 44 min, rad 9.4 min — WU 20 min + T 2,0 km kontinuirano + CD 15 min [doza T_continuous 2000 m, korak deload]
+  2026-11-28 easy      7.90 km 47 min — Lagano 7,9 km
+  2026-11-29 long      11.60 km 69 min — Dugi 11,6 km lagano
+  napomena: Rasterećenje: cilj 35,4 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+
+ned 5 2026-11-30…2026-12-06 faza base — cilj 47 / plan 46.98 km
+  2026-12-01 q1        9.69 km 54 min, rad 8.2 min — WU 20 min + R 10 × 200 m (oporavak 200 m džog) + CD 15 min [doza R 2000 m, korak next]
+  2026-12-03 q2        9.39 km 51 min, rad 16.4 min — WU 20 min + T 3,5 km kontinuirano + CD 15 min [doza T_continuous 3500 m, korak next]
+  2026-12-05 easy      12.40 km 74 min — Lagano 12,4 km
+  2026-12-06 long      15.50 km 92 min — Dugi 15,5 km lagano
+
+ned 6 2026-12-07…2026-12-13 faza development — cilj 45.2 / plan 45.19 km
+  2026-12-08 q1        8.56 km 48 min, rad 8.7 min — WU 20 min + I 2 × 1000 m (oporavak 4:00 džog) + CD 15 min [doza I 2000 m, korak transition]
+  2026-12-10 q2        9.83 km 54 min, rad 16.9 min — WU 20 min + T 3 × 1200 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 3600 m, korak transition]
+  2026-12-12 easy      11.90 km 71 min — Lagano 11,9 km
+  2026-12-13 long      14.90 km 89 min — Dugi 14,9 km lagano
+  napomena: Nedelja ne može da se sastavi na 49,8 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 45,2 km.
+
+ned 7 2026-12-14…2026-12-20 faza development — cilj 47.9 / plan 47.89 km
+  2026-12-15 q1        9.39 km 52 min, rad 10.4 min — WU 20 min + I 3 × 800 m (oporavak 3:15 džog) + CD 15 min [doza I 2400 m, korak next]
+  2026-12-17 q2        10.40 km 57 min, rad 18.8 min — WU 20 min + T 4 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 4000 m, korak next]
+  2026-12-19 easy      12.30 km 73 min — Lagano 12,3 km
+  2026-12-20 long      15.80 km 94 min — Dugi 15,8 km lagano
+
+ned 8 2026-12-21…2026-12-27 faza development RASTEREĆENJE — cilj 38.3 / plan 38.26 km
+  2026-12-22 easy      8.60 km 51 min — Lagano 8,6 km
+  2026-12-24 q2        8.46 km 47 min, rad 11.3 min — WU 20 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 2400 m, korak deload]
+  2026-12-26 easy      8.60 km 51 min — Lagano 8,6 km
+  2026-12-27 long      12.60 km 75 min — Dugi 12,6 km lagano
+  napomena: Rasterećenje: cilj 38,3 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+
+ned 9 2026-12-28…2027-01-03 faza development — cilj 50.8 / plan 50.76 km
+  2026-12-29 q1        10.23 km 56 min, rad 13.0 min — WU 20 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 15 min [doza I 3000 m, korak next]
+  2026-12-31 q2        11.03 km 60 min, rad 22.6 min — WU 20 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 4800 m, korak next]
+  2027-01-02 easy      12.80 km 76 min — Lagano 12,8 km
+  2027-01-03 long      16.70 km 99 min — Dugi 16,7 km lagano
+
+ned 10 2027-01-04…2027-01-10 faza development — cilj 52.6 / plan 52.6 km
+  2027-01-05 q1        10.83 km 59 min, rad 15.6 min — WU 20 min + I 3 × 1200 m (oporavak 4:00 džog) + CD 15 min [doza I 3600 m, korak next]
+  2027-01-07 q2        11.57 km 63 min, rad 23.5 min — WU 20 min + T 5 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 5000 m, korak next]
+  2027-01-09 easy      13.40 km 80 min — Lagano 13,4 km
+  2027-01-10 long      16.80 km 100 min — Dugi 16,8 km lagano
+  napomena: Nedelja ne može da se sastavi na 53,8 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 52,6 km.
+
+ned 11 2027-01-11…2027-01-17 faza specific — cilj 52.1 / plan 52.15 km
+  2027-01-12 q1        10.89 km 59 min, rad 20.7 min — WU 20 min + RP 3 × 1500 m (oporavak 1:30 džog) + CD 15 min [doza RP 4500 m, korak transition]
+  2027-01-14 q2        11.06 km 60 min, rad 23.5 min — WU 20 min + T 2 × 2500 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 5000 m, korak alt]
+  2027-01-16 easy      13.40 km 80 min — Lagano 13,4 km
+  2027-01-17 long      16.80 km 100 min — Dugi 16,8 km lagano
+  napomena: Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 52,1 km.
+
+ned 12 2027-01-18…2027-01-24 faza specific RASTEREĆENJE — cilj 41.7 / plan 41.73 km
+  2027-01-19 easy      9.60 km 57 min — Lagano 9,6 km
+  2027-01-21 q2        9.23 km 51 min, rad 14.1 min — WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 3000 m, korak deload]
+  2027-01-23 easy      9.50 km 56 min — Lagano 9,5 km
+  2027-01-24 long      13.40 km 80 min — Dugi 13,4 km lagano
+  napomena: Rasterećenje: cilj 41,7 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+
+ned 13 2027-01-25…2027-01-31 faza specific — cilj 53.1 / plan 53.15 km
+  2027-01-26 q1        11.57 km 62 min, rad 23.0 min — WU 20 min + RP 5 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza RP 5000 m, korak next]
+  2027-01-28 q2        11.38 km 62 min, rad 15.6 min — WU 20 min + I 4 × 900 m (oporavak 3:45 džog) + CD 15 min [doza I 3600 m, korak maintain]
+  2027-01-30 easy      13.40 km 80 min — Lagano 13,4 km
+  2027-01-31 long      16.80 km 100 min — Dugi 16,8 km lagano
+  napomena: Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 53,1 km.
+  napomena: Specifična faza, nedelja B: drugi kvalitet je I održavanja 3,6 km (doza poslednje I, ne raste); T u deonicama se nastavlja u sledećoj nedelji A.
+
+ned 14 2027-02-01…2027-02-07 faza specific — cilj 53.5 / plan 53.48 km
+  2027-02-02 q1        12.39 km 66 min, rad 27.6 min — WU 20 min + RP 3 × 2000 m (oporavak 1:30 džog) + CD 15 min [doza RP 6000 m, korak next]
+  2027-02-04 q2        10.89 km 59 min, rad 23.5 min — WU 20 min + T 5,0 km kontinuirano + CD 15 min [doza T_cruise 5000 m, korak alt]
+  2027-02-06 easy      13.40 km 80 min — Lagano 13,4 km
+  2027-02-07 long      16.80 km 100 min — Dugi 16,8 km lagano
+  napomena: Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 53,5 km.
+
+ned 15 2027-02-08…2027-02-14 faza taper — cilj 40.1 / plan 40.06 km
+  2027-02-09 q1        9.23 km 51 min, rad 13.8 min — WU 20 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza RP 3000 m, korak taper]
+  2027-02-11 q2        9.23 km 51 min, rad 14.1 min — WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 3000 m, korak taper]
+  2027-02-13 easy      9.00 km 53 min — Lagano 9,0 km
+  2027-02-14 long      12.60 km 75 min — Dugi 12,6 km lagano
+  napomena: Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži.
+
+ned 16 2027-02-15…2027-02-21 faza race — cilj 17.5 / plan 17.52 km
+  2027-02-16 easy      5.89 km 35 min — Lagano 35 min
+  2027-02-18 sharpener 7.70 km 42 min, rad 13.8 min — WU 15 min + RP 3 × 1000 m (oporavak 1:30 džog) + CD 10 min [doza RP_sharpener 3000 m, korak sharpener]
+  2027-02-20 eve       3.93 km 23 min, ubrzanja — Lagano 20 min + 4 × 20 s ubrzanja
+  2027-02-21 race      14.20 km 71 min, rad 46.0 min — Trka 10 km (WU 15 min + CD 10 min)
+  napomena: Trkačka nedelja: oštrenje 3 × 1000 m RP (≤ RP doza tapera 3,0 km), trka 10 km se ne računa u obim.
+upozorenje undefined: Nedelja spuštena na 39,4 km, koliko nedelja može da se sastavi (redovan rast 40 km).
+upozorenje undefined: Nedelja spuštena na 45,2 km, koliko nedelja može da se sastavi (redovan rast 49,8 km).
+upozorenje undefined: Nedelja spuštena na 52,6 km, koliko nedelja može da se sastavi (redovan rast 53,8 km).
+upozorenje undefined: Nedelja spuštena na 52,1 km, koliko nedelja može da se sastavi (redovan rast 55 km).
+upozorenje undefined: Nedelja spuštena na 53,1 km, koliko nedelja može da se sastavi (redovan rast 55 km).
+upozorenje undefined: Nedelja spuštena na 53,5 km, koliko nedelja može da se sastavi (redovan rast 55 km).
+upozorenje undefined: 4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.
+
+napomene:
+  #1 Nedelja ne može da se sastavi na 40,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 39,4 km.
+  #4 Rasterećenje: cilj 35,4 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+  #6 Nedelja ne može da se sastavi na 49,8 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 45,2 km.
+  #8 Rasterećenje: cilj 38,3 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+  #10 Nedelja ne može da se sastavi na 53,8 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 52,6 km.
+  #11 Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 52,1 km.
+  #12 Rasterećenje: cilj 41,7 km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.
+  #13 Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 53,1 km.
+  #13 Specifična faza, nedelja B: drugi kvalitet je I održavanja 3,6 km (doza poslednje I, ne raste); T u deonicama se nastavlja u sledećoj nedelji A.
+  #14 Nedelja ne može da se sastavi na 55,0 km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je 53,5 km.
+  #15 Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži.
+  #16 Trkačka nedelja: oštrenje 3 × 1000 m RP (≤ RP doza tapera 3,0 km), trka 10 km se ne računa u obim.
+
+metrike: {"weeks":16,"m1":{"T":{"firstWeek":1,"firstMin":9.4,"maxMin":23.5,"maxWeek":10},"I":{"firstWeek":6,"firstMin":8.7,"maxMin":15.6,"maxWeek":10},"R":{"firstWeek":1,"firstMin":4.9,"maxMin":8.2,"maxWeek":5},"RP":{"firstWeek":11,"firstMin":20.7,"maxMin":27.6,"maxWeek":14}},"m2":{"first":0.11,"atMax":0.42},"m3":{"maxKm":6,"maxPct":60,"totalKm":21.5,"weeksWith":5},"m4":{"maxKm":16.8,"maxMin":100,"pct":168,"withFast":0,"plateau":5},"m5":0,"m6":{"tests":0,"weeksToRace":16,"paceVariants":{"R":1,"T":1,"I":1,"RP":1}},"m7":{"base":9.4,"development":13.1,"specific":16,"taper":15,"race":18.9},"m8":{"peakOverStart":1.36,"peakOverCurrent":1.34,"longShareAtPeak":0.31},"hold":{"R":"plafon udela zone","T":"plafon udela zone","I":"drugo (maintain)","RP":"≤ 1 nivo nedeljno (faza se završila)"},"repro":{"checked":22,"same":20,"diff":["13:q2:maintain:2400→3600","14:q2:alt:3000→5000"]}}

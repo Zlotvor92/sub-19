@@ -389,6 +389,35 @@ export function longWorkout(km: number, p: Paces): Workout {
   );
 }
 
+/** M19 (P2-S1): dugi sa završnim blokom u maratonskom tempu — `km` ukupno (dužina dugog iz lengths.ts), poslednjih
+    `blockKm` kontinuirano u MP, ostatak lagano; `feel` (M16) → RPE zone MP. Jedino mesto sastava dugog sa blokom. */
+export function longBlockWorkout(km: number, blockKm: number, p: Paces, feel = false): Workout {
+  const eKm = Math.round((km - blockKm) * 10) / 10;
+  const w = assemble(
+    'long',
+    null,
+    `Dugi ${fmtKm(km)} km: ${fmtKm(eKm)} km lagano + ${fmtKm(blockKm)} km u maratonskom tempu`,
+    [
+      { kind: 'long', km: eKm },
+      { kind: 'continuous', zone: 'MP', km: blockKm }
+    ],
+    [
+      distEasy('long', eKm, p),
+      seg('continuous', 'MP', blockKm, Math.round(blockKm * p.MP), p.MP, 'exact', 'estimated')
+    ],
+    null
+  );
+  return feel ? { ...w, rpe: rpeOf('MP') } : w;
+}
+
+/** M19: km bloka u MP na kraju dugog (0 = lagan dugi). Jedna funkcija za konstruktor, validator i adaptaciju (A5). */
+export const longBlockKm = (w: Pick<Workout, 'kind' | 'workKm'>): number =>
+  w.kind === 'long' ? w.workKm.MP : 0;
+
+/** M19: trajanje dugog sa blokom za granicu dugog (M13) — lagan deo sporim E + blok u MP [s]. */
+export const longBlockSec = (km: number, blockKm: number, p: Paces): number =>
+  Math.round((km - blockKm) * p.E.slow + blockKm * p.MP);
+
 /** M8: lagan trening zadat vremenom (30 min E). */
 export function easyTimeWorkout(sec: number, p: Paces): Workout {
   return assemble(
@@ -427,6 +456,30 @@ export function eveWorkout(p: Paces, strides = true): Workout {
   );
 }
 
+/** P5-F3: lagan dan `km` (dužinu daje lengths.ts) sa ubrzanjima na kraju — `reps` × `sec` s R tempom, oporavak isti
+    metraž džogom (struktura dana pred trku, M8); lagan deo = km − ubrzanja − oporavci, km dana se ne menja. */
+export function easyStridesWorkout(km: number, p: Paces, reps: number, sec: number): Workout {
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail: Segment[] = [];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) tail.push(recoverySegment(rec, p));
+    tail.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  const eKm = (km100(km) - tail.reduce((a, x) => a + km100(x.km), 0)) / 100;
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km sa ${reps} × ${sec} s ubrzanja na kraju`,
+    [
+      { kind: 'easy', km: eKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    [distEasy('easy', eKm, p), ...tail],
+    null
+  );
+}
+
 /** M8: oštrenje trkačke nedelje — WU + 2 × 2000 m MP (2:00) + CD (WU/CD po M14); `feel` uz RPE MP (M16). */
 export function sharpenerWorkout(
   p: Paces,
@@ -453,12 +506,15 @@ export function sharpenerWorkout(
 }
 
 /** M8: trka 42,2 km + WU 5 min (van obima nedelje); trajanje = prognoza maratona (M2). */
-export function raceWorkout(p: Paces, raceSec: number): Workout {
+export function raceWorkout(p: Paces, raceSec: number, feel = false): Workout {
   const q = P.raceWeek;
+  // P8-G3: dan trke se ispisuje kao trka — distanca i prognozirano vreme (plan po osećaju: procena), zagrevanje posebno.
+  const t = Math.round(raceSec);
+  const hms = `${Math.floor(t / 3600)}:${String(Math.floor((t % 3600) / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
   return assemble(
     'race',
     null,
-    `Maraton ${fmtKm(q.raceKm)} km (WU ${q.raceWarmupSec / 60} min)`,
+    `Maraton ${fmtKm(q.raceKm)} km — ${feel ? 'procena' : 'prognoza'} ${hms} (pre starta ${q.raceWarmupSec / 60} min laganog zagrevanja)`,
     [
       { kind: 'warmup', sec: q.raceWarmupSec },
       { kind: 'race', km: q.raceKm }

@@ -1,0 +1,419 @@
+{
+ "R": {
+  "ulaza": 21840,
+  "odbijenoStaro": 0,
+  "odbijenoNovo": 0,
+  "novaOdbijanja": [],
+  "novaOdbijanjaN": 0,
+  "bajtIsto": 0,
+  "vrhPao10": 6720,
+  "mere": {
+   "peak": {
+    "pre": [
+     82.5,
+     42.5,
+     120
+    ],
+    "posle": [
+     75.7,
+     39,
+     120
+    ]
+   },
+   "hours": {
+    "pre": [
+     7.7,
+     2.8,
+     13.9
+    ],
+    "posle": [
+     7.4,
+     2.6,
+     12
+    ]
+   },
+   "long": {
+    "pre": [
+     26.7,
+     19.8,
+     32
+    ],
+    "posle": [
+     26.7,
+     17.6,
+     32
+    ]
+   },
+   "mpMid": {
+    "pre": [
+     60.4,
+     20.6,
+     109.9
+    ],
+    "posle": [
+     48.5,
+     20.6,
+     59.3
+    ]
+   },
+   "t": {
+    "pre": [
+     34,
+     9.7,
+     61.5
+    ],
+    "posle": [
+     28.3,
+     9.7,
+     38.4
+    ]
+   },
+   "i": {
+    "pre": [
+     20.3,
+     0,
+     35.4
+    ],
+    "posle": [
+     17.7,
+     0,
+     23.5
+    ]
+   },
+   "mpTotalKm": {
+    "pre": [
+     54,
+     31,
+     84
+    ],
+    "posle": [
+     44,
+     23.5,
+     74
+    ]
+   },
+   "taper1": {
+    "pre": [
+     28.1,
+     0,
+     43.5
+    ],
+    "posle": [
+     21.3,
+     0,
+     28.2
+    ]
+   },
+   "sharp": {
+    "pre": [
+     18.7,
+     6.9,
+     29
+    ],
+    "posle": [
+     9.6,
+     3.4,
+     10
+    ]
+   },
+   "over25": {
+    "preSum": 10790,
+    "posleSum": 7540
+   },
+   "test": {
+    "preSum": 21840,
+    "posleSum": 21840
+   },
+   "dropped": {
+    "preSum": 570,
+    "posleSum": 1548
+   },
+   "capLimited": {
+    "preSum": 4902,
+    "posleSum": 4002
+   },
+   "warnings": {
+    "preSum": 9792,
+    "posleSum": 11694
+   }
+  }
+ },
+ "F": {
+  "ulaza": 8190,
+  "odbijenoStaro": 0,
+  "odbijenoNovo": 0,
+  "novaOdbijanja": [],
+  "novaOdbijanjaN": 0,
+  "bajtIsto": 0,
+  "vrhPao10": 3624,
+  "mere": {
+   "peak": {
+    "pre": [
+     82.5,
+     42.5,
+     120
+    ],
+    "posle": [
+     72.1,
+     39,
+     120
+    ]
+   },
+   "hours": {
+    "pre": [
+     8.5,
+     3.1,
+     14.4
+    ],
+    "posle": [
+     7.8,
+     2.9,
+     12.2
+    ]
+   },
+   "long": {
+    "pre": [
+     25.7,
+     19,
+     32
+    ],
+    "posle": [
+     24.6,
+     17.1,
+     32
+    ]
+   },
+   "mpMid": {
+    "pre": [
+     69,
+     24.4,
+     122.7
+    ],
+    "posle": [
+     47.4,
+     24.4,
+     56.8
+    ]
+   },
+   "t": {
+    "pre": [
+     40,
+     11.2,
+     68.5
+    ],
+    "posle": [
+     28.5,
+     11.2,
+     40
+    ]
+   },
+   "i": {
+    "pre": [
+     24.1,
+     0,
+     39.5
+    ],
+    "posle": [
+     17.4,
+     0,
+     23
+    ]
+   },
+   "mpTotalKm": {
+    "pre": [
+     54,
+     31.5,
+     86.5
+    ],
+    "posle": [
+     42,
+     23.5,
+     74
+    ]
+   },
+   "taper1": {
+    "pre": [
+     33.2,
+     6,
+     48.9
+    ],
+    "posle": [
+     24,
+     4,
+     31.6
+    ]
+   },
+   "sharp": {
+    "pre": [
+     22.2,
+     8,
+     32.6
+    ],
+    "posle": [
+     9.5,
+     4,
+     10
+    ]
+   },
+   "over25": {
+    "preSum": 3779,
+    "posleSum": 1866
+   },
+   "test": {
+    "preSum": 8190,
+    "posleSum": 6930
+   },
+   "dropped": {
+    "preSum": 168,
+    "posleSum": 1632
+   },
+   "capLimited": {
+    "preSum": 2577,
+    "posleSum": 2277
+   },
+   "warnings": {
+    "preSum": 4308,
+    "posleSum": 6648
+   }
+  }
+ },
+ "B": {
+  "ulaza": 1890,
+  "odbijenoStaro": 0,
+  "odbijenoNovo": 0,
+  "novaOdbijanja": [],
+  "novaOdbijanjaN": 0,
+  "bajtIsto": 0,
+  "vrhPao10": 63,
+  "mere": {
+   "peak": {
+    "pre": [
+     52.5,
+     37.5,
+     75
+    ],
+    "posle": [
+     52.5,
+     37.1,
+     75
+    ]
+   },
+   "hours": {
+    "pre": [
+     6.3,
+     3.4,
+     10.5
+    ],
+    "posle": [
+     6.3,
+     3.4,
+     8.9
+    ]
+   },
+   "long": {
+    "pre": [
+     22.1,
+     16.6,
+     31.3
+    ],
+    "posle": [
+     21.7,
+     16.1,
+     31.3
+    ]
+   },
+   "mpMid": {
+    "pre": [
+     66.6,
+     30.3,
+     110.6
+    ],
+    "posle": [
+     40.4,
+     30.3,
+     48.9
+    ]
+   },
+   "t": {
+    "pre": [
+     26,
+     13.7,
+     45.7
+    ],
+    "posle": [
+     21.4,
+     13.7,
+     29.2
+    ]
+   },
+   "i": {
+    "pre": [
+     0,
+     0,
+     0
+    ],
+    "posle": [
+     0,
+     0,
+     0
+    ]
+   },
+   "mpTotalKm": {
+    "pre": [
+     42,
+     29.5,
+     66
+    ],
+    "posle": [
+     27.5,
+     27.5,
+     44.5
+    ]
+   },
+   "taper1": {
+    "pre": [
+     0,
+     0,
+     0
+    ],
+    "posle": [
+     0,
+     0,
+     0
+    ]
+   },
+   "sharp": {
+    "pre": [
+     0,
+     0,
+     0
+    ],
+    "posle": [
+     0,
+     0,
+     0
+    ]
+   },
+   "over25": {
+    "preSum": 0,
+    "posleSum": 0
+   },
+   "test": {
+    "preSum": 0,
+    "posleSum": 0
+   },
+   "dropped": {
+    "preSum": 0,
+    "posleSum": 0
+   },
+   "capLimited": {
+    "preSum": 231,
+    "posleSum": 462
+   },
+   "warnings": {
+    "preSum": 1482,
+    "posleSum": 1743
+   }
+  }
+ }
+}

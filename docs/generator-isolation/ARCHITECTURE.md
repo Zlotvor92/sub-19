@@ -3,6 +3,14 @@
 Stanje posle segmenta 5/5. Tok izdvajanja i dokazi po segmentima: `STATUS.md`; završni zaključak: `FINAL-REPORT.md`.
 Sve putanje su relativne prema `web/src/`.
 
+> **V1b (10. 11. 2026) — v1 obrisan.** Folderi `fiveK/`, `tenK/`, `marathon/` sadrže samo `v2/`; `select.ts` uvozi
+> adaptere `<distanca>/v2/app/index.ts` direktno i nov plan pravi samo v2. Polumaratonski v1 (`halfMarathon/` van `v2/`)
+> ostaje zamrznut SAMO za ugrađeni lični plan vlasnika (`LEGACY_PERSONAL_GENERATOR`, `meta.licni`) do V1c (posle
+> 13. 12. 2026). Sačuvan plan starog generatora (bez oznake ili sa oznakom v1) nema generator (`isLegacyPlan`):
+> prikazuje se, unos radi, poruka `LEGACY_PLAN` + „Generiši nov plan". Tabela i opis ispod opisuju stanje PRE V1b
+> (istorijski zapis); proveru granica sada vrši `generators/architecture.node.test.ts` nad korenima 5K/10K/maraton v2
+> i folderom polumaratona. Izveštaj: `docs/generators-v2/perfection/reports/V1b-REPORT.md`.
+
 ## 1. Granice
 
 | Generator | Direktorijum | Izvorni fajlovi (bez testova) | Distanca (tačna vrednost) |
@@ -186,16 +194,13 @@ proveravali njegove funkcije idu kroz `src/test/generators.ts` / kopije u genera
 
 ## 9. Komande
 
-Iz `web/`:
+Iz `web/` (V1b: v1 5K/10K/maraton obrisani, projekat `v1` ukinut):
 
 ```
 npm run check                                              # typecheck + lint + prettier + vitest (svi projekti)
 npx vitest run --project node generators/                  # arhitektura, izolacija, v2
-TEST_V1=1 npx vitest run --project v1 generators/          # ekvivalencija v1, lični plan, runtime izolacija (projekat v1)
 npx vitest run --project node generators/architecture      # statičke granice i dostižnost iz main.tsx
-TEST_V1=1 npx vitest run --project v1 generators/runtimeIsolation  # izolacija u izvršavanju
-TEST_V1=1 npx vitest run --project v1 generators/personalPlan      # lični plan → HM
-TEST_V1=1 npx vitest run --project v1 generators/guidance          # preneta logika van plana: 4 kopije = referenca
+npx vitest run --project node generators/personalPlan      # lični plan → zamrznut HM v1
 npx vitest run --project ui Flow.test personalPlanGenerator # aplikacione putanje
 npm run build
 npx playwright test

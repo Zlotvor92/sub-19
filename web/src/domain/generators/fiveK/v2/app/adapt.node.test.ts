@@ -13,9 +13,8 @@ import {
   type PersistedState
 } from '../../../../state';
 import type { StructuredPlanInput } from '../../../contract';
-import { fiveKV2ToggleVisible } from '../../../flags';
 import {
-  FIVE_K_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
   FIVE_K_V2_GENERATOR,
   fiveKV2AdaptPreview,
   fiveKV2FormHistory,
@@ -306,7 +305,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
       })
     );
     const x = pr.reasons.find((r) => r.condition === 'RESULT_IGNORED')!;
-    expect(x.message).toMatch(/VDOT \d+(,\d)? van 30–60 — rezultat se ne primenjuje\.$/);
+    expect(x.message).toMatch(/VDOT \d+(,\d)? van 30–70 — rezultat se ne primenjuje\.$/);
     expect(pr.reasons.some((r) => r.condition === 'NEW_RESULT')).toBe(false);
   });
 
@@ -508,9 +507,9 @@ describe('8. ugovor (b) posle 08b: kroz činjenice i adaptFiveKV2, nijedan poziv
       38.3,
       1
     );
-    // Nijedan član nije funkcija starog 5K.
+    // Nijedan član nije funkcija starog generatora (V1b: 5K v1 obrisan; preostali v1 je zamrznut HM v1).
     const v2 = g as unknown as Record<string, unknown>;
-    const v1 = FIVE_K_GENERATOR as unknown as Record<string, unknown>;
+    const v1 = LEGACY_PERSONAL_GENERATOR as unknown as Record<string, unknown>;
     for (const k of Object.keys(v2))
       if (typeof v2[k] === 'function') expect(v2[k], k).not.toBe(v1[k]);
   });
@@ -533,16 +532,6 @@ describe('9. Napredak → Forma: VDOT iz rezultata v2 i ocena cilja, bez lanca f
     expect(fiveKV2FormHistory({ plan: planOf(RUN_WALK), today: d('2026-11-12') })!.mode).toBe(
       'runWalk'
     );
-  });
-});
-
-describe('10. prekidač: vidljiv samo uz VITE_FIVEK_V2 ili administratoru', () => {
-  it('pravilo vidljivosti', () => {
-    expect(fiveKV2ToggleVisible({ devOverride: undefined, isAdmin: false })).toBe(false);
-    expect(fiveKV2ToggleVisible({ devOverride: '', isAdmin: false })).toBe(false);
-    expect(fiveKV2ToggleVisible({ devOverride: '1', isAdmin: false })).toBe(true);
-    expect(fiveKV2ToggleVisible({ devOverride: '0', isAdmin: false })).toBe(true);
-    expect(fiveKV2ToggleVisible({ devOverride: undefined, isAdmin: true })).toBe(true);
   });
 });
 
@@ -604,7 +593,15 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
       '5k-v2.10.4',
       '5k-v2.11.0',
       '5k-v2.11.1',
-      '5k-v2.12.0'
+      '5k-v2.12.0',
+      '5k-v2.13.0',
+      '5k-v2.14.0',
+      '5k-v2.15.0',
+      '5k-v2.15.1',
+      '5k-v2.15.2',
+      '5k-v2.15.3',
+      '5k-v2.16.0',
+      '5k-v2.17.0'
     ]);
     const plan = planOf(WITH_RESULT);
     const old = JSON.parse(JSON.stringify(plan)) as GenPlanState;
@@ -625,10 +622,10 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
     // Bol 5 u sredu 11. 11., asOf četvrtak 12. 11.: sidro r = ned 2 (sadrži 13. 11.), ne ned 3 (kraj bola 19. 11.).
     const pain = { facts: { pain: [{ date: '2026-11-11', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-12'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.17.0' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
-    expect(v2.policyVersion).toBe('5k-v2.12.0');
+    expect(v2.policyVersion).toBe('5k-v2.17.0');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 2, share: 0.7 });
     // 5k-v2.12.0 (T4): plan trkača nema redovno rasterećenje pre nedelje 4 (ranije ned 3, Odluka 9 ga je ukidala).
     expect(v2.weeks[2]!.deload).toBe(false);
@@ -670,7 +667,7 @@ describe('08e (5k-v2.7.0): sačuvan plan 5k-v2.6.1', () => {
     // Bol 5 u sredu 18. 11., asOf četvrtak 19. 11.: sidro r = ned 3; ned 4 (redovno rasterećenje) otpada.
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.17.0' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
@@ -696,6 +693,6 @@ describe('08g (5k-v2.8.0): sačuvan plan 5k-v2.7.0', () => {
     expect(generatorForPlan(old)).toBe(FIVE_K_V2_GENERATOR);
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.17.0' });
   });
 });

@@ -1,0 +1,3 @@
+profil (b) MAR
+ulaz: {"startDate":"2026-10-19","raceDate":"2026-12-13","runDays":["tue","thu","sat","sun"],"currentWeeklyKm":30,"recentResult":{"distanceM":5000,"timeSec":1225,"date":"2026-10-12"},"goalTimeSec":null,"longRunDay":"sun"}
+ODBIJENO: PLAN_TOO_SHORT: Plan od 8 nedelja je prekratak: maraton traži najmanje 12 nedelja pripreme; preporuka: polumaraton. | WEEKLY_KM_TOO_LOW: Trenutni obim 30 km je ispod 35 km nedeljno za 4 dana trčanja. Obim 30 km nosi 3 dana trčanja.

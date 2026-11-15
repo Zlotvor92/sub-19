@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan } from '@/test/generators';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
@@ -18,7 +18,7 @@ import {
   trainingHour,
   type ForecastCache
 } from './index';
-import { bestHour, heatFor, targetPace, weatherCard } from '../generators/fiveK/weather';
+import { bestHour, heatFor, targetPace, weatherCard } from '../generators/halfMarathon/weather';
 
 /* parity: vrucinaZa, vremeCist, vremeZaSat, vremeSada, najboljiSat, satTreninga, satTrcanja, tempTrcanja, cilJTempoDana (app.js). */
 

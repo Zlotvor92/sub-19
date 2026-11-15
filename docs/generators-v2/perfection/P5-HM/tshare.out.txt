@@ -1,0 +1,8 @@
+pre R prvi T dan: udeo rada 24 % [18–37] n 144
+pre R prvi I dan: udeo rada 21 % [14–29] n 108
+pre F prvi T dan: udeo rada 26.5 % [21–36] n 32
+pre F prvi I dan: udeo rada 24 % [18–31] n 24
+posle R prvi T dan: udeo rada 29 % [18–50] n 144
+posle R prvi I dan: udeo rada 25 % [16–36] n 108
+posle F prvi T dan: udeo rada 31 % [23–44] n 32
+posle F prvi I dan: udeo rada 28.5 % [23–38] n 24

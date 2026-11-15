@@ -1419,3 +1419,12 @@ Polazno `bf47249`; izveštaj `HANDOFF-FACTS.md`. Bez PR-a/mergea/deploya; `fiveK
 - Regresija: sve reference bajt-iste bez izmene očekivanja; generatori 51 fajl / 1026 testova.
 - Ostaje: uzrok nesaglasnog stanja (`graftFuturePlan` spaja `meta` pri vraćanju verzije) nije diran; signal saglasnosti
   je samo `startDate`; `generators/handoff.ts` komentar (van putanja).
+
+## V1b — uklanjanje v1 (10. 11. 2026)
+
+- Obrisani v1 generatori 5K, 10K i maratona (folderi van `v2/`), njihovi testovi i reference, `flags.ts` i prekidači
+  v2, v1 grane čarobnjaka i `domain/onboarding`, v1 ciljevi predaje (`handoff.ts` → samo `SourceFormat`), `docs/qa`.
+- Zamrznut HM v1 samo za lični plan (`LEGACY_PERSONAL_GENERATOR`); `personalPlan.node.test.ts` (8196 tokova) bajt-isti.
+- Stari planovi: bez generatora, prikaz i unos rade, poruka + „Generiši nov plan" (`LegacyPlanNotice`).
+- CI: projekat i posao `v1` ukinuti, „sve" u 10 delova. Detalji: `docs/generators-v2/perfection/reports/V1b-REPORT.md`.
+

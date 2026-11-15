@@ -1,0 +1,524 @@
+/* V4 — ODLUKE DONETE JEDNOM (SPEC § 6.2 k. 3–4, § 4.6). Svaka veličina ima jednu funkciju-vlasnika;
+   `replan` ih čita iz `header.decisions` i poziva ponovo samo gde § 6.3 to dozvoljava. */
+import {
+  DEFAULT_EASY_MAX_OVER_PREVIOUS,
+  DEFAULT_MAX_PEAK_OVER_BASE,
+  DEFAULT_TAPER_EASY_MAX_SEC,
+  LONG_EASY_FLOOR_FROM_SEC,
+  LONG_EASY_FLOOR_HIGH_DAYS,
+  LONG_EASY_FLOOR_HIGH_KM,
+  LONG_EASY_FLOOR_HIGH_SEC,
+  LONG_EASY_FLOOR_SEC,
+  M6_MIN_RUN_DAYS,
+  NEAR_ENOUGH,
+  RAN_GOAL_DAYS,
+  RAN_GOAL_SHARE
+} from './constants';
+import { diffDays } from './dates';
+import type {
+  Decisions,
+  IsoDate,
+  DistanceData,
+  LevelId,
+  LoadPoints,
+  SafetyNumbers,
+  Seconds,
+  StimulusTag,
+  Template,
+  Weekday
+} from './types';
+
+/** Ulaz lestvice vrha (S2): polazni obim u km, broj nedelja pripreme i ograničen trkač (kratak staž ili tegoba). */
+export interface PeakLadderInput {
+  baseKm: number;
+  weeks: number;
+  limited: boolean;
+  /** R27 (pod vrha do adekvatnog obima): nivo i tegoba u poslednjih 12 meseci. */
+  level?: LevelId;
+  pain?: boolean;
+}
+
+/** Množilac vrha (S2): red lestvice za polazni obim i dužinu pripreme; ograničen trkač najviše `limitedOverBase`.
+    Bez lestvice: `maxPeakOverBase` ili podrazumevano 1,40. */
+export function ladderOverBase(safety: SafetyNumbers, input: PeakLadderInput | null): number {
+  const fallback = safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE;
+  const ladder = safety.peakLadder;
+  if (ladder === undefined || input === null) return fallback;
+  const row = ladder.rows.find(
+    (r) => (r.maxBaseKm === null || input.baseKm <= r.maxBaseKm) && input.weeks >= r.minWeeks
+  );
+  const over = row?.overBase ?? fallback;
+  const limited =
+    input.limited && ladder.limitedOverBase !== undefined
+      ? Math.min(over, ladder.limitedOverBase)
+      : over;
+  /* R27: vrh ispod adekvatnog obima distance diže se do njega kad nedelje to nose korakom `stepPct` */
+  const f = ladder.adequateFloor;
+  if (
+    f === undefined ||
+    input.level === undefined ||
+    !f.levels.includes(input.level) ||
+    input.pain === true ||
+    input.baseKm <= 0
+  )
+    return limited;
+  const reach = (1 + f.stepPct) ** Math.max(0, input.weeks - f.tailWeeks);
+  return Math.max(limited, Math.min((f.peakKm * f.loadOverKm) / input.baseKm, reach));
+}
+
+/** Ulaz lestvice iz činjenica: km = bodovi baze u minutima laganog tempa; ograničen = staž ispod praga ili tegoba
+    u poslednjih 12 meseci. Kratak staž: `yearsRunning` ispod praga (u nedeljama). */
+export function ladderInputOf(input: {
+  baseLoad: LoadPoints;
+  easyPaceSecPerKm: number;
+  weeks: number;
+  yearsRunning: number | undefined;
+  painInYear: boolean;
+  safety: SafetyNumbers;
+  level?: LevelId;
+}): PeakLadderInput {
+  const tenure = input.safety.peakLadder?.limitedTenureWeeks ?? 0;
+  const shortTenure = input.yearsRunning !== undefined && input.yearsRunning * 52 < tenure;
+  return {
+    baseKm: input.easyPaceSecPerKm > 0 ? (input.baseLoad * 60) / input.easyPaceSecPerKm : 0,
+    weeks: input.weeks,
+    limited: shortTenure || input.painInYear,
+    ...(input.level === undefined ? {} : { level: input.level, pain: input.painInYear })
+  };
+}
+
+/** Vrh nedeljnog opterećenja: `P = max(B, min(B / startPct, plafon nivoa, B × množilac))` (R3, S2). */
+export function decidePeak(
+  baseLoad: LoadPoints,
+  template: Template,
+  safety: SafetyNumbers,
+  level: LevelId,
+  overBase: number = safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE
+): LoadPoints {
+  const cap = safety.peakLoadCap[level] ?? Number.POSITIVE_INFINITY;
+  /* S2: sa lestvicom je ona jedini vlasnik vrha; `startPct` šablona tada samo oblikuje prve nedelje. */
+  const wanted =
+    safety.peakLadder !== undefined
+      ? Number.POSITIVE_INFINITY
+      : template.startPct > 0
+        ? baseLoad / template.startPct
+        : baseLoad;
+  return Math.max(baseLoad, Math.min(wanted, cap, baseLoad * overBase));
+}
+
+/** Plafon rada po treningu za nivo (S4): broj, ili mapa po nivou (`*` za ostale; bez njega bez plafona). */
+export function maxWorkOf(
+  raw: Seconds | Readonly<Record<LevelId, Seconds>>,
+  level: LevelId
+): Seconds {
+  if (typeof raw === 'number') return raw;
+  return raw[level] ?? raw['*'] ?? Number.POSITIVE_INFINITY;
+}
+
+/** Osnovica lestvice doze (S4): `udeo × P × 60`, bez plafona nivoa. */
+export function decideDoseBase(
+  peakLoad: LoadPoints,
+  safety: SafetyNumbers
+): Record<StimulusTag, Seconds> {
+  const out: Record<StimulusTag, Seconds> = {};
+  for (const tag of Object.keys(safety.doseCaps).sort()) {
+    const cap = safety.doseCaps[tag];
+    if (cap !== undefined) out[tag] = Math.round(cap.shareOfPeakLoad * peakLoad * 60);
+  }
+  return out;
+}
+
+/** Plafon doze po podražaju: `min(maxWorkSec nivoa, udeo × P × 60)`, zaokružen na sekundu. */
+export function decideCaps(
+  peakLoad: LoadPoints,
+  safety: SafetyNumbers,
+  level: LevelId = ''
+): Record<StimulusTag, Seconds> {
+  const caps: Record<StimulusTag, Seconds> = {};
+  for (const tag of Object.keys(safety.doseCaps).sort()) {
+    const cap = safety.doseCaps[tag];
+    if (cap !== undefined) {
+      caps[tag] = Math.round(
+        Math.min(maxWorkOf(cap.maxWorkSec, level), cap.shareOfPeakLoad * peakLoad * 60)
+      );
+    }
+  }
+  return caps;
+}
+
+/** Zagrevanje i hlađenje: prvi red čiji `uptoBaseLoad ≥ B` (red sa `null` važi za sve). */
+export function decideWarmup(
+  baseLoad: LoadPoints,
+  safety: SafetyNumbers
+): { warmupSec: Seconds; cooldownSec: Seconds } {
+  for (const row of safety.warmupCooldown) {
+    if (row.uptoBaseLoad === null || row.uptoBaseLoad >= baseLoad) {
+      return { warmupSec: row.warmupSec, cooldownSec: row.cooldownSec };
+    }
+  }
+  const last = safety.warmupCooldown[safety.warmupCooldown.length - 1];
+  return { warmupSec: last?.warmupSec ?? 0, cooldownSec: last?.cooldownSec ?? 0 };
+}
+
+/** Najmanji dozvoljen rast nedelje u minutima (S2): veće od `minRampLoad` i `minRampKm` u laganom tempu. */
+export function minRampOf(safety: SafetyNumbers, easyPaceSecPerKm: number): number {
+  return Math.max(safety.minRampLoad, ((safety.minRampKm ?? 0) * easyPaceSecPerKm) / 60);
+}
+
+/** PRAVILO RASTA NEDELJE (S2, R27): najveći obim (minuti) posle najveće od prethodne 3 nedelje `m` — procenat ili
+    najmanji korak, po nivou kad ga podaci daju (`rampByLevel`), inače opšti brojevi. Jedan vlasnik: čitaju ga
+    konstruktor i čuvar. */
+export function rampRuleOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  m: number,
+  easyPaceSecPerKm: number
+): number {
+  const own = safety.rampByLevel?.[level];
+  if (own === undefined)
+    return Math.max(m * (1 + safety.maxWeeklyRampPct), m + minRampOf(safety, easyPaceSecPerKm));
+  return Math.max(
+    m * (1 + own.pct),
+    m + Math.max(own.minLoad, ((own.minKm ?? 0) * easyPaceSecPerKm) / 60)
+  );
+}
+
+/** Korak dugog (S2): veće od `longStepSec` i `longStepKm` u laganom tempu. */
+/** M5 (krug 5): važi li najkraće lagano po nivou (nivo ima unos i trkač trči ≥ `minEasyFromRunDays` dana). */
+export function levelMinEasy(safety: SafetyNumbers, level: LevelId, runDays: number): boolean {
+  return safety.minEasyMin?.[level] !== undefined && runDays >= (safety.minEasyFromRunDays ?? 0);
+}
+
+/** M5 (krug 5): najkraće lagano trčanje nivoa (sekunde). */
+export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number): Seconds {
+  if (!levelMinEasy(safety, level, runDays)) return safety.minEasySec;
+  const min = safety.minEasyMin?.[level];
+  return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
+}
+
+/** R24 (M6 + P1): najkraći lagan dan nedelje gradnje/rasterećenja (s) — `minEasyMin` nivoa od
+    `minEasyBuildFromRunDays` (i bar `M6_MIN_RUN_DAYS`) traženih dana; `null` kad pravilo ne važi. */
+export function buildMinEasyOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  runDays: number
+): Seconds | null {
+  const from = safety.minEasyBuildFromRunDays;
+  const least = safety.minEasyMin?.[level] ?? safety.minEasyBuildMin?.[level];
+  if (from === undefined || least === undefined) return null;
+  if (runDays < Math.max(M6_MIN_RUN_DAYS, from)) return null;
+  return Math.max(safety.minEasySec, least * 60);
+}
+
+/** Krug 15–16 (M4): niz TEŠKIH dana zaredom (dugi i dani kvaliteta, ciklično preko granice nedelje) koji sadrži dan
+    `wd`: dužina, da li sadrži dan dugog, i prvi/poslednji dan niza. Lagan dan ili odmor prekida niz. */
+export function runStreak(
+  hardDays: readonly Weekday[],
+  wd: Weekday,
+  longDay: Weekday
+): { len: number; hasLong: boolean; from: Weekday; to: Weekday } {
+  const set = new Set<number>([...hardDays, longDay]);
+  let len = 1;
+  let hasLong = wd === longDay;
+  let from = wd as number;
+  let to = wd as number;
+  for (let k = 1; len < 7 && set.has((wd - k + 7) % 7); k += 1) {
+    len += 1;
+    from = (wd - k + 7) % 7;
+    if (from === longDay) hasLong = true;
+  }
+  for (let k = 1; len < 7 && set.has((wd + k) % 7); k += 1) {
+    len += 1;
+    to = (wd + k) % 7;
+    if (to === longDay) hasLong = true;
+  }
+  return { len, hasLong, from: from as Weekday, to: to as Weekday };
+}
+
+/** Krug 15 (M2, M21): pod laganog dana uz dugi nedelje — 0 kad je dugi kraći od `LONG_EASY_FLOOR_FROM_SEC`. Jedini
+    vlasnik pravila „lagan ≥ 30 min (45 min kod 5+ dana i ≥ 55 km) uz dugi ≥ 90 min". */
+export function longEasyFloor(
+  decisions: Pick<Decisions, 'runDays' | 'baseVolumeMin' | 'baseKm' | 'baseLoad'>,
+  longSec: Seconds,
+  easyPace: number
+): Seconds {
+  if (longSec < LONG_EASY_FLOOR_FROM_SEC) return 0;
+  /* polazni obim u km iz istorije (kao u zaglavlju „Polazim od ≈ N km"), inače minuti u laganom tempu */
+  const baseKm =
+    decisions.baseKm ??
+    (easyPace > 0 ? ((decisions.baseVolumeMin ?? decisions.baseLoad) * 60) / easyPace : 0);
+  return decisions.runDays.length >= LONG_EASY_FLOOR_HIGH_DAYS && baseKm >= LONG_EASY_FLOOR_HIGH_KM
+    ? LONG_EASY_FLOOR_HIGH_SEC
+    : LONG_EASY_FLOOR_SEC;
+}
+
+export function longStepOf(safety: SafetyNumbers, easyPaceSecPerKm: number): Seconds {
+  return Math.max(safety.longStepSec, (safety.longStepKm ?? 0) * easyPaceSecPerKm);
+}
+
+/** Vrednost za broj dana iz mape „1"…„7"; ako ključa nema, najbliži manji pa najbliži veći. */
+function byRunDays(map: Readonly<Record<string, number>>, runDays: number): number | undefined {
+  for (let d = runDays; d >= 1; d -= 1) {
+    const value = map[String(d)];
+    if (value !== undefined) return value;
+  }
+  for (let d = runDays + 1; d <= 7; d += 1) {
+    const value = map[String(d)];
+    if (value !== undefined) return value;
+  }
+  return undefined;
+}
+
+const isDayMap = (value: unknown): value is Readonly<Record<string, number>> =>
+  typeof value === 'object' && value !== null;
+
+/** Lagan dan kao najveći udeo dugog te nedelje (R2a); broj ili mapa po broju dana trčanja. */
+export function easyShareOfLong(safety: SafetyNumbers, runDays: number): number {
+  const raw = safety.easyMaxShareOfLong;
+  return typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? 1);
+}
+
+/** Lagan dan kao najveći umnožak najdužeg laganog dana prethodne nedelje (R2b). */
+export function easyOverPrevious(safety: SafetyNumbers): number {
+  return safety.easyMaxOverPrevious ?? DEFAULT_EASY_MAX_OVER_PREVIOUS;
+}
+
+/** Najduži lagan dan u nedelji sužavanja i nedelji trke (R1). */
+export function taperEasyMax(safety: SafetyNumbers, runDays: number): Seconds {
+  const raw = safety.taperEasyMaxSec ?? DEFAULT_TAPER_EASY_MAX_SEC;
+  return typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? Number.POSITIVE_INFINITY);
+}
+
+/** Udeo dugog za broj dana; mapa može biti i po nivou (treći krug). */
+export function longShare(safety: SafetyNumbers, level: LevelId, runDays: number): number {
+  const map = safety.longShareByRunDays;
+  const leveled = Object.values(map).some(isDayMap);
+  if (!leveled) {
+    const flat: Record<string, number> = {};
+    for (const [key, value] of Object.entries(map))
+      if (typeof value === 'number') flat[key] = value;
+    return byRunDays(flat, runDays) ?? 1;
+  }
+  const own: unknown = map[level];
+  return isDayMap(own) ? (byRunDays(own, runDays) ?? 1) : 1;
+}
+
+/** Udeo dugog za nedelju od `weekKm` planiranih km (S3): ispod `longShareLowVolume.belowKm` važi veći udeo,
+    a u nedeljama najdužeg dugog (`high`) najveći. */
+export function longShareFor(
+  safety: SafetyNumbers,
+  level: LevelId,
+  runDays: number,
+  weekKm: number,
+  high: boolean
+): number {
+  const base = longShare(safety, level, runDays);
+  const low = safety.longShareLowVolume;
+  if (low === undefined || runDays < low.minRunDays) return base;
+  /* dopuna kruga 4 (D4; trener § D4): između `belowKm` i `midKm` udeo do `midShare` */
+  if (weekKm >= low.belowKm)
+    return low.midKm !== undefined && low.midShare !== undefined && weekKm < low.midKm
+      ? Math.max(base, low.midShare)
+      : base;
+  return Math.max(base, high ? low.peakShare : low.share);
+}
+
+/** Najduži dugi plana: `min(plafon nivoa, udeo po danima × P × 60)`, na ceo minut. Sa laganim tempom udeo prati
+    obim vrha (S3: mali obim nosi veći udeo u najviše nekoliko nedelja). */
+export function decideLongMax(
+  peakLoad: LoadPoints,
+  safety: SafetyNumbers,
+  level: LevelId,
+  runDays: number,
+  easyPaceSecPerKm?: number
+): Seconds {
+  const cap =
+    safety.longMaxSecByRunDays?.[level]?.[String(runDays)] ??
+    safety.longMaxSec[level] ??
+    Number.POSITIVE_INFINITY;
+  const share =
+    easyPaceSecPerKm === undefined
+      ? longShare(safety, level, runDays)
+      : longShareFor(safety, level, runDays, (peakLoad * 60) / easyPaceSecPerKm, true);
+  return Math.round(Math.min(cap, share * peakLoad * 60) / 60) * 60;
+}
+
+/** Polazni dugi: veće od najdužeg skorašnjeg trčanja i udela bazne nedelje (udeo može biti po broju dana). */
+export function decideLongStart(
+  longestRecentSec: Seconds,
+  baseLoad: LoadPoints,
+  safety: SafetyNumbers,
+  runDays: number
+): Seconds {
+  const raw = safety.longStartShare;
+  const share = typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? 0);
+  return Math.round(Math.max(longestRecentSec, share * baseLoad * 60) / 60) * 60;
+}
+
+/** R27 (`fewerRunDays`): dani plana kad sadašnji obim ne nosi tražene dane — bez dana pred dugi (ako nije dan
+    kvaliteta), inače bez poslednjeg po prioritetu; `null` kad pravilo ne važi (svi traženi dani ostaju). */
+export function fewerRunDaysOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  availability: { runDays: readonly Weekday[]; longDay: Weekday; confirmedRunDays?: boolean },
+  baseVolumeMin: number
+): Weekday[] | null {
+  const rule = safety.fewerRunDays;
+  const least = rule?.minAvgMin[level];
+  const n = availability.runDays.length;
+  if (rule === undefined || least === undefined || availability.confirmedRunDays === true)
+    return null;
+  if (n < rule.fromRunDays || n <= M6_MIN_RUN_DAYS - 1 || baseVolumeMin / n >= least) return null;
+  const order = assignDays(availability.runDays, availability.longDay);
+  const eve = ((availability.longDay + 6) % 7) as Weekday;
+  const drop = order.indexOf(eve) >= 2 ? eve : order[order.length - 1];
+  if (drop === undefined) return null;
+  return availability.runDays.filter((wd) => wd !== drop).sort((a, b) => a - b);
+}
+
+const gap = (a: number, b: number): number => Math.min(Math.abs(a - b), 7 - Math.abs(a - b));
+
+/** Raspored dana (§ 4.6): svi dani trčanja osim sidra, po prioritetu Q1, Q2, … (najveći razmak od već zauzetih). */
+export function assignDays(runDays: readonly Weekday[], anchor: Weekday): Weekday[] {
+  const free = runDays.filter((d) => d !== anchor);
+  const taken: Weekday[] = [anchor];
+  const order: Weekday[] = [];
+  while (free.length > 0) {
+    let best = 0;
+    let bestScore = -1;
+    free.forEach((day, i) => {
+      const score = Math.min(...taken.map((t) => gap(day, t)));
+      const better =
+        score > bestScore ||
+        (score === bestScore &&
+          (order.length === 0 ? day > (free[best] ?? 0) : day < (free[best] ?? 0)));
+      if (better) {
+        best = i;
+        bestScore = score;
+      }
+    });
+    const [day] = free.splice(best, 1);
+    if (day === undefined) break;
+    order.push(day);
+    taken.push(day);
+  }
+  return order;
+}
+
+export interface DecideInput {
+  data: DistanceData;
+  template: Template;
+  level: LevelId;
+  baseLoad: LoadPoints;
+  longestRecentSec: Seconds;
+  runDays: readonly Weekday[];
+  longDay: Weekday;
+  /** Lestvica vrha (S2); bez nje važi `maxPeakOverBase`. */
+  ladder?: PeakLadderInput | null;
+  /** Lagani tempo (S3: udeo dugog po obimu). */
+  easyPaceSecPerKm?: number;
+  /** Očekivano vreme na dan trke (D3: dugi prema vremenu trke). */
+  raceSec?: Seconds;
+  /** R20 B1: dugi koji trkač već redovno trči (s); plafon dugog ne spušta ispod njega. */
+  habitLongSec?: Seconds;
+}
+
+/** D3 (krug 5): spor trkač — dugi ≤ vreme trke + `overSec`, blok/progresija u dugom ≤ `blockMaxSec`. */
+function applyLongVsRace(
+  d: Decisions,
+  data: DistanceData,
+  raceSec: Seconds | undefined
+): Decisions {
+  const r = data.safety.longVsRace;
+  if (r === undefined || raceSec === undefined || raceSec < r.fromRaceSec) return d;
+  const blockTags = new Set(
+    data.library
+      .filter(
+        (x) =>
+          x.kind === 'long' && (x.main.kind === 'finish-block' || x.main.kind === 'progressive')
+      )
+      .map((x) => x.stimulus)
+  );
+  const doseCapSec: Record<StimulusTag, Seconds> = { ...d.doseCapSec };
+  for (const tag of blockTags) {
+    const cap = doseCapSec[tag];
+    if (cap !== undefined) doseCapSec[tag] = Math.min(cap, r.blockMaxSec);
+  }
+  return {
+    ...d,
+    longMaxSec: Math.min(d.longMaxSec, Math.round((raceSec + r.overSec) / 60) * 60),
+    doseCapSec
+  };
+}
+
+/** Sve odluke plana na jednom mestu, svaka iz svog vlasnika. */
+export function decide(input: DecideInput): Decisions {
+  return withLongHabit(
+    applyLongVsRace(decideBase(input), input.data, input.raceSec),
+    input.habitLongSec
+  );
+}
+
+/** R20 B1: plafon dugog važi za RAST — ne spušta dugi ispod onoga što trkač već redovno trči. */
+export function withLongHabit(d: Decisions, habitLongSec: Seconds | undefined): Decisions {
+  const habit = Math.round((habitLongSec ?? 0) / 60) * 60;
+  if (habit <= d.longMaxSec) return d;
+  return { ...d, longMaxSec: habit, longHabitSec: habit };
+}
+
+function decideBase(input: DecideInput): Decisions {
+  const { data, template, level, baseLoad } = input;
+  const peakOverBase = ladderOverBase(data.safety, input.ladder ?? null);
+  const peakLoad =
+    Math.round(decidePeak(baseLoad, template, data.safety, level, peakOverBase) * 10) / 10;
+  const runDays = [...input.runDays].sort((a, b) => a - b);
+  return {
+    templateId: template.id,
+    level,
+    baseLoad,
+    peakLoad,
+    longMaxSec: decideLongMax(peakLoad, data.safety, level, runDays.length, input.easyPaceSecPerKm),
+    longStartSec: decideLongStart(input.longestRecentSec, baseLoad, data.safety, runDays.length),
+    doseCapSec: decideCaps(peakLoad, data.safety, level),
+    doseBaseSec: decideDoseBase(peakLoad, data.safety),
+    ...(data.safety.peakLadder === undefined ? {} : { peakOverBase }),
+    ...decideWarmup(baseLoad, data.safety),
+    runDays,
+    longDay: input.longDay,
+    qualityDays: assignDays(runDays, input.longDay)
+  };
+}
+
+/** Da li dugi (najduži dozvoljen, trajanje) stiže do dugog za distancu (S3): ≥ `minLongSec` ili ≥ `longCheckKm`;
+    plan kraći od `longCheckMinWeeks` se ne proverava. */
+export function longReaches(
+  data: DistanceData,
+  weeks: number,
+  longSec: Seconds,
+  easyPaceSecPerKm: number,
+  /** Krug 10 (stavka 22): stvarni km najdužeg dugog (sa km bloka u tempu trke); bez njega km iz laganog tempa. */
+  longKm?: number
+): boolean {
+  const a = data.adequate;
+  if (a.longCheckMinWeeks === undefined || weeks < a.longCheckMinWeeks) return true;
+  const km = a.longCheckKm ?? a.minLongKm;
+  return (
+    longSec >= NEAR_ENOUGH * (a.minLongSec ?? Number.POSITIVE_INFINITY) ||
+    Math.max(longSec / easyPaceSecPerKm, longKm ?? 0) >= NEAR_ENOUGH * km
+  );
+}
+
+/** Krug 10 (stavka 12): trkač je u poslednjih 12 nedelja istrčao dužinu cilja (trka ili unet rezultat) — dugi za
+    distancu tada nije uslov za napredak, a „duže od svega što si trčao" nije tačno. */
+export function ranGoalDistance(
+  today: IsoDate,
+  runs: readonly { date: IsoDate; distanceM: number; effort?: string }[],
+  recent: { distanceM: number; date?: IsoDate } | undefined,
+  distanceM: number
+): boolean {
+  const near = (m: number): boolean => m >= RAN_GOAL_SHARE * distanceM;
+  const inWindow = (d: IsoDate | undefined): boolean =>
+    d === undefined || (d <= today && diffDays(today, d) <= RAN_GOAL_DAYS);
+  if (recent !== undefined && near(recent.distanceM) && inWindow(recent.date)) return true;
+  return runs.some((r) => r.effort !== undefined && near(r.distanceM) && inWindow(r.date));
+}

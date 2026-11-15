@@ -1,0 +1,47 @@
+{
+  "round": "V4-MAR-01",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus); merilo iz ROUND-V4-HM-09",
+  "source": "02e06e1",
+  "plan": {
+    "p01": 78, "p02": 78.5, "p03": { "now": 74, "withChecks": 71, "findings": ["K6 ned 10 28 %"] },
+    "p04": 75, "p05": 80.5, "p06": 71, "p07": 79,
+    "p08": { "now": 76.5, "withChecks": 75, "findings": ["K7 ned 19"] },
+    "p09": { "now": 80, "withChecks": 77, "findings": ["K7 ned 9, 13"] },
+    "p10": { "now": 74, "withChecks": 71, "findings": ["K6 ned 8 36 %, ned 16 28 %"] },
+    "p11": 76, "p12": 79, "p13": 69.5, "p14": 81.5, "p15": 76.5, "p16": 77, "p17": 80,
+    "p18": { "now": 70, "withChecks": 67, "findings": ["K6 ned 12 29 %"] },
+    "p19": 71,
+    "average": 76.2, "averageWithChecks": 75.4, "atLeast80": 4, "profiles": 19
+  },
+  "adaptation": {
+    "E1": { "score": 79.8, "s01": 85, "s02": 77, "s03": 77, "s04": 80 },
+    "E2": { "score": 69.3, "s05": 60, "s06": 58, "s07": 80, "s08": 79 },
+    "E3": { "score": 79.8, "s09": 72, "s10": 83, "s11": 82, "s12": 82 },
+    "E4": { "score": 77.8, "s13": 77, "s14": 80, "s15": 76, "s16": 78 },
+    "E5": { "score": 78.5, "s17": 72, "s18": 84, "s19": 84, "s20": 74 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 71.3, "s25": 76, "s26": 76, "s27": 62 },
+    "MAR": { "score": 76, "s28": 72, "s29": 80 },
+    "partB": 77.8
+  },
+  "personalization": { "P1": 84, "P2": 78, "P3": 79, "partC": 80.3 },
+  "composite": 77.5,
+  "verdicts": {
+    "longestLong4to5days45to60km": "plan 23-25 km je prekratak; tacno 26-28 km (ili 2 h 50-3 h), dva puta u poslednjih 7 nedelja, udeo do 48-50 % u te dve nedelje",
+    "p07": "tacno 30-32 km; 28 km je kratko 2-4 km; MP blok <= 12-13 km",
+    "formCheck": "polozaj dobar (test 10 km u rasterecenju ned 4-10, ned 8 i 16 kod 24 ned); nedostaje pripremni polumaraton 6-9 nedelja pred trku"
+  },
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "povratak posle bolesti/puta cuva jedan dugi >= 26 km; posle puta prvi dugi 70-75 % poslednjeg pravog (s05, s06, s27)" },
+    { "n": 2, "kind": "motor", "text": "E5 za maraton: dugi <= 60 %, nedelja <= 75 % u ned 1-2 (s17, s20)" },
+    { "n": 3, "kind": "motor", "text": "izmena posle rezultata uvek ima recenicu (s02, s03)" },
+    { "n": 4, "kind": "motor", "text": "propusten najduzi dugi u N-3: N-2 dugi 24-26 km lagano (s28, s09)" },
+    { "n": 5, "kind": "podatak", "text": "najduzi dugi 26-28 km kod vrha 45-60 km" },
+    { "n": 6, "kind": "podatak", "text": "MP blok <= 45 % dugog" },
+    { "n": 7, "kind": "podatak", "text": "pripremni polumaraton 6-9 nedelja pred trku (>= 18 nedelja)" },
+    { "n": 8, "kind": "podatak", "text": "dugi ne stoji (p04 2 h 30 x8, p17 27,5 km x5, p05 31,5 km x7); p18 bez MP blokova, vreme na nogama" }
+  ],
+  "verdict": "nije zatvoreno: Plan 76,2, B 77,8, C 80,3",
+  "ownerReview": ["s05", "p07", "p04"]
+}

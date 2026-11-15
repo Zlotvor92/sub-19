@@ -1,0 +1,29 @@
+[
+  {
+    "name": "K4-A1 3 dana bez nedelje B (bAllowed samo 4–6 dana)",
+    "file": "src/domain/generators/halfMarathon/v2/specific.ts",
+    "find": "  regular &&\n  !rule.beginner &&",
+    "replace": "  regular &&\n  rule.quality === 2 &&\n  !rule.beginner &&",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+    ]
+  },
+  {
+    "name": "K4-A2 talas 0,95 × plafon umesto 0,85",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  Math.floor(P.specific.wave.share * ceiling10 + EPS);",
+    "replace": "  Math.floor(0.95 * ceiling10 + EPS);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+    ]
+  },
+  {
+    "name": "K4-B dan po želji bez prenosa km u ostale lagane",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "    rest.reduce((a, x) => a + x, 0) + e[opt]!,\n",
+    "replace": "    rest.reduce((a, x) => a + x, 0) + 0 * e[opt]! - 99,\n",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+    ]
+  }
+]

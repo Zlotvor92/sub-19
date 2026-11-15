@@ -7,7 +7,13 @@ import { AppBar } from '../../components/ui/Shell';
 import { Icon } from '../../components/ui/icons';
 import { Disclosure } from '../../components/ui/Disclosure';
 import { Notice, Row } from '../../components/ui/primitives';
-import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
+import {
+  useActiveGenPlan,
+  useIcuConnected,
+  useResolvedPlan,
+  useTrainingStore,
+  useV4Warnings
+} from '../../stores';
 import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
 import { useHmV2Needed } from '../../stores/hmV2Actions';
 import { useMarathonV2Needed } from '../../stores/marathonV2Actions';
@@ -18,6 +24,8 @@ import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
 import { DayRow } from './DayRow';
 import { GoalAssessmentLine } from './GoalAssessment';
+import { V4FormCard } from './V4FormCard';
+import { LegacyPlanNotice } from './LegacyPlanNotice';
 
 const byDate = (a: { date: string }, b: { date: string }): number => {
   const da = a.date || '9999-99-99';
@@ -53,7 +61,9 @@ export default function PlanPage() {
   const [picked, setPicked] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
 
-  const warnings = gen?.meta?.dayWarnings;
+  /* F9 korak 7: plan iz V4 nosi upozorenja u zaglavlju (`header.warnings`); inače kao pre. */
+  const v4Warnings = useV4Warnings();
+  const warnings = v4Warnings ?? gen?.meta?.dayWarnings;
   const view = useMemo(() => {
     if (!plan || !today) return null;
     return { race: effectiveRaceDate(plan, gen?.meta?.['raceDate']) };
@@ -99,7 +109,9 @@ export default function PlanPage() {
           </p>
         ) : null}
         <GoalAssessmentLine meta={gen?.meta} />
+        <V4FormCard />
       </header>
+      <LegacyPlanNotice />
 
       <div className="weeknav">
         <div className="weeknav-t">

@@ -2,7 +2,7 @@
    (1) Posle sporijeg rezultata konstruktor je zadržavao prethodnu dozu (workouts.baseWeek `pm`) čije ponavljanje
    na novom tempu traje duže od plafona → R_REP (npr. 0,4 km × 308 s/km = 123 s > 120 s). Ispravka: workouts.repFits —
    ponovljena/zadržana struktura (R, I, RP, T cruise) mora stati u plafon trajanja na tekućem tempu (kao validator).
-   (2) Rezultat sa VDOT van 30–60 → RESULT_IGNORED sa vrednošću i opsegom (kao 10K A1); adaptacija se nastavlja.
+   (2) Rezultat sa VDOT van 30–60 (od 5k-v2.13.0 30–70) → RESULT_IGNORED sa vrednošću i opsegom (kao 10K A1); adaptacija se nastavlja.
    Trajna mreža ivica: km max po broju dana (35 / 45 / 65), VDOT 30 i 60, lak 330 i 510 s/km, 6 i 16 nedelja, trka
    subota i nedelja × rezultat (sporiji, brži, test 3 km/5 km, ivica VDOT) i umor → 0 odbijanja. */
 
@@ -66,7 +66,7 @@ describe('08k (2) rezultat van opsega VDOT', () => {
     const r = adaptFiveKV2(p, earlyFacts(p as unknown as EarlyPlan, 'slower', at), at);
     if (!r.ok) throw new Error(S(r.reasons));
     const x = r.reasons.find((y) => y.condition === 'RESULT_IGNORED');
-    expect(x?.message).toMatch(/VDOT 28 van 30–60/);
+    expect(x?.message).toMatch(/VDOT 28 van 30–70/);
     expect(r.plan.vdot).toBe(30);
   });
 });
@@ -141,8 +141,8 @@ describe('08k trajna mreža ivica (km max 35/45/65, VDOT 30/60, lak 330/510, trk
               `${b.id}/${s}/${at}: ${r.violations.map((v) => v.rule).join('+') || r.reasons.map((x) => x.code).join('+')}`
             );
         }
-        // Ivica VDOT: rezultat tačno na granicama opsega (30, 60) i van njega (29, 61).
-        for (const v of [29, 30, 60, 61]) {
+        // Ivica VDOT: rezultat tačno na granicama opsega (30, 70; 5k-v2.13.0, P4 S2) i van njega (29, 71).
+        for (const v of [29, 30, 70, 71]) {
           const r = adaptFiveKV2(
             p,
             {

@@ -2,7 +2,7 @@
    ovih odluka. */
 
 import { addDays } from './dates.ts';
-import { TEN_K_V2_POLICY as P } from './policy.ts';
+import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { IsoDate, Phase, WeekFrame } from './types.ts';
 
 export interface PhaseCounts {
@@ -118,9 +118,44 @@ export function deloadWeeks(phases: readonly Phase[]): number[] | null {
   return out;
 }
 
-/** D27: nedelja testa 5 km = poslednja nedelja baze (1-indeks). */
-export function testWeekOf(phases: readonly Phase[]): number {
-  return phases.lastIndexOf('base') + 1;
+/** D27 / D35 (P5 F1): vrsta testa 5 km plana — 'feel' plan po osećaju koji nije početnik (D27/D32), 'control' kontrolni
+    test plana sa rezultatom (ne početnik) od test.controlMinWeeks nedelja (D35), null bez testa. JEDINO mesto odluke
+    (konstruktor, adapt.ts i validator). */
+export type TestKind = 'feel' | 'control' | null;
+export function testKindOf(feel: boolean, rule: PlanRule, weeks: number): TestKind {
+  if (rule.beginner) return null;
+  if (feel) return rule.feelTest ? 'feel' : null;
+  return weeks >= P.test.controlMinWeeks ? 'control' : null;
+}
+
+/** D27: nedelja testa 5 km = poslednja nedelja baze (1-indeks). D35 (kontrolni test): poslednja ne-rasteretna nedelja
+    razvoja (`deloads` = rasteretne nedelje D5). G7 (D46) / P9b (D52): ne pre test.minWeek; 0 = nema takve nedelje.
+    JEDINO mesto odluke o nedelji testa (konstruktor i validator). */
+export function testWeekOf(
+  phases: readonly Phase[],
+  kind: 'feel' | 'control' = 'feel',
+  deloads: readonly number[] = []
+): number {
+  let tw = 0;
+  if (kind === 'feel') tw = phases.lastIndexOf('base') + 1;
+  else
+    for (let i = phases.length; i >= 1 && tw === 0; i--)
+      if (phases[i - 1] === 'development' && !deloads.includes(i)) tw = i;
+  // G7 (P8 dopuna, D46): test ne pre nedelje test.minWeek — inače prva ne-rasteretna nedelja ≥ minWeek iste faze, ili bez
+  // testa.
+  const min = P.test.minWeek;
+  if (tw === 0 || tw >= min) return tw;
+  const ph = phases[tw - 1];
+  for (let i = min; i <= phases.length; i++) {
+    if (phases[i - 1] !== ph) break;
+    if (!deloads.includes(i)) return i;
+  }
+  // P9b (D52): plan po osećaju bez takve nedelje baze — prva ne-rasteretna nedelja razvoja ≥ minWeek (test umesto
+  // kvaliteta te nedelje, jedini kvalitet po G7); nema je → bez testa. Kontrolni test bez promene.
+  if (kind === 'feel')
+    for (let i = min; i <= phases.length; i++)
+      if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;
+  return 0;
 }
 
 /**
@@ -143,13 +178,13 @@ export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFra
   });
 }
 
-/** Okviri nedelja: datumi, faza, rasterećenje; `test` (plan po osećaju, D27) označava nedelju testa.
-    null kad D5 nema rešenja. */
-export function periodize(startDate: IsoDate, weeks: number, test = false): WeekFrame[] | null {
+/** Okviri nedelja: datumi, faza, rasterećenje; `test` (vrsta testa, testKindOf: D27 plan po osećaju, D35 kontrolni
+    test) označava nedelju testa. null kad D5 nema rešenja. */
+export function periodize(startDate: IsoDate, weeks: number, test: TestKind): WeekFrame[] | null {
   const phases = phasesOf(weeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
-  const tw = test ? testWeekOf(phases) : 0;
+  const tw = test ? testWeekOf(phases, test, deloads) : 0;
   return phases.map((phase, i) => ({
     index: i + 1,
     startDate: addDays(startDate, 7 * i),

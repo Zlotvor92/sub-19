@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan } from '@/test/generators';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';

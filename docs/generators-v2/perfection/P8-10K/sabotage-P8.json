@@ -1,0 +1,83 @@
+[
+  {
+    "name": "P8-G1a bez G1 (korak D6)",
+    "file": "src/domain/generators/tenK/v2/volume.ts",
+    "find": "  if (left <= 0 || last10 >= cap10) return g;",
+    "replace": "  return g;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G1b preostale nedelje broje i rasterećenja",
+    "file": "src/domain/generators/tenK/v2/volume.ts",
+    "find": "(f.phase === 'base' || f.phase === 'development') && !f.deload) n++;",
+    "replace": "(f.phase === 'base' || f.phase === 'development')) n++;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G1c validator bez G1 (stari rekurent)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "                  : Math.min(lastBuild + growthStep10(lastBuild, cap10, rule, left), cap10),",
+    "replace": "                  : Math.min(lastBuild + growthStep10(lastBuild, cap10, rule, 0), cap10),",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G2a plafon bez donje granice prvog nivoa",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "    zoneFloorM(zone, beginner)\n  );",
+    "replace": "    0\n  );",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G2b donja granica bez lestvice početnika",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "ZONE_LADDERS[zone].map((l) => doseOf(ladderLevels(l, beginner)[0]!))",
+    "replace": "ZONE_LADDERS[zone].map((l) => doseOf(ladderLevels(l, false)[0]!))",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G3a tehnička napomena „ne može da se sastavi” ide trkaču",
+    "file": "src/domain/generators/tenK/v2/userNotes.ts",
+    "find": "  [/^Nedelja ne može da se sastavi na .*$/u, null],\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G3b upozorenja bez zbira (svako doslovno)",
+    "file": "src/domain/generators/tenK/v2/userNotes.ts",
+    "find": "    if (IN_WEEK_NOTES.has(rule)) continue;",
+    "replace": "    for (const v of vs) push(v.message);\n    continue;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G3c napomena testa bez uputstva za rezultat",
+    "file": "src/domain/generators/tenK/v2/userNotes.ts",
+    "find": "Do testa je tempo procena. Posle testa unesi rezultat: tempo treninga i ocena cilja se prilagođavaju od sledeće nedelje.",
+    "replace": "Do testa je tempo procena.",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-D42 bez upozorenja SHORT_EASY",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "    if (fewer && short.length > 0)",
+    "replace": "    if (false)",
+    "tests": [
+      "src/domain/generators/tenK/v2/p8.node.test.ts"
+    ]
+  }
+]

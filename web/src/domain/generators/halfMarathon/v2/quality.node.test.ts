@@ -106,12 +106,21 @@ describe('H11 plafon (pouka 10)', () => {
 });
 
 describe('H12 progresija', () => {
-  it('početni nivo = najviši ≤ 60 % plafona, najmanje prvi nivo', () => {
-    expect(fmt(startLevel('T_continuous', 40)!)).toBe('2 kont'); // 60 % od 4000 = 2400 → 2,0
-    expect(fmt(startLevel('T_continuous', 60)!)).toBe('3 kont'); // 3600 → 3,0
-    expect(fmt(startLevel('RP', 60)!)).toBe('2x2500'); // 60 % od 9000 = 5400
-    expect(fmt(startLevel('I', 30)!)).toBe('2x1000'); // 1440 < prvi nivo → prvi nivo
-    expect(startLevel('RP', 20)).toBeNull();
+  it('početni nivo = najviši ≤ 80 % plafona za T i I (P5-F4), ≤ 60 % za R i RP, najmanje prvi nivo', () => {
+    expect(fmt(startLevel('T_continuous', 40)!)).toBe('3 kont'); // 80 % od 4000 = 3200 → 3,0
+    expect(fmt(startLevel('T_continuous', 60)!)).toBe('4 kont'); // 4800 → 4,0
+    expect(fmt(startLevel('T_cruise', 50)!)).toBe('4x1000'); // 80 % od 5000 = 4000
+    expect(fmt(startLevel('I', 50)!)).toBe('3x1000'); // 80 % od 4000 = 3200 → 3000
+    expect(fmt(startLevel('R', 60)!)).toBe('6x300'); // 60 % od 3000 = 1800
+    expect(fmt(startLevel('RP', 60)!)).toBe('2x3000'); // P1-S2: 60 % od 12 000 (20 %) = 7200
+    expect(fmt(startLevel('I', 30)!)).toBe('2x1000'); // 1920 < prvi nivo → prvi nivo
+    // P8 G2: prvi nivo lestvice uvek staje (bilo: null — ni prvi nivo ne staje u plafon).
+    expect(fmt(startLevel('RP', 20)!)).toBe('2x2000');
+    // P8 G4: uz tempo nedelje plafon je i u minutima — I ≤ 24 min (VDOT ≥ 40), T ≤ 30 min, RP ≤ 45 min.
+    expect(capM('RP', 90, p45)).toBeLessThan(capM('RP', 90));
+    expect((capM('RP', 90, p45) / 1000) * p45.RP).toBeLessThanOrEqual(2700);
+    expect((capM('T', 79, p45) / 1000) * p45.T).toBeLessThanOrEqual(1800);
+    expect(capM('RP', 20, p45, 4000)).toBe(4000);
   });
 
   it('sledeći nivo ako staje (≤ 1 nivo), inače ista doza druge strukture, inače ponavljanje', () => {
@@ -176,6 +185,7 @@ describe('H12 progresija', () => {
       50,
       p45
     )!;
+    // P8 G4: plafon RP = min(20 % od 50 km, 45 min po RP tempu) → početni nivo (60 %) 5000 ≥ poslednje I 4800.
     expect(rp.doseM).toBe(5000);
     const rpStart = pickSlot(
       { ladder: 'I', doseM: 2000, structure: { form: 'reps', reps: 2, repM: 1000 } },
@@ -183,7 +193,7 @@ describe('H12 progresija', () => {
       60,
       p45
     )!;
-    expect(rpStart.doseM).toBe(5000); // početni nivo 60 km (≤ 5400) > poslednje I
+    expect(rpStart.doseM).toBe(5000); // P8 G4: 60 % od min(12 000, 45 min RP) → 5000 > poslednje I
   });
 
   it('pouka 12: doza pada samo uz allowDrop (druga pretraga, nedelja ograničena kapacitetom)', () => {
@@ -199,7 +209,7 @@ describe('H12 progresija', () => {
 
   it('prva nedelja izgradnje: oba slota na početnom nivou', () => {
     const w = pickBuild(INITIAL_QUALITY, 'base', 40, p45, R4)!;
-    expect([fmt(w.q1!.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '2 kont']);
+    expect([fmt(w.q1!.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '3 kont']);
   });
 });
 
@@ -242,7 +252,14 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
       q2: { ladder: 'T_cruise', doseM: 3000, structure: { form: 'reps', reps: 3, repM: 1000 } },
       t: 3000
     });
-    expect([fmt(lo.q1.structure), fmt(lo.q2!.structure)]).toEqual(['2x2000', '2x1000']);
+    // K3-B: 0,6 × 5000 = 3000 < 2 × 2000 → kraća struktura van lestvice 2 × 1500 (bilo 2 × 2000).
+    expect([fmt(lo.q1.structure), fmt(lo.q2!.structure)]).toEqual(['2x1500', '2x1000']);
+    const four = taperDoses({
+      q1: { ladder: 'RP', doseM: 4000, structure: { form: 'reps', reps: 2, repM: 2000 } },
+      q2: null,
+      t: 0
+    });
+    expect(fmt(four.q1.structure)).toBe('2x1200');
   });
 
   it('HI6 (3 dana): rasterećenje T ≈ 60 % poslednje doze jedinog slota (Q1); taper samo RP', () => {
@@ -253,10 +270,10 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
         structure: { form: 'reps', reps: 2, repM: 4000 } as Structure
       },
       q2: null,
-      t: 0
+      t: 4000
     };
-    // 0,6 × 8000 = 4800 → T cruise 3 × 1600 (specifično).
-    expect(fmt(deloadDose(rp, 'specific', R3).structure)).toBe('3x1600');
+    // P8 G5: ≈ 60 % poslednje T doze (4000 → 2400), ne doze slota (RP 8000): T cruise 2 × 1200.
+    expect(fmt(deloadDose(rp, 'specific', R3).structure)).toBe('2x1200');
     const t = taperDoses(rp, 1);
     expect([t.q1.doseM, t.q2]).toEqual([4000, null]);
   });

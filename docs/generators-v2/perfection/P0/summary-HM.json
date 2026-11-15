@@ -1,0 +1,5622 @@
+{
+ "distance": "HM",
+ "inputs": 192,
+ "ok": 192,
+ "rejected": [],
+ "errors": [],
+ "policyVersions": [
+  "hm-v2.8.0"
+ ],
+ "groups": {
+  "ALL|all|all": {
+   "n": 192,
+   "M1_T_first": {
+    "med": 11.3,
+    "min": 6.9,
+    "max": 23.2,
+    "n": 192
+   },
+   "M1_T_max": {
+    "med": 22,
+    "min": 8.6,
+    "max": 45.3,
+    "n": 192
+   },
+   "M1_T_plansWith": 192,
+   "M1_I_first": {
+    "med": 11.6,
+    "min": 6.3,
+    "max": 23.1,
+    "n": 132
+   },
+   "M1_I_max": {
+    "med": 15.7,
+    "min": 6.3,
+    "max": 34.7,
+    "n": 132
+   },
+   "M1_I_plansWith": 132,
+   "M1_R_first": {
+    "med": 5.95,
+    "min": 3.6,
+    "max": 13.1,
+    "n": 132
+   },
+   "M1_R_max": {
+    "med": 9.6,
+    "min": 3.6,
+    "max": 17.5,
+    "n": 132
+   },
+   "M1_R_plansWith": 132,
+   "M1_RP_first": {
+    "med": 23.5,
+    "min": 13.8,
+    "max": 52.4,
+    "n": 192
+   },
+   "M1_RP_max": {
+    "med": 35.3,
+    "min": 17.3,
+    "max": 78.6,
+    "n": 192
+   },
+   "M1_RP_plansWith": 192,
+   "M2_first": {
+    "med": 0.15,
+    "min": 0.08,
+    "max": 0.33,
+    "n": 192
+   },
+   "M2_atMax": {
+    "med": 0.51,
+    "min": 0.36,
+    "max": 0.66,
+    "n": 192
+   },
+   "M3_maxKm": {
+    "med": 8,
+    "min": 4,
+    "max": 12,
+    "n": 192
+   },
+   "M3_maxPct": {
+    "med": 37.9,
+    "min": 19,
+    "max": 56.9,
+    "n": 192
+   },
+   "M3_totalKm": {
+    "med": 29,
+    "min": 8,
+    "max": 53,
+    "n": 192
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 2,
+    "max": 6,
+    "n": 192
+   },
+   "M4_maxKm": {
+    "med": 20,
+    "min": 11.2,
+    "max": 24,
+    "n": 192
+   },
+   "M4_maxMin": {
+    "med": 119,
+    "min": 63,
+    "max": 145,
+    "n": 192
+   },
+   "M4_pct": {
+    "med": 94.8,
+    "min": 53.1,
+    "max": 113.8,
+    "n": 192
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 192
+   },
+   "M4_plateau": {
+    "med": 7,
+    "min": 1,
+    "max": 14,
+    "n": 192
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 192
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 1,
+    "n": 192
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 7,
+    "max": 20,
+    "n": 192
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.4,
+    "min": 1.1,
+    "max": 15.6,
+    "n": 192
+   },
+   "M7_development": {
+    "med": 9.05,
+    "min": 3.5,
+    "max": 13.5,
+    "n": 192
+   },
+   "M7_specific": {
+    "med": 16.5,
+    "min": 7.6,
+    "max": 21.9,
+    "n": 192
+   },
+   "M7_taper": {
+    "med": 15.4,
+    "min": 0,
+    "max": 21.8,
+    "n": 192
+   },
+   "M7_race": {
+    "med": 19,
+    "min": 0,
+    "max": 31.5,
+    "n": 192
+   },
+   "M8_peakOverStart": {
+    "med": 1.39,
+    "min": 1.07,
+    "max": 1.55,
+    "n": 192
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.36,
+    "min": 1.01,
+    "max": 1.4,
+    "n": 192
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.2,
+    "max": 0.45,
+    "n": 192
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 146,
+     "prelaz faze (faza se završila)": 13,
+     "≤ 1 nivo nedeljno (faza se završila)": 7,
+     "kraj lestvice": 11
+    },
+    "RP": {
+     "plafon udela zone": 107,
+     "≤ 1 nivo nedeljno (faza se završila)": 71,
+     "dan ≤ dugi (pouka 32)": 1,
+     "kraj lestvice": 13
+    },
+    "R": {
+     "plafon udela zone": 46,
+     "≤ 1 nivo nedeljno (faza se završila)": 36,
+     "kraj lestvice": 49,
+     "dan ≤ dugi (pouka 32)": 1
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 48,
+     "plafon udela zone": 38,
+     "≤ 1 nivo nedeljno (faza se završila)": 29,
+     "kraj lestvice": 17
+    }
+   },
+   "repro": {
+    "checked": 3089,
+    "same": 3081
+   }
+  },
+  "B|all|all": {
+   "n": 16,
+   "M1_T_first": {
+    "med": 8.65,
+    "min": 8.5,
+    "max": 8.8,
+    "n": 16
+   },
+   "M1_T_max": {
+    "med": 17.5,
+    "min": 14.2,
+    "max": 28,
+    "n": 16
+   },
+   "M1_T_plansWith": 16,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 24.3,
+    "min": 23.5,
+    "max": 30.4,
+    "n": 16
+   },
+   "M1_RP_max": {
+    "med": 32.85,
+    "min": 23.5,
+    "max": 54.8,
+    "n": 16
+   },
+   "M1_RP_plansWith": 16,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 16
+   },
+   "M2_atMax": {
+    "med": 0.55,
+    "min": 0.47,
+    "max": 0.66,
+    "n": 16
+   },
+   "M3_maxKm": {
+    "med": 5.5,
+    "min": 4,
+    "max": 9,
+    "n": 16
+   },
+   "M3_maxPct": {
+    "med": 26.05,
+    "min": 19,
+    "max": 42.7,
+    "n": 16
+   },
+   "M3_totalKm": {
+    "med": 21,
+    "min": 8,
+    "max": 37,
+    "n": 16
+   },
+   "M3_weeksWith": {
+    "med": 4.5,
+    "min": 2,
+    "max": 6,
+    "n": 16
+   },
+   "M4_maxKm": {
+    "med": 14.6,
+    "min": 11.2,
+    "max": 18.6,
+    "n": 16
+   },
+   "M4_maxMin": {
+    "med": 104,
+    "min": 78,
+    "max": 130,
+    "n": 16
+   },
+   "M4_pct": {
+    "med": 69.2,
+    "min": 53.1,
+    "max": 88.2,
+    "n": 16
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 16
+   },
+   "M4_plateau": {
+    "med": 6,
+    "min": 1,
+    "max": 11,
+    "n": 16
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 16
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 16
+   },
+   "M6_weeksToRace": {
+    "med": 16,
+    "min": 12,
+    "max": 20,
+    "n": 16
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 2.75,
+    "min": 1.1,
+    "max": 6.2,
+    "n": 16
+   },
+   "M7_development": {
+    "med": 7.2,
+    "min": 4.8,
+    "max": 8.9,
+    "n": 16
+   },
+   "M7_specific": {
+    "med": 11.45,
+    "min": 7.6,
+    "max": 13,
+    "n": 16
+   },
+   "M7_taper": {
+    "med": 8.7,
+    "min": 6.1,
+    "max": 11.9,
+    "n": 16
+   },
+   "M7_race": {
+    "med": 11.35,
+    "min": 1.8,
+    "max": 26.8,
+    "n": 16
+   },
+   "M8_peakOverStart": {
+    "med": 1.39,
+    "min": 1.31,
+    "max": 1.4,
+    "n": 16
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.39,
+    "min": 1.31,
+    "max": 1.4,
+    "n": 16
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.33,
+    "min": 0.3,
+    "max": 0.4,
+    "n": 16
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 10,
+     "≤ 1 nivo nedeljno (faza se završila)": 6
+    },
+    "RP": {
+     "plafon udela zone": 12,
+     "≤ 1 nivo nedeljno (faza se završila)": 4
+    }
+   },
+   "repro": {
+    "checked": 144,
+    "same": 144
+   }
+  },
+  "B|d4|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 8.65,
+    "min": 8.5,
+    "max": 8.8,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 14.4,
+    "min": 14.2,
+    "max": 14.6,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 23.9,
+    "min": 23.5,
+    "max": 24.3,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 23.9,
+    "min": 23.5,
+    "max": 24.3,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.48,
+    "min": 0.47,
+    "max": 0.48,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 4,
+    "min": 4,
+    "max": 4,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 19,
+    "min": 19,
+    "max": 19,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 12,
+    "min": 8,
+    "max": 16,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 3,
+    "min": 2,
+    "max": 4,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 11.2,
+    "min": 11.2,
+    "max": 11.2,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 79,
+    "min": 78,
+    "max": 80,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 53.1,
+    "min": 53.1,
+    "max": 53.1,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 7,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 16,
+    "min": 12,
+    "max": 20,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 4.3,
+    "min": 2.4,
+    "max": 6.2,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 8.65,
+    "min": 8.4,
+    "max": 8.9,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 12.4,
+    "min": 11.8,
+    "max": 13,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 7.65,
+    "min": 7.6,
+    "max": 7.7,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 2.5,
+    "min": 2.5,
+    "max": 2.5,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.4,
+    "min": 0.4,
+    "max": 0.4,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 4
+    },
+    "RP": {
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 36,
+    "same": 36
+   }
+  },
+  "B|d4|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 8.65,
+    "min": 8.5,
+    "max": 8.8,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 22.35,
+    "min": 17,
+    "max": 28,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 26.85,
+    "min": 23.5,
+    "max": 30.4,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 41.8,
+    "min": 35.3,
+    "max": 48.7,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.61,
+    "min": 0.57,
+    "max": 0.64,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 7,
+    "min": 6,
+    "max": 8,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 33.15,
+    "min": 28.4,
+    "max": 37.9,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 29,
+    "min": 23,
+    "max": 35,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 18.3,
+    "min": 18,
+    "max": 18.6,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 129,
+    "min": 128,
+    "max": 130,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 86.75,
+    "min": 85.3,
+    "max": 88.2,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 7.5,
+    "min": 4,
+    "max": 11,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 16,
+    "min": 12,
+    "max": 20,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 2.3,
+    "min": 1.2,
+    "max": 3.4,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 5.8,
+    "min": 5.3,
+    "max": 6.3,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 9.75,
+    "min": 8.3,
+    "max": 11.1,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 10.5,
+    "min": 10.4,
+    "max": 10.6,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 26.6,
+    "min": 26.4,
+    "max": 26.8,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.37,
+    "min": 1.35,
+    "max": 1.38,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.37,
+    "min": 1.35,
+    "max": 1.38,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.34,
+    "min": 0.33,
+    "max": 0.34,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    }
+   },
+   "repro": {
+    "checked": 36,
+    "same": 36
+   }
+  },
+  "B|d5|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 8.65,
+    "min": 8.5,
+    "max": 8.8,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 17.8,
+    "min": 17,
+    "max": 18.7,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 23.9,
+    "min": 23.5,
+    "max": 24.3,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 29.9,
+    "min": 29.4,
+    "max": 30.4,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.53,
+    "min": 0.53,
+    "max": 0.53,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 5,
+    "min": 5,
+    "max": 5,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 23.7,
+    "min": 23.7,
+    "max": 23.7,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 16.5,
+    "min": 14,
+    "max": 19,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 3.5,
+    "min": 3,
+    "max": 4,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 11.2,
+    "min": 11.2,
+    "max": 11.2,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 79,
+    "min": 78,
+    "max": 80,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 53.1,
+    "min": 53.1,
+    "max": 53.1,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 7,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 16,
+    "min": 12,
+    "max": 20,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 3.7,
+    "min": 1.9,
+    "max": 5.5,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 8.2,
+    "min": 8.1,
+    "max": 8.3,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 12.2,
+    "min": 12.2,
+    "max": 12.2,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 6.1,
+    "min": 6.1,
+    "max": 6.1,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 1.8,
+    "min": 1.8,
+    "max": 1.8,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.32,
+    "max": 0.32,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 4
+    },
+    "RP": {
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 36,
+    "same": 36
+   }
+  },
+  "B|d5|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 8.65,
+    "min": 8.5,
+    "max": 8.8,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 22.35,
+    "min": 17,
+    "max": 28,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 26.85,
+    "min": 23.5,
+    "max": 30.4,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 44.75,
+    "min": 35.3,
+    "max": 54.8,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.62,
+    "min": 0.57,
+    "max": 0.66,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 7.5,
+    "min": 6,
+    "max": 9,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 35.55,
+    "min": 28.4,
+    "max": 42.7,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 30,
+    "min": 23,
+    "max": 37,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 18.3,
+    "min": 18,
+    "max": 18.6,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 129,
+    "min": 128,
+    "max": 130,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 86.75,
+    "min": 85.3,
+    "max": 88.2,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 4.5,
+    "min": 1,
+    "max": 8,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 16,
+    "min": 12,
+    "max": 20,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 2.1,
+    "min": 1.1,
+    "max": 3.1,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 5.25,
+    "min": 4.8,
+    "max": 5.7,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 9.1,
+    "min": 7.6,
+    "max": 10.6,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 10.8,
+    "min": 9.7,
+    "max": 11.9,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 20.35,
+    "min": 20.2,
+    "max": 20.5,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.32,
+    "min": 1.31,
+    "max": 1.33,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.32,
+    "min": 1.31,
+    "max": 1.33,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.31,
+    "min": 0.3,
+    "max": 0.32,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "≤ 1 nivo nedeljno (faza se završila)": 4
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    }
+   },
+   "repro": {
+    "checked": 36,
+    "same": 36
+   }
+  },
+  "F|all|all": {
+   "n": 32,
+   "M1_T_first": {
+    "med": 12.5,
+    "min": 9.1,
+    "max": 22.8,
+    "n": 32
+   },
+   "M1_T_max": {
+    "med": 21.9,
+    "min": 11.4,
+    "max": 41.1,
+    "n": 32
+   },
+   "M1_T_plansWith": 32,
+   "M1_I_first": {
+    "med": 12.7,
+    "min": 8.4,
+    "max": 23.1,
+    "n": 24
+   },
+   "M1_I_max": {
+    "med": 17.15,
+    "min": 8.4,
+    "max": 34.7,
+    "n": 24
+   },
+   "M1_I_plansWith": 24,
+   "M1_R_first": {
+    "med": 6.8,
+    "min": 4.8,
+    "max": 13.1,
+    "n": 24
+   },
+   "M1_R_max": {
+    "med": 9.8,
+    "min": 4.8,
+    "max": 17.5,
+    "n": 24
+   },
+   "M1_R_plansWith": 24,
+   "M1_RP_first": {
+    "med": 26.2,
+    "min": 18.7,
+    "max": 52.4,
+    "n": 32
+   },
+   "M1_RP_max": {
+    "med": 39.3,
+    "min": 23.4,
+    "max": 78.6,
+    "n": 32
+   },
+   "M1_RP_plansWith": 32,
+   "M2_first": {
+    "med": 0.17,
+    "min": 0.11,
+    "max": 0.33,
+    "n": 32
+   },
+   "M2_atMax": {
+    "med": 0.53,
+    "min": 0.43,
+    "max": 0.64,
+    "n": 32
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 5,
+    "max": 12,
+    "n": 32
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 23.7,
+    "max": 56.9,
+    "n": 32
+   },
+   "M3_totalKm": {
+    "med": 29,
+    "min": 14,
+    "max": 53,
+    "n": 32
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 3,
+    "max": 6,
+    "n": 32
+   },
+   "M4_maxKm": {
+    "med": 18.05,
+    "min": 15.6,
+    "max": 24,
+    "n": 32
+   },
+   "M4_maxMin": {
+    "med": 129,
+    "min": 86,
+    "max": 145,
+    "n": 32
+   },
+   "M4_pct": {
+    "med": 85.55,
+    "min": 73.9,
+    "max": 113.8,
+    "n": 32
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 32
+   },
+   "M4_plateau": {
+    "med": 7,
+    "min": 1,
+    "max": 14,
+    "n": 32
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 32
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 32
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 32
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 10.35,
+    "min": 3.6,
+    "max": 15.6,
+    "n": 32
+   },
+   "M7_development": {
+    "med": 8.5,
+    "min": 3.6,
+    "max": 13.3,
+    "n": 32
+   },
+   "M7_specific": {
+    "med": 16.9,
+    "min": 8.9,
+    "max": 21.9,
+    "n": 32
+   },
+   "M7_taper": {
+    "med": 15.4,
+    "min": 0,
+    "max": 21.8,
+    "n": 32
+   },
+   "M7_race": {
+    "med": 19.5,
+    "min": 0,
+    "max": 29.4,
+    "n": 32
+   },
+   "M8_peakOverStart": {
+    "med": 1.36,
+    "min": 1.07,
+    "max": 1.4,
+    "n": 32
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.31,
+    "min": 1.01,
+    "max": 1.4,
+    "n": 32
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.2,
+    "max": 0.45,
+    "n": 32
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 22,
+     "prelaz faze (faza se završila)": 2,
+     "kraj lestvice": 2
+    },
+    "RP": {
+     "plafon udela zone": 19,
+     "≤ 1 nivo nedeljno (faza se završila)": 10,
+     "kraj lestvice": 3
+    },
+    "R": {
+     "plafon udela zone": 9,
+     "≤ 1 nivo nedeljno (faza se završila)": 8,
+     "kraj lestvice": 7
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 12,
+     "plafon udela zone": 8,
+     "kraj lestvice": 3,
+     "≤ 1 nivo nedeljno (faza se završila)": 1
+    }
+   },
+   "repro": {
+    "checked": 484,
+    "same": 484
+   }
+  },
+  "F|d3|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 10.8,
+    "min": 9.1,
+    "max": 12.5,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 15.15,
+    "min": 11.4,
+    "max": 20.1,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 22.45,
+    "min": 18.7,
+    "max": 26.2,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 28.1,
+    "min": 23.4,
+    "max": 32.8,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.3,
+    "min": 0.27,
+    "max": 0.33,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.51,
+    "min": 0.47,
+    "max": 0.55,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 5,
+    "min": 5,
+    "max": 5,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 23.7,
+    "min": 23.7,
+    "max": 23.7,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 16.5,
+    "min": 14,
+    "max": 19,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 3.5,
+    "min": 3,
+    "max": 4,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 15.7,
+    "min": 15.7,
+    "max": 15.7,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 102,
+    "min": 86,
+    "max": 118,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 74.4,
+    "min": 74.4,
+    "max": 74.4,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 3,
+    "min": 1,
+    "max": 8,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 10.9,
+    "min": 9.9,
+    "max": 11.9,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 8.45,
+    "min": 8.4,
+    "max": 8.6,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 12.65,
+    "min": 11.3,
+    "max": 14,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.45,
+    "min": 0.45,
+    "max": 0.45,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 4
+    },
+    "RP": {
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 38,
+    "same": 38
+   }
+  },
+  "F|d3|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 11.95,
+    "min": 11.4,
+    "max": 12.5,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 20.8,
+    "min": 13.7,
+    "max": 25.1,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 24.8,
+    "min": 18.7,
+    "max": 26.2,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 38.4,
+    "min": 28.1,
+    "max": 39.3,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.25,
+    "max": 0.26,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.51,
+    "min": 0.43,
+    "max": 0.52,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 8,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 37.9,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 26,
+    "min": 23,
+    "max": 35,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 21.65,
+    "min": 19.3,
+    "max": 24,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 138.5,
+    "min": 132,
+    "max": 145,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 102.65,
+    "min": 91.5,
+    "max": 113.8,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 6.5,
+    "min": 3,
+    "max": 11,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 7.95,
+    "min": 7.3,
+    "max": 8.6,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 7.6,
+    "min": 5.5,
+    "max": 8.5,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 10.7,
+    "min": 9.2,
+    "max": 11.2,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 11.5,
+    "min": 10.4,
+    "max": 12.6,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 26.4,
+    "min": 23.4,
+    "max": 29.4,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.27,
+    "min": 1.22,
+    "max": 1.31,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.12,
+    "min": 1.01,
+    "max": 1.22,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.43,
+    "min": 0.42,
+    "max": 0.44,
+    "n": 4
+   },
+   "hold": {
+    "T": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 1,
+     "plafon udela zone": 3
+    }
+   },
+   "repro": {
+    "checked": 38,
+    "same": 38
+   }
+  },
+  "F|d4|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 10.8,
+    "min": 9.1,
+    "max": 12.5,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 21.7,
+    "min": 18.3,
+    "max": 25.1,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 10,
+    "min": 8.4,
+    "max": 11.6,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 12.15,
+    "min": 8.4,
+    "max": 17.4,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 5.65,
+    "min": 4.8,
+    "max": 6.5,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 6.8,
+    "min": 4.8,
+    "max": 9.8,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 22.45,
+    "min": 18.7,
+    "max": 26.2,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 33.7,
+    "min": 28.1,
+    "max": 39.3,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.16,
+    "min": 0.14,
+    "max": 0.17,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.55,
+    "min": 0.51,
+    "max": 0.6,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 6,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 28.4,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 26,
+    "min": 23,
+    "max": 29,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 16.8,
+    "min": 16.8,
+    "max": 16.8,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 109,
+    "min": 92,
+    "max": 126,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 79.6,
+    "min": 79.6,
+    "max": 79.6,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 5,
+    "min": 1,
+    "max": 8,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 14.55,
+    "min": 13.5,
+    "max": 15.6,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 12.1,
+    "min": 10.9,
+    "max": 13.3,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 20.65,
+    "min": 19.5,
+    "max": 21.9,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 21.75,
+    "min": 21.7,
+    "max": 21.8,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 26.35,
+    "min": 25.1,
+    "max": 27.6,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.4,
+    "min": 0.4,
+    "max": 0.4,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "plafon udela zone": 4
+    },
+    "T": {
+     "plafon udela zone": 4
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 80,
+    "same": 80
+   }
+  },
+  "F|d4|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 13.1,
+    "min": 12.5,
+    "max": 13.7,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 20.85,
+    "min": 12.5,
+    "max": 29.2,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 13.3,
+    "min": 12.7,
+    "max": 13.9,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 17.5,
+    "min": 12.7,
+    "max": 27.7,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 7.9,
+    "min": 7.1,
+    "max": 8.7,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 11.3,
+    "min": 8,
+    "max": 13.1,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 30.45,
+    "min": 28.1,
+    "max": 32.8,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 49.6,
+    "min": 42.2,
+    "max": 59,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.14,
+    "min": 0.13,
+    "max": 0.15,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.55,
+    "min": 0.5,
+    "max": 0.58,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 9,
+    "min": 8,
+    "max": 10,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 42.7,
+    "min": 37.9,
+    "max": 47.4,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 34.5,
+    "min": 27,
+    "max": 43,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 21.65,
+    "min": 19.3,
+    "max": 24,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 138.5,
+    "min": 132,
+    "max": 145,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 102.65,
+    "min": 91.5,
+    "max": 113.8,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 10.5,
+    "min": 7,
+    "max": 14,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 5.25,
+    "min": 4.3,
+    "max": 10.9,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 5.1,
+    "min": 4.2,
+    "max": 6.5,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 13.05,
+    "min": 9.9,
+    "max": 19.9,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 16.9,
+    "min": 15,
+    "max": 18.8,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 21.95,
+    "min": 19.5,
+    "max": 24.4,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.14,
+    "min": 1.09,
+    "max": 1.17,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.13,
+    "min": 1.06,
+    "max": 1.17,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.3,
+    "max": 0.34,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "kraj lestvice": 1,
+     "plafon udela zone": 1
+    },
+    "T": {
+     "plafon udela zone": 2
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    }
+   },
+   "repro": {
+    "checked": 50,
+    "same": 50
+   }
+  },
+  "F|d5|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 10.8,
+    "min": 9.1,
+    "max": 12.5,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 26,
+    "min": 21.9,
+    "max": 30.1,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 10,
+    "min": 8.4,
+    "max": 11.6,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 12.15,
+    "min": 8.4,
+    "max": 17.4,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 5.65,
+    "min": 4.8,
+    "max": 6.5,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 8.35,
+    "min": 6.4,
+    "max": 10.9,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 22.45,
+    "min": 18.7,
+    "max": 26.2,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 33.7,
+    "min": 28.1,
+    "max": 39.3,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.16,
+    "min": 0.14,
+    "max": 0.17,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.55,
+    "min": 0.51,
+    "max": 0.6,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 6,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 28.4,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 26,
+    "min": 23,
+    "max": 29,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 15.6,
+    "min": 15.6,
+    "max": 15.6,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 101.5,
+    "min": 86,
+    "max": 117,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 73.9,
+    "min": 73.9,
+    "max": 73.9,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 4.5,
+    "min": 1,
+    "max": 8,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 13.2,
+    "min": 12.7,
+    "max": 13.7,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 10.75,
+    "min": 9.3,
+    "max": 12.3,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 18.7,
+    "min": 18.1,
+    "max": 19.3,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 18.65,
+    "min": 18.6,
+    "max": 18.7,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 20.35,
+    "min": 19.5,
+    "max": 21.2,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.32,
+    "max": 0.32,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "T": {
+     "plafon udela zone": 4
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 80,
+    "same": 80
+   }
+  },
+  "F|d5|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 15.4,
+    "min": 12.5,
+    "max": 18.3,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 24.5,
+    "min": 12.5,
+    "max": 36.5,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 17.15,
+    "min": 16.9,
+    "max": 17.4,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 21.35,
+    "min": 16.9,
+    "max": 28.9,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 9.4,
+    "min": 8,
+    "max": 10.8,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 12.95,
+    "min": 9.5,
+    "max": 17.5,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 33.7,
+    "min": 28.1,
+    "max": 39.3,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 52.9,
+    "min": 42.2,
+    "max": 65.5,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.16,
+    "min": 0.14,
+    "max": 0.17,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.55,
+    "min": 0.5,
+    "max": 0.61,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 9.5,
+    "min": 9,
+    "max": 10,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 45.05,
+    "min": 42.7,
+    "max": 47.4,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 37.5,
+    "min": 32,
+    "max": 43,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 21.65,
+    "min": 19.3,
+    "max": 24,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 138.5,
+    "min": 132,
+    "max": 145,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 102.65,
+    "min": 91.5,
+    "max": 113.8,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 10.5,
+    "min": 7,
+    "max": 14,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 7.25,
+    "min": 4.1,
+    "max": 10.4,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 6.75,
+    "min": 3.7,
+    "max": 12.9,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 13.4,
+    "min": 9.2,
+    "max": 17.8,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 15.75,
+    "min": 13.3,
+    "max": 18.2,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 17.15,
+    "min": 15.1,
+    "max": 19.2,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.11,
+    "min": 1.08,
+    "max": 1.13,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.11,
+    "min": 1.07,
+    "max": 1.13,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.26,
+    "min": 0.24,
+    "max": 0.28,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "kraj lestvice": 2
+    },
+    "T": {
+     "plafon udela zone": 2
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "kraj lestvice": 1,
+     "≤ 1 nivo nedeljno (faza se završila)": 1
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 4
+    }
+   },
+   "repro": {
+    "checked": 59,
+    "same": 59
+   }
+  },
+  "F|d6|dno": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 10.8,
+    "min": 9.1,
+    "max": 12.5,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 26.45,
+    "min": 21.9,
+    "max": 31.3,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 10.85,
+    "min": 8.4,
+    "max": 13.9,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 14.25,
+    "min": 8.4,
+    "max": 23.2,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 5.65,
+    "min": 4.8,
+    "max": 6.5,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 9.1,
+    "min": 6.4,
+    "max": 13.1,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 24.8,
+    "min": 18.7,
+    "max": 32.8,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 38.4,
+    "min": 28.1,
+    "max": 52.4,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.12,
+    "min": 0.11,
+    "max": 0.13,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.51,
+    "min": 0.43,
+    "max": 0.59,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 7,
+    "min": 6,
+    "max": 8,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 33.15,
+    "min": 28.4,
+    "max": 37.9,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 29,
+    "min": 23,
+    "max": 35,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 16.8,
+    "min": 16.8,
+    "max": 16.8,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 109,
+    "min": 92,
+    "max": 126,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 79.6,
+    "min": 79.6,
+    "max": 79.6,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 5,
+    "min": 1,
+    "max": 8,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 11.95,
+    "min": 11.9,
+    "max": 12,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 10.4,
+    "min": 8.2,
+    "max": 12.6,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 17.75,
+    "min": 16.9,
+    "max": 18.6,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 13.25,
+    "min": 10.2,
+    "max": 17.9,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 19.25,
+    "min": 17.9,
+    "max": 21,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.3,
+    "min": 0.3,
+    "max": 0.3,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "T": {
+     "plafon udela zone": 4
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 2
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "plafon udela zone": 2
+    }
+   },
+   "repro": {
+    "checked": 80,
+    "same": 80
+   }
+  },
+  "F|d6|vrh": {
+   "n": 4,
+   "M1_T_first": {
+    "med": 17.65,
+    "min": 12.5,
+    "max": 22.8,
+    "n": 4
+   },
+   "M1_T_max": {
+    "med": 26.8,
+    "min": 12.5,
+    "max": 41.1,
+    "n": 4
+   },
+   "M1_T_plansWith": 4,
+   "M1_I_first": {
+    "med": 21.7,
+    "min": 20.3,
+    "max": 23.1,
+    "n": 4
+   },
+   "M1_I_max": {
+    "med": 24.2,
+    "min": 20.3,
+    "max": 34.7,
+    "n": 4
+   },
+   "M1_I_plansWith": 4,
+   "M1_R_first": {
+    "med": 11.3,
+    "min": 9.5,
+    "max": 13.1,
+    "n": 4
+   },
+   "M1_R_max": {
+    "med": 15.15,
+    "min": 12.7,
+    "max": 17.5,
+    "n": 4
+   },
+   "M1_R_plansWith": 4,
+   "M1_RP_first": {
+    "med": 47.3,
+    "min": 42.2,
+    "max": 52.4,
+    "n": 4
+   },
+   "M1_RP_max": {
+    "med": 60.85,
+    "min": 56.2,
+    "max": 78.6,
+    "n": 4
+   },
+   "M1_RP_plansWith": 4,
+   "M2_first": {
+    "med": 0.18,
+    "min": 0.16,
+    "max": 0.19,
+    "n": 4
+   },
+   "M2_atMax": {
+    "med": 0.59,
+    "min": 0.56,
+    "max": 0.64,
+    "n": 4
+   },
+   "M3_maxKm": {
+    "med": 12,
+    "min": 10,
+    "max": 12,
+    "n": 4
+   },
+   "M3_maxPct": {
+    "med": 56.9,
+    "min": 47.4,
+    "max": 56.9,
+    "n": 4
+   },
+   "M3_totalKm": {
+    "med": 45,
+    "min": 37,
+    "max": 53,
+    "n": 4
+   },
+   "M3_weeksWith": {
+    "med": 5.5,
+    "min": 5,
+    "max": 6,
+    "n": 4
+   },
+   "M4_maxKm": {
+    "med": 21.65,
+    "min": 19.3,
+    "max": 24,
+    "n": 4
+   },
+   "M4_maxMin": {
+    "med": 138.5,
+    "min": 132,
+    "max": 145,
+    "n": 4
+   },
+   "M4_pct": {
+    "med": 102.65,
+    "min": 91.5,
+    "max": 113.8,
+    "n": 4
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M4_plateau": {
+    "med": 10.5,
+    "min": 7,
+    "max": 14,
+    "n": 4
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 4
+   },
+   "M6_tests": {
+    "med": 1,
+    "min": 1,
+    "max": 1,
+    "n": 4
+   },
+   "M6_weeksToRace": {
+    "med": 10,
+    "min": 7,
+    "max": 13,
+    "n": 4
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 6.75,
+    "min": 3.6,
+    "max": 10.1,
+    "n": 4
+   },
+   "M7_development": {
+    "med": 7.2,
+    "min": 3.6,
+    "max": 11.9,
+    "n": 4
+   },
+   "M7_specific": {
+    "med": 13.45,
+    "min": 8.9,
+    "max": 19.3,
+    "n": 4
+   },
+   "M7_taper": {
+    "med": 13.85,
+    "min": 12.3,
+    "max": 15.4,
+    "n": 4
+   },
+   "M7_race": {
+    "med": 17.15,
+    "min": 15.1,
+    "max": 19.2,
+    "n": 4
+   },
+   "M8_peakOverStart": {
+    "med": 1.11,
+    "min": 1.07,
+    "max": 1.11,
+    "n": 4
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.11,
+    "min": 1.07,
+    "max": 1.11,
+    "n": 4
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.22,
+    "min": 0.2,
+    "max": 0.24,
+    "n": 4
+   },
+   "hold": {
+    "R": {
+     "kraj lestvice": 4
+    },
+    "T": {
+     "kraj lestvice": 2
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 2,
+     "kraj lestvice": 2
+    },
+    "RP": {
+     "kraj lestvice": 3,
+     "≤ 1 nivo nedeljno (faza se završila)": 1
+    }
+   },
+   "repro": {
+    "checked": 59,
+    "same": 59
+   }
+  },
+  "R|all|all": {
+   "n": 144,
+   "M1_T_first": {
+    "med": 11.3,
+    "min": 6.9,
+    "max": 23.2,
+    "n": 144
+   },
+   "M1_T_max": {
+    "med": 22.3,
+    "min": 8.6,
+    "max": 45.3,
+    "n": 144
+   },
+   "M1_T_plansWith": 144,
+   "M1_I_first": {
+    "med": 10.9,
+    "min": 6.3,
+    "max": 20.9,
+    "n": 108
+   },
+   "M1_I_max": {
+    "med": 15.7,
+    "min": 6.3,
+    "max": 31.3,
+    "n": 108
+   },
+   "M1_I_plansWith": 108,
+   "M1_R_first": {
+    "med": 5.9,
+    "min": 3.6,
+    "max": 11.9,
+    "n": 108
+   },
+   "M1_R_max": {
+    "med": 9.6,
+    "min": 3.6,
+    "max": 15.7,
+    "n": 108
+   },
+   "M1_R_plansWith": 108,
+   "M1_RP_first": {
+    "med": 23.5,
+    "min": 13.8,
+    "max": 47.1,
+    "n": 144
+   },
+   "M1_RP_max": {
+    "med": 35.3,
+    "min": 17.3,
+    "max": 70.6,
+    "n": 144
+   },
+   "M1_RP_plansWith": 144,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.08,
+    "max": 0.31,
+    "n": 144
+   },
+   "M2_atMax": {
+    "med": 0.49,
+    "min": 0.36,
+    "max": 0.62,
+    "n": 144
+   },
+   "M3_maxKm": {
+    "med": 8,
+    "min": 5,
+    "max": 12,
+    "n": 144
+   },
+   "M3_maxPct": {
+    "med": 37.9,
+    "min": 23.7,
+    "max": 56.9,
+    "n": 144
+   },
+   "M3_totalKm": {
+    "med": 30,
+    "min": 14,
+    "max": 53,
+    "n": 144
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 3,
+    "max": 6,
+    "n": 144
+   },
+   "M4_maxKm": {
+    "med": 20.5,
+    "min": 14.5,
+    "max": 24,
+    "n": 144
+   },
+   "M4_maxMin": {
+    "med": 119,
+    "min": 63,
+    "max": 143,
+    "n": 144
+   },
+   "M4_pct": {
+    "med": 97.15,
+    "min": 68.7,
+    "max": 113.8,
+    "n": 144
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 144
+   },
+   "M4_plateau": {
+    "med": 7,
+    "min": 1,
+    "max": 14,
+    "n": 144
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 144
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 144
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 144
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.5,
+    "min": 3.1,
+    "max": 12.3,
+    "n": 144
+   },
+   "M7_development": {
+    "med": 9.75,
+    "min": 3.5,
+    "max": 13.5,
+    "n": 144
+   },
+   "M7_specific": {
+    "med": 16.8,
+    "min": 7.7,
+    "max": 21.9,
+    "n": 144
+   },
+   "M7_taper": {
+    "med": 15.4,
+    "min": 0,
+    "max": 21.8,
+    "n": 144
+   },
+   "M7_race": {
+    "med": 18.6,
+    "min": 0,
+    "max": 31.5,
+    "n": 144
+   },
+   "M8_peakOverStart": {
+    "med": 1.39,
+    "min": 1.1,
+    "max": 1.55,
+    "n": 144
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.36,
+    "min": 1.05,
+    "max": 1.4,
+    "n": 144
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.2,
+    "max": 0.45,
+    "n": 144
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 114,
+     "prelaz faze (faza se završila)": 11,
+     "≤ 1 nivo nedeljno (faza se završila)": 1,
+     "kraj lestvice": 9
+    },
+    "RP": {
+     "plafon udela zone": 76,
+     "≤ 1 nivo nedeljno (faza se završila)": 57,
+     "dan ≤ dugi (pouka 32)": 1,
+     "kraj lestvice": 10
+    },
+    "R": {
+     "plafon udela zone": 37,
+     "≤ 1 nivo nedeljno (faza se završila)": 28,
+     "kraj lestvice": 42,
+     "dan ≤ dugi (pouka 32)": 1
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 36,
+     "plafon udela zone": 30,
+     "≤ 1 nivo nedeljno (faza se završila)": 28,
+     "kraj lestvice": 14
+    }
+   },
+   "repro": {
+    "checked": 2461,
+    "same": 2453
+   }
+  },
+  "R|d3|dno": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 8.6,
+    "min": 6.9,
+    "max": 11.3,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 12.6,
+    "min": 8.6,
+    "max": 18.1,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 17.5,
+    "min": 13.8,
+    "max": 23.5,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 21.9,
+    "min": 17.3,
+    "max": 29.4,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.22,
+    "max": 0.31,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.45,
+    "min": 0.39,
+    "max": 0.53,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 5,
+    "min": 5,
+    "max": 5,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 23.7,
+    "min": 23.7,
+    "max": 23.7,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 14,
+    "min": 14,
+    "max": 19,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 3,
+    "min": 3,
+    "max": 4,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 15.7,
+    "min": 15.7,
+    "max": 15.7,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 85,
+    "min": 68,
+    "max": 112,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 74.4,
+    "min": 74.4,
+    "max": 74.4,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 8,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 8.8,
+    "min": 8.7,
+    "max": 8.9,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 8.5,
+    "min": 8.4,
+    "max": 9,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 11.3,
+    "min": 10.5,
+    "max": 14,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.45,
+    "min": 0.45,
+    "max": 0.45,
+    "n": 12
+   },
+   "hold": {
+    "T": {
+     "plafon udela zone": 12
+    },
+    "RP": {
+     "plafon udela zone": 12
+    }
+   },
+   "repro": {
+    "checked": 124,
+    "same": 124
+   }
+  },
+  "R|d3|sredina": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 8.6,
+    "min": 6.9,
+    "max": 11.3,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 17.55,
+    "min": 10.3,
+    "max": 22.3,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 19.5,
+    "min": 13.8,
+    "max": 23.8,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.26,
+    "min": 0.22,
+    "max": 0.31,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.44,
+    "max": 0.57,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 6,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 28.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 24,
+    "min": 23,
+    "max": 31,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 22,
+    "min": 18.4,
+    "max": 22,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 116,
+    "min": 96,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 104.3,
+    "min": 87.2,
+    "max": 104.3,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 2,
+    "min": 1,
+    "max": 8,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 7.55,
+    "min": 6.7,
+    "max": 8.4,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 8.35,
+    "min": 6.7,
+    "max": 8.6,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 11.1,
+    "min": 10.1,
+    "max": 12.9,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 11.7,
+    "min": 11.7,
+    "max": 14,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 25.85,
+    "min": 21.9,
+    "max": 31.5,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.41,
+    "min": 1.4,
+    "max": 1.55,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.17,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.45,
+    "min": 0.45,
+    "max": 0.45,
+    "n": 12
+   },
+   "hold": {
+    "T": {
+     "prelaz faze (faza se završila)": 4,
+     "plafon udela zone": 8
+    },
+    "RP": {
+     "plafon udela zone": 12
+    }
+   },
+   "repro": {
+    "checked": 124,
+    "same": 124
+   }
+  },
+  "R|d3|vrh": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 10.55,
+    "min": 8.6,
+    "max": 11.6,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 19.1,
+    "min": 13.7,
+    "max": 23.2,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": null,
+   "M1_I_max": null,
+   "M1_I_plansWith": 0,
+   "M1_R_first": null,
+   "M1_R_max": null,
+   "M1_R_plansWith": 0,
+   "M1_RP_first": {
+    "med": 20,
+    "min": 13.8,
+    "max": 23.8,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 32,
+    "min": 20.7,
+    "max": 38,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.23,
+    "min": 0.2,
+    "max": 0.25,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.46,
+    "min": 0.36,
+    "max": 0.51,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 7,
+    "min": 6,
+    "max": 8,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 33.15,
+    "min": 28.4,
+    "max": 37.9,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 27,
+    "min": 23,
+    "max": 35,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 6.5,
+    "min": 3,
+    "max": 11,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 7,
+    "min": 6.5,
+    "max": 7.7,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 8.4,
+    "min": 6.5,
+    "max": 8.7,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 10.25,
+    "min": 9.1,
+    "max": 10.9,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 10.4,
+    "min": 10.4,
+    "max": 12.1,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 23.05,
+    "min": 19.5,
+    "max": 28.3,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.23,
+    "min": 1.22,
+    "max": 1.31,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.22,
+    "min": 1.05,
+    "max": 1.22,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.44,
+    "min": 0.42,
+    "max": 0.44,
+    "n": 12
+   },
+   "hold": {
+    "T": {
+     "prelaz faze (faza se završila)": 4,
+     "plafon udela zone": 8
+    },
+    "RP": {
+     "plafon udela zone": 9,
+     "≤ 1 nivo nedeljno (faza se završila)": 3
+    }
+   },
+   "repro": {
+    "checked": 124,
+    "same": 124
+   }
+  },
+  "R|d4|dno": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 8.6,
+    "min": 6.9,
+    "max": 11.3,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 17.1,
+    "min": 13.7,
+    "max": 22.7,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 7.85,
+    "min": 6.3,
+    "max": 10.4,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 10.65,
+    "min": 6.3,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 4.45,
+    "min": 3.6,
+    "max": 5.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 6.4,
+    "min": 4.8,
+    "max": 9.8,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 17.5,
+    "min": 13.8,
+    "max": 23.5,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.11,
+    "max": 0.15,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.44,
+    "max": 0.57,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 6,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 28.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 23,
+    "min": 23,
+    "max": 29,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 16.8,
+    "min": 15.2,
+    "max": 16.8,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 91,
+    "min": 66,
+    "max": 120,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 79.6,
+    "min": 72,
+    "max": 79.6,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 8,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 12,
+    "min": 11.4,
+    "max": 12.3,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 12.9,
+    "min": 10.9,
+    "max": 13.3,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 19.5,
+    "min": 18.4,
+    "max": 21.9,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 17.7,
+    "min": 13.6,
+    "max": 21.8,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 24.5,
+    "min": 21.5,
+    "max": 26.8,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.4,
+    "min": 0.36,
+    "max": 0.4,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "plafon udela zone": 12
+    },
+    "T": {
+     "plafon udela zone": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "plafon udela zone": 8
+    },
+    "RP": {
+     "plafon udela zone": 12
+    }
+   },
+   "repro": {
+    "checked": 248,
+    "same": 248
+   }
+  },
+  "R|d4|sredina": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 10.7,
+    "min": 8.6,
+    "max": 14.2,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 23.6,
+    "min": 20.6,
+    "max": 28.3,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 10.3,
+    "min": 7.6,
+    "max": 12.8,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 15.15,
+    "min": 7.6,
+    "max": 25.1,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 4.45,
+    "min": 3.6,
+    "max": 5.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 7.6,
+    "min": 5.4,
+    "max": 11.9,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 21.9,
+    "min": 17.3,
+    "max": 29.4,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 37,
+    "min": 27.6,
+    "max": 53,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.1,
+    "min": 0.08,
+    "max": 0.12,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.43,
+    "max": 0.58,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 8,
+    "min": 8,
+    "max": 9,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 37.9,
+    "min": 37.9,
+    "max": 42.7,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 27,
+    "min": 27,
+    "max": 37,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 5,
+    "min": 2,
+    "max": 12,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.8,
+    "min": 7.9,
+    "max": 11,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 11.05,
+    "min": 5.4,
+    "max": 13.4,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 17.5,
+    "min": 9.2,
+    "max": 19.9,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 16.3,
+    "min": 15.8,
+    "max": 18.9,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 20.45,
+    "min": 18.8,
+    "max": 24.6,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.38,
+    "min": 0.32,
+    "max": 0.38,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 8,
+     "plafon udela zone": 4
+    },
+    "T": {
+     "prelaz faze (faza se završila)": 1,
+     "plafon udela zone": 11
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 5,
+     "plafon udela zone": 3
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 8,
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 229,
+    "same": 229
+   }
+  },
+  "R|d4|vrh": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 11.55,
+    "min": 10.3,
+    "max": 13.9,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 22,
+    "min": 11.3,
+    "max": 27.5,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 11.7,
+    "min": 9.5,
+    "max": 12.8,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 16.55,
+    "min": 9.5,
+    "max": 25.1,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 6.7,
+    "min": 5.4,
+    "max": 8.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 10.9,
+    "min": 7.2,
+    "max": 12.8,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 29.4,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 41.4,
+    "min": 31.1,
+    "max": 53,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.1,
+    "max": 0.15,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.42,
+    "max": 0.55,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 9,
+    "min": 8,
+    "max": 10,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 42.7,
+    "min": 37.9,
+    "max": 47.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 32,
+    "min": 27,
+    "max": 43,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 10,
+    "min": 7,
+    "max": 14,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 8.2,
+    "min": 3.4,
+    "max": 11.2,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 7.6,
+    "min": 4,
+    "max": 13.5,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 15.15,
+    "min": 8.6,
+    "max": 20.1,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 16.7,
+    "min": 14.4,
+    "max": 20.4,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 19.35,
+    "min": 16.8,
+    "max": 23.6,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.17,
+    "min": 1.1,
+    "max": 1.17,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.17,
+    "min": 1.1,
+    "max": 1.17,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.34,
+    "min": 0.3,
+    "max": 0.34,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "plafon udela zone": 3,
+     "≤ 1 nivo nedeljno (faza se završila)": 3,
+     "kraj lestvice": 6
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 5,
+     "plafon udela zone": 3
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 9,
+     "plafon udela zone": 3
+    },
+    "T": {
+     "prelaz faze (faza se završila)": 2,
+     "plafon udela zone": 6,
+     "≤ 1 nivo nedeljno (faza se završila)": 1
+    }
+   },
+   "repro": {
+    "checked": 196,
+    "same": 196
+   }
+  },
+  "R|d5|dno": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 8.6,
+    "min": 6.9,
+    "max": 11.3,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 20.6,
+    "min": 16.5,
+    "max": 27.2,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 7.85,
+    "min": 6.3,
+    "max": 10.4,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 10.65,
+    "min": 6.3,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 4.45,
+    "min": 3.6,
+    "max": 5.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 7,
+    "min": 5.4,
+    "max": 9.8,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 17.5,
+    "min": 13.8,
+    "max": 23.5,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.11,
+    "max": 0.15,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.44,
+    "max": 0.57,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 6,
+    "min": 6,
+    "max": 6,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 28.4,
+    "min": 28.4,
+    "max": 28.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 23,
+    "min": 23,
+    "max": 29,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 15.6,
+    "min": 15.6,
+    "max": 15.6,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 84.5,
+    "min": 68,
+    "max": 111,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 73.9,
+    "min": 73.9,
+    "max": 73.9,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 8,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 10.9,
+    "min": 10.9,
+    "max": 11.7,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 12.2,
+    "min": 9.3,
+    "max": 12.7,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 18.1,
+    "min": 17.1,
+    "max": 19.3,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 18.7,
+    "min": 11.7,
+    "max": 18.7,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 19.7,
+    "min": 17.5,
+    "max": 20.5,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.32,
+    "max": 0.32,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "plafon udela zone": 12
+    },
+    "T": {
+     "plafon udela zone": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "plafon udela zone": 8
+    },
+    "RP": {
+     "plafon udela zone": 12
+    }
+   },
+   "repro": {
+    "checked": 248,
+    "same": 248
+   }
+  },
+  "R|d5|sredina": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 12.85,
+    "min": 10.3,
+    "max": 17,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 28.6,
+    "min": 22,
+    "max": 39.7,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 11.85,
+    "min": 9.5,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 16.55,
+    "min": 9.5,
+    "max": 26.1,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 5.95,
+    "min": 4.8,
+    "max": 7.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 9.6,
+    "min": 6,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 41.4,
+    "min": 31.1,
+    "max": 58.8,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.1,
+    "max": 0.15,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.53,
+    "min": 0.45,
+    "max": 0.61,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 9,
+    "min": 9,
+    "max": 10,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 42.7,
+    "min": 42.7,
+    "max": 47.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 32,
+    "min": 32,
+    "max": 43,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 4,
+    "min": 1,
+    "max": 11,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.9,
+    "min": 9.9,
+    "max": 11.1,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 11.3,
+    "min": 9.2,
+    "max": 12.6,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 18.1,
+    "min": 13.7,
+    "max": 19.4,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 15.6,
+    "min": 15.6,
+    "max": 19.1,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 15.95,
+    "min": 14.3,
+    "max": 19.2,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.36,
+    "min": 1.36,
+    "max": 1.37,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.36,
+    "min": 1.36,
+    "max": 1.36,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.32,
+    "min": 0.27,
+    "max": 0.32,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 8,
+     "kraj lestvice": 4
+    },
+    "T": {
+     "plafon udela zone": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 8
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 8,
+     "plafon udela zone": 4
+    }
+   },
+   "repro": {
+    "checked": 244,
+    "same": 244
+   }
+  },
+  "R|d5|vrh": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 14.7,
+    "min": 11.3,
+    "max": 18.5,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 29.5,
+    "min": 11.3,
+    "max": 37.1,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 15.1,
+    "min": 12.7,
+    "max": 17.1,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 18.55,
+    "min": 12.7,
+    "max": 26.1,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 7.4,
+    "min": 6,
+    "max": 9.8,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 11.85,
+    "min": 9.6,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 41.4,
+    "min": 31.1,
+    "max": 58.8,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.11,
+    "max": 0.16,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.42,
+    "max": 0.58,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 9,
+    "min": 9,
+    "max": 10,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 42.7,
+    "min": 42.7,
+    "max": 47.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 32,
+    "min": 32,
+    "max": 43,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 10,
+    "min": 7,
+    "max": 14,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.35,
+    "min": 3.3,
+    "max": 10.1,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 10.75,
+    "min": 3.6,
+    "max": 13.2,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 16.55,
+    "min": 8.1,
+    "max": 17.8,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 16.5,
+    "min": 12.8,
+    "max": 18.2,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 15,
+    "min": 12.7,
+    "max": 18.6,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.13,
+    "min": 1.11,
+    "max": 1.13,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.13,
+    "min": 1.11,
+    "max": 1.13,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.28,
+    "min": 0.24,
+    "max": 0.28,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "kraj lestvice": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 5,
+     "kraj lestvice": 3
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 12
+    },
+    "T": {
+     "plafon udela zone": 9
+    }
+   },
+   "repro": {
+    "checked": 217,
+    "same": 217
+   }
+  },
+  "R|d6|dno": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 8.95,
+    "min": 7.9,
+    "max": 11.3,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 21,
+    "min": 16.5,
+    "max": 28.3,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 8.7,
+    "min": 6.3,
+    "max": 12.5,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 13.6,
+    "min": 6.3,
+    "max": 20.9,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 4.45,
+    "min": 3.6,
+    "max": 5.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 7.6,
+    "min": 3.6,
+    "max": 11.9,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 20,
+    "min": 13.8,
+    "max": 29.4,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 32,
+    "min": 20.7,
+    "max": 47.1,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.1,
+    "min": 0.08,
+    "max": 0.12,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.46,
+    "min": 0.36,
+    "max": 0.56,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 8,
+    "min": 6,
+    "max": 8,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 37.9,
+    "min": 28.4,
+    "max": 37.9,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 27,
+    "min": 23,
+    "max": 35,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 16.8,
+    "min": 14.5,
+    "max": 16.8,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 91,
+    "min": 63,
+    "max": 120,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 79.6,
+    "min": 68.7,
+    "max": 79.6,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 1.5,
+    "min": 1,
+    "max": 8,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.5,
+    "min": 4.8,
+    "max": 11.1,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 12.5,
+    "min": 8.2,
+    "max": 12.6,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 16.9,
+    "min": 15.7,
+    "max": 18.6,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 10.2,
+    "min": 10.2,
+    "max": 17.8,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 17.9,
+    "min": 16.5,
+    "max": 20.9,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.4,
+    "min": 1.4,
+    "max": 1.4,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.3,
+    "min": 0.26,
+    "max": 0.3,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 5,
+     "dan ≤ dugi (pouka 32)": 1,
+     "plafon udela zone": 6
+    },
+    "T": {
+     "plafon udela zone": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "plafon udela zone": 8
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 3,
+     "dan ≤ dugi (pouka 32)": 1,
+     "plafon udela zone": 8
+    }
+   },
+   "repro": {
+    "checked": 242,
+    "same": 234
+   }
+  },
+  "R|d6|sredina": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 12.85,
+    "min": 10.3,
+    "max": 17,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 34.3,
+    "min": 27.5,
+    "max": 45.3,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 12.8,
+    "min": 9.5,
+    "max": 20.9,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 18.15,
+    "min": 9.5,
+    "max": 31.3,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 6.7,
+    "min": 5.4,
+    "max": 8.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 10.9,
+    "min": 7.2,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 26.25,
+    "min": 20.7,
+    "max": 35.3,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 41.4,
+    "min": 31.1,
+    "max": 58.8,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.13,
+    "min": 0.1,
+    "max": 0.15,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.5,
+    "min": 0.42,
+    "max": 0.58,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 9,
+    "min": 9,
+    "max": 10,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 42.7,
+    "min": 42.7,
+    "max": 47.4,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 32,
+    "min": 32,
+    "max": 43,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 6,
+    "min": 3,
+    "max": 13,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 8.9,
+    "min": 8.8,
+    "max": 10,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 11.1,
+    "min": 8.8,
+    "max": 12.9,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 17.1,
+    "min": 16,
+    "max": 18.1,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 16.5,
+    "min": 16.5,
+    "max": 18.2,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 15.6,
+    "min": 15,
+    "max": 18.6,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.31,
+    "min": 1.31,
+    "max": 1.31,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.31,
+    "min": 1.31,
+    "max": 1.31,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.28,
+    "min": 0.24,
+    "max": 0.28,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "≤ 1 nivo nedeljno (faza se završila)": 4,
+     "kraj lestvice": 8
+    },
+    "T": {
+     "plafon udela zone": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 4,
+     "kraj lestvice": 4
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 12
+    }
+   },
+   "repro": {
+    "checked": 248,
+    "same": 248
+   }
+  },
+  "R|d6|vrh": {
+   "n": 12,
+   "M1_T_first": {
+    "med": 18.45,
+    "min": 11.3,
+    "max": 23.2,
+    "n": 12
+   },
+   "M1_T_max": {
+    "med": 33.15,
+    "min": 11.3,
+    "max": 41.7,
+    "n": 12
+   },
+   "M1_T_plansWith": 12,
+   "M1_I_first": {
+    "med": 18.9,
+    "min": 15.2,
+    "max": 20.9,
+    "n": 12
+   },
+   "M1_I_max": {
+    "med": 21.3,
+    "min": 15.2,
+    "max": 31.3,
+    "n": 12
+   },
+   "M1_I_plansWith": 12,
+   "M1_R_first": {
+    "med": 8.95,
+    "min": 7.2,
+    "max": 11.9,
+    "n": 12
+   },
+   "M1_R_max": {
+    "med": 11.85,
+    "min": 9.6,
+    "max": 15.7,
+    "n": 12
+   },
+   "M1_R_plansWith": 12,
+   "M1_RP_first": {
+    "med": 39.4,
+    "min": 31.1,
+    "max": 47.1,
+    "n": 12
+   },
+   "M1_RP_max": {
+    "med": 52.5,
+    "min": 41.4,
+    "max": 70.6,
+    "n": 12
+   },
+   "M1_RP_plansWith": 12,
+   "M2_first": {
+    "med": 0.15,
+    "min": 0.13,
+    "max": 0.18,
+    "n": 12
+   },
+   "M2_atMax": {
+    "med": 0.54,
+    "min": 0.48,
+    "max": 0.62,
+    "n": 12
+   },
+   "M3_maxKm": {
+    "med": 12,
+    "min": 10,
+    "max": 12,
+    "n": 12
+   },
+   "M3_maxPct": {
+    "med": 56.9,
+    "min": 47.4,
+    "max": 56.9,
+    "n": 12
+   },
+   "M3_totalKm": {
+    "med": 41,
+    "min": 37,
+    "max": 53,
+    "n": 12
+   },
+   "M3_weeksWith": {
+    "med": 5,
+    "min": 5,
+    "max": 6,
+    "n": 12
+   },
+   "M4_maxKm": {
+    "med": 24,
+    "min": 20,
+    "max": 24,
+    "n": 12
+   },
+   "M4_maxMin": {
+    "med": 129.5,
+    "min": 104,
+    "max": 143,
+    "n": 12
+   },
+   "M4_pct": {
+    "med": 113.8,
+    "min": 94.8,
+    "max": 113.8,
+    "n": 12
+   },
+   "M4_withFast": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M4_plateau": {
+    "med": 10,
+    "min": 7,
+    "max": 14,
+    "n": 12
+   },
+   "M5_strides": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_tests": {
+    "med": 0,
+    "min": 0,
+    "max": 0,
+    "n": 12
+   },
+   "M6_weeksToRace": {
+    "med": 15,
+    "min": 10,
+    "max": 20,
+    "n": 12
+   },
+   "M6_plansPaceChange": 0,
+   "M7_base": {
+    "med": 9.1,
+    "min": 3.1,
+    "max": 9.5,
+    "n": 12
+   },
+   "M7_development": {
+    "med": 10.85,
+    "min": 3.5,
+    "max": 12.3,
+    "n": 12
+   },
+   "M7_specific": {
+    "med": 17,
+    "min": 7.7,
+    "max": 19.3,
+    "n": 12
+   },
+   "M7_taper": {
+    "med": 15.4,
+    "min": 11.8,
+    "max": 15.4,
+    "n": 12
+   },
+   "M7_race": {
+    "med": 15,
+    "min": 12.6,
+    "max": 18.6,
+    "n": 12
+   },
+   "M8_peakOverStart": {
+    "med": 1.11,
+    "min": 1.11,
+    "max": 1.11,
+    "n": 12
+   },
+   "M8_peakOverCurrent": {
+    "med": 1.11,
+    "min": 1.11,
+    "max": 1.11,
+    "n": 12
+   },
+   "M8_longShareAtPeak": {
+    "med": 0.24,
+    "min": 0.2,
+    "max": 0.24,
+    "n": 12
+   },
+   "hold": {
+    "R": {
+     "kraj lestvice": 12
+    },
+    "I": {
+     "prelaz faze (faza se završila)": 4,
+     "≤ 1 nivo nedeljno (faza se završila)": 1,
+     "kraj lestvice": 7
+    },
+    "RP": {
+     "≤ 1 nivo nedeljno (faza se završila)": 2,
+     "kraj lestvice": 10
+    },
+    "T": {
+     "kraj lestvice": 9
+    }
+   },
+   "repro": {
+    "checked": 217,
+    "same": 217
+   }
+  }
+ },
+ "reproDiffSample": [
+  "R-d6-40km-10w-v65 2:q1:alt:1600→1200",
+  "R-d6-40km-10w-v65 3:q1:alt:1600→1200",
+  "R-d6-40km-15w-v65 2:q1:alt:1600→1200",
+  "R-d6-40km-15w-v65 3:q1:alt:1600→1200",
+  "R-d6-40km-15w-v65 13:q2:drop:4800→2400",
+  "R-d6-40km-20w-v65 2:q1:alt:1600→1200",
+  "R-d6-40km-20w-v65 3:q1:alt:1600→1200",
+  "R-d6-40km-20w-v65 16:q2:drop:5000→2400"
+ ],
+ "reproDiffSteps": {
+  "alt": 6,
+  "drop": 2
+ }
+}

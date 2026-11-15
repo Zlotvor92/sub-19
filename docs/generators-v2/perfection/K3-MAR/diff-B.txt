@@ -1,0 +1,12 @@
+R-d3: n 3120 odb 0→0 prom 0 vrh<-10% 0
+R-d4: n 4368 odb 0→0 prom 0 vrh<-10% 0
+R-d5: n 6240 odb 0→0 prom 0 vrh<-10% 0
+R-d6: n 8112 odb 0→0 prom 0 vrh<-10% 0
+F-d3: n 1170 odb 0→0 prom 0 vrh<-10% 0
+F-d4: n 1638 odb 0→0 prom 0 vrh<-10% 0
+F-d5: n 2340 odb 0→0 prom 0 vrh<-10% 0
+F-d6: n 3042 odb 0→0 prom 0 vrh<-10% 0
+B-d4: n 945 odb 0→0 prom 756 vrh<-10% 708 | peak 52.5→45.5 [37.9..58.5]; longest 23.2→21.4 [17..29.2]; hoursPeak 6.28→5.48 [3.43..7.43]
+B-d5: n 945 odb 0→0 prom 756 vrh<-10% 756 | peak 60→52 [44.2..65]; longest 23.2→21.4 [16.6..30]; hoursPeak 7.25→6.25 [4..7.44]
+nova odbijanja: 0
+B MARATHON_LONG_SHORT {"R":3648,"F":1170,"B":1020}

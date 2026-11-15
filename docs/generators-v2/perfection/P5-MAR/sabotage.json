@@ -1,0 +1,65 @@
+[
+  {
+    "name": "P5-F1a plan sa rezultatom bez testa (testKindOf)",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "  return !rule.beginner && weeks >= P.test.resultMinWeeks ? 'result' : null;",
+    "replace": "  return null;",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F1b test u rasteretnoj nedelji razvoja",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "    if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;",
+    "replace": "    if (phases[i - 1] === 'development') return i;",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts", "src/domain/generators/marathon/v2/feel.node.test.ts"]
+  },
+  {
+    "name": "P5-F2a okidač bez efekta (assess ne pravi korak)",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "  if (pair) {\n    const [a, b] = pair;",
+    "replace": "  if (pair && false) {\n    const [a, b] = pair;",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2b nedelja bez rasta ipak uzima sledeći nivo (pickSlot)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);",
+    "replace": "    const next = nextLevel(ladder, prev.doseM, beginner);",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2c validator ne proverava nedelju bez rasta (QUALITY_HOLD)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "      if (holdWeeks.has(w.index) && checked(w) && !reducedQ(w))",
+    "replace": "      if (false && holdWeeks.has(w.index) && checked(w) && !reducedQ(w))",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F3a uvek 4 ubrzanja (i od razvoja)",
+    "file": "src/domain/generators/marathon/v2/strides.ts",
+    "find": "  return { reps: frame.phase === 'base' ? s.baseReps : s.laterReps, sec: s.sec };",
+    "replace": "  return { reps: s.baseReps, sec: s.sec };",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F3b izbor dana: pri jednakom razmaku kasniji",
+    "file": "src/domain/generators/marathon/v2/strides.ts",
+    "find": "      if (!best || gap > best.gap) best = { date: d.date, gap };",
+    "replace": "      if (!best || gap >= best.gap) best = { date: d.date, gap };",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F3c validator ne proverava ubrzanja (STRIDES)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "      if (want !== null ? JSON.stringify(d.workout) !== want : has)",
+    "replace": "      if (false && (want !== null ? JSON.stringify(d.workout) !== want : has))",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F4a početni udeo T/I nazad na 60 % (startShareOf)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "  P.startLevel.zoneShare[zoneOf(ladder)] ?? P.startLevel.capShare;",
+    "replace": "  P.startLevel.capShare;",
+    "tests": ["src/domain/generators/marathon/v2/p5.node.test.ts"]
+  }
+]

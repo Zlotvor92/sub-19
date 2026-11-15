@@ -27,6 +27,8 @@ with ocekivano as (
     'tabela:endpoint_usage','tabela:nalog_za_brisanje','tabela:push_pretplata',
     'tabela:korisnik_dogadjaj','tabela:user_state','tabela:user_state_istorija',
     'tabela:zajednica_izazov','tabela:zajednica_profil',
+    'tabela:aktivnost','tabela:plan_v4','tabela:plan_v4_verzija','tabela:plan_v4_dogadjaj',
+    'tabela:v4_pristup',
     -- pogledi (v. app-stats.sql i migrations/)
     'pogled:admin_aktivnost','pogled:admin_korisnici','pogled:app_stats',
     -- funkcije
@@ -38,12 +40,13 @@ with ocekivano as (
     'funkcija:user_state_zapamti','funkcija:zajednica_profil_dodirni',
     'funkcija:zajednica_vidljiv_ja',
     'funkcija:korisnik_dogadjaj_iz_stanja','funkcija:zabelezi_otvaranje',
-    'funkcija:odbij_oauth_token',
+    'funkcija:odbij_oauth_token','funkcija:plan_v4_rev',
+    'funkcija:plan_v4_zapamti','funkcija:v4_iskljuci',
     -- okidači
     'okidač:ai_posao_kvota_zastiti_trg','okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
     'okidač:push_pretplata_dodirni_trg','okidač:user_state_touch_trg',
     'okidač:user_state_zapamti_trg','okidač:zajednica_profil_dodirni_trg',
-    'okidač:korisnik_dogadjaj_trg'
+    'okidač:korisnik_dogadjaj_trg','okidač:plan_v4_rev_trg','okidač:plan_v4_zapamti_trg'
   ] ) as kljuc
 ),
 stvarno as (

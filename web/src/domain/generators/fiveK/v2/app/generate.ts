@@ -7,7 +7,7 @@ import { generateFiveKV2 } from '../generate.ts';
 import { assessGoal, raceTimeForVdot, vdotFromResult } from '../paces.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import type { Weekday } from '../types.ts';
-import type { GenPlanState } from '../../exchange.ts';
+import type { GenPlanState } from './exchange.ts';
 import { addDays, diffDays, type IsoDate } from './date.ts';
 import { generatedPlan, storedPlan, type GeneratedV2Plan } from './plan.ts';
 import type {

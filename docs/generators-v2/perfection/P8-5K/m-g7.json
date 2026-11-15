@@ -1,0 +1,135 @@
+{
+ "tag": "g7",
+ "inputs": 3964,
+ "ok": 3964,
+ "rejected": 0,
+ "rejectedList": [],
+ "plateauLongAvg": 4.24,
+ "plateauVolAvg": 3.43,
+ "counts": {
+  "fam_B": 664,
+  "fam_F": 1432,
+  "fam_R": 1868,
+  "kraj_razvoja_ned_sum": 29396,
+  "kvalitet_duzi_od_dugog": 117,
+  "plato_dugog_>=6": 1026,
+  "plato_obima_>=6": 513,
+  "pocetnik": 386,
+  "poslednji_R_sec_sum": 1299474,
+  "prvi_I_posle_R_n": 3436,
+  "prvi_I_posle_R_sec_sum": 1932675,
+  "rasterecenje_I>60%": 350,
+  "rasterecenje_I>=pune": 69,
+  "rasterecenje_R>60%": 316,
+  "rasterecenje_R>=pune": 92,
+  "rasterecenje_T>60%": 254,
+  "rasterecenje_T>=pune": 52,
+  "taper_T>70%": 396,
+  "trka_10.0km": 744,
+  "trka_6.5km": 688,
+  "trka_7.5km": 333,
+  "trka_8.5km": 1448,
+  "trka_9.0km": 751,
+  "trka_najduzi_dan": 229,
+  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": 1354,
+  "vrh_dostignut_ned_sum": 24542
+ },
+ "examples": {
+  "trka_najduzi_dan": [
+   "P0:R-d3-12km-6w-v55",
+   "P0:F-d3-12km-6w-e330",
+   "P0:F-d3-12km-6w-e450",
+   "P0:R-d4-15km-6w-v35",
+   "P0:R-d4-15km-6w-v45",
+   "P0:R-d4-15km-6w-v55"
+  ],
+  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": [
+   "P0:R-d3-12km-6w-v55",
+   "P0:R-d3-12km-6w-v65",
+   "P0:F-d3-12km-6w-e330",
+   "P0:R-d3-12km-11w-v55",
+   "P0:R-d3-12km-11w-v65",
+   "P0:R-d3-12km-16w-v55"
+  ],
+  "rasterecenje_R>60%": [
+   "P0:R-d3-12km-11w-v35#4",
+   "P0:R-d3-12km-11w-v45#4",
+   "P0:R-d3-12km-11w-v55#4",
+   "P0:R-d3-12km-11w-v65#4",
+   "P0:R-d3-12km-16w-v35#4",
+   "P0:R-d3-12km-16w-v35#8"
+  ],
+  "rasterecenje_R>=pune": [
+   "P0:R-d3-12km-11w-v35#4",
+   "P0:R-d3-12km-11w-v45#4",
+   "P0:R-d3-12km-11w-v55#4",
+   "P0:R-d3-12km-11w-v65#4",
+   "P0:R-d3-12km-16w-v35#4",
+   "P0:R-d3-12km-16w-v35#8"
+  ],
+  "rasterecenje_I>60%": [
+   "P0:R-d3-12km-11w-v35#7",
+   "P0:R-d3-12km-11w-v45#7",
+   "P0:R-d3-12km-11w-v55#7",
+   "P0:R-d3-12km-11w-v65#7",
+   "P0:R-d3-12km-16w-v45#12",
+   "P0:R-d3-12km-16w-v55#12"
+  ],
+  "rasterecenje_I>=pune": [
+   "P0:R-d3-12km-11w-v45#7",
+   "P0:R-d3-12km-11w-v55#7",
+   "P0:R-d3-12km-11w-v65#7",
+   "P0:R-d4-15km-11w-v55#7",
+   "P0:R-d4-15km-11w-v65#7",
+   "r-d3-9w-12km-v38-0#5"
+  ],
+  "kvalitet_duzi_od_dugog": [
+   "P0:F-d3-12km-16w-e450#5",
+   "P0:F-d4-15km-6w-e330#4",
+   "P0:R-d4-15km-11w-v55#6",
+   "P0:R-d4-15km-16w-v35#4",
+   "P0:R-d4-15km-16w-v45#4",
+   "P0:R-d4-15km-16w-v55#4"
+  ],
+  "plato_dugog_>=6": [
+   "P0:R-d3-24km-16w-v35",
+   "P0:R-d3-35km-11w-v35",
+   "P0:R-d3-35km-11w-v45",
+   "P0:R-d3-35km-16w-v35",
+   "P0:R-d3-35km-16w-v45",
+   "P0:F-d3-35km-16w-e330"
+  ],
+  "plato_obima_>=6": [
+   "P0:R-d3-35km-11w-v35",
+   "P0:R-d3-35km-11w-v45",
+   "P0:R-d3-35km-16w-v35",
+   "P0:R-d3-35km-16w-v45",
+   "P0:F-d3-35km-16w-e330",
+   "P0:F-d3-35km-16w-e450"
+  ],
+  "rasterecenje_T>60%": [
+   "P0:F-d3-35km-16w-e330#4",
+   "P0:F-d3-35km-16w-e330#8",
+   "P0:F-d3-35km-16w-e450#4",
+   "P0:F-d3-35km-16w-e450#8",
+   "P0:B-d3-30km-16w-e420#4",
+   "P0:B-d3-30km-16w-e420#8"
+  ],
+  "taper_T>70%": [
+   "P0:R-d4-15km-6w-v35#5",
+   "P0:R-d4-15km-6w-v45#5",
+   "P0:R-d4-15km-6w-v55#5",
+   "P0:R-d4-15km-6w-v65#5",
+   "P0:F-d4-15km-6w-e330#5",
+   "P0:F-d4-15km-6w-e450#5"
+  ],
+  "rasterecenje_T>=pune": [
+   "f-d3-11w-16km-e420-0#4",
+   "f-d3-11w-16km-e480-0#4",
+   "f-d3-11w-16km-e420-1#4",
+   "f-d3-11w-16km-e480-1#4",
+   "f-d3-11w-20km-e360-0#4",
+   "f-d3-11w-20km-e360-1#4"
+  ]
+ }
+}

@@ -1,0 +1,67 @@
+{
+  "round": "V4-HM-09",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus), prvi krug",
+  "source": "origin/claude/v4 @ 12651ae (ispisi 5989be4, krug 9b)",
+  "calibration": {
+    "state": "2776b5d",
+    "profiles": {
+      "p01": { "previous": 82.5, "mine": 81.5 },
+      "p05": { "previous": 81.5, "mine": 80.5 },
+      "p06": { "previous": 75, "mine": 67, "note": "4 od 7 nedelja gradnje bez kvaliteta; nedelja -1 veca od -2; ocena 75 nasledjena iz kruga 5/6" },
+      "p08": { "previous": 75.5, "mine": 74 },
+      "p11": { "previous": 80.5, "mine": 80 }
+    },
+    "shift": "oko -1 poen opste; p06 -8"
+  },
+  "readDayByDay": {
+    "plans": ["p01-p12", "vlasnik-v1", "vlasnik-v2"],
+    "scenarios": ["s01", "s02", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19", "s20", "s24", "s26"],
+    "fromOverview": ["s03", "s11", "s21", "s22", "s23", "s25", "s27"],
+    "pairs": "P1B, P2B, P3A, P3B prve 4 nedelje; ostalo iz brojeva"
+  },
+  "plan": {
+    "p01": { "prev": 82.5, "now": 81.5 },
+    "p02": { "prev": 81, "now": 82 },
+    "p03": { "prev": 77, "now": 77 },
+    "p04": { "prev": 80, "now": 79.5 },
+    "p05": { "prev": 82, "now": 80.5 },
+    "p06": { "prev": 75, "now": 71 },
+    "p07": { "prev": 80.5, "now": 80.5 },
+    "p08": { "prev": 75.5, "now": 74, "withChecks": 73.3, "findings": ["K7 ned 15 +15 %"] },
+    "p09": { "prev": 81, "now": 81 },
+    "p10": { "prev": 76, "now": 76.5, "withChecks": 73.5, "findings": ["K7 ned 15 +15 %"] },
+    "p11": { "prev": 80.5, "now": 80.5 },
+    "p12": { "prev": 81, "now": 78.5 },
+    "average": 78.5,
+    "averageWithChecks": 78.2,
+    "atLeast80": 6,
+    "owner": { "vlasnik-v1": 78, "vlasnik-v2": 80.5 }
+  },
+  "adaptation": {
+    "E1": { "score": 82.3, "s01": 85, "s02": 79, "s03": 85, "s04": 80 },
+    "E2": { "score": 71.8, "s05": 60, "s06": 81.5, "s07": 74.5, "s08": 71 },
+    "E3": { "score": 83.1, "s09": 83, "s10": 84, "s11": 83, "s12": 82.5 },
+    "E4": { "score": 78.0, "s13": 80, "s14": 81, "s15": 73, "s16": 78 },
+    "E5": { "score": 81.6, "s17": 80.5, "s18": 82, "s19": 84, "s20": 80 },
+    "E6": { "score": 90.8, "s21": 91, "s22": 91, "s23": 91, "s24": 90 },
+    "E7": { "score": 78.3, "s25": 82, "s26": 71, "s27": 82 },
+    "partB": 80.8,
+    "previousPartB": 83.7
+  },
+  "personalization": { "P1": 85, "P2": 83, "P3": 83, "partC": 83.7 },
+  "composite": 80.2,
+  "previousComposite": 81.6,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "bolest/pauza ne snizava ostatak plana srazmerno; vrh -5-10 % najvise, najduzi dugi >= 90 % ako je >= 6 nedelja do trke (s05, s07)" },
+    { "n": 2, "kind": "motor", "text": "granica dugog (+25 % / +20 min) od poslednjeg stvarnog dugog vazi i posle trke i puta (s26 60 -> 90 min)" },
+    { "n": 3, "kind": "motor", "text": "tekst izmene navodi samo dogadjaj koji ju je izazvao (s02 pogresan rezultat; p12 ponovo objavljuje stari test)" },
+    { "n": 4, "kind": "motor", "text": "kasna bolest: nedelja -1 55-65 % sa kratkim radom u tempu trke (s08)" },
+    { "n": 5, "kind": "motor", "text": "E5: dugi u ned 1-2 <= 60 % uobicajenog, ned 2 <= 75 % (s17, s18, s20)" },
+    { "n": 6, "kind": "podatak", "text": "p06 suzavanje <= 70 % / <= 45 %, ned 6 jedan kvalitet" },
+    { "n": 7, "kind": "podatak", "text": "p08 nedelja 1 = sadasnji obim; p08/p10 ned 15 bez +15 %" },
+    { "n": 8, "kind": "podatak", "text": "oznake faza oko provere i vrsna nedelja (p11, p12)" }
+  ],
+  "verdict": "planovi zatvoreni; HM u celini nije zatvoren dok se ne isprave 1 i 2 (regresija E2 iz kruga 9b) i ponovo pogledaju s05, s07, s08, s26",
+  "ownerReview": ["s05", "s08", "vlasnik-v2"]
+}
