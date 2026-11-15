@@ -9,6 +9,9 @@ import type { PlanDoc } from '../../domain/v4/engine';
 import type { PlanApi, PlanRow } from './planApi';
 import type { V4Failure } from './rest';
 
+/** Koliko prethodnih verzija plana ostaje u `plan_v4_verzija` (odluka vlasnika 15. 11. 2026). */
+export const VERSIONS_KEPT = 3;
+
 export type PlanAction = (current: PlanDoc | null) => { doc: PlanDoc; otisak: string } | null;
 
 export type CommitResult =
@@ -31,7 +34,15 @@ export async function commitAction(
     if (cur !== null && cur.otisak === next.otisak)
       return { ok: true, row: cur, wrote: false, tries: i };
     const saved = await api.save(next, cur === null ? null : cur.rev, deviceId);
-    if (saved.ok) return { ok: true, row: saved.row, wrote: true, tries: i };
+    if (saved.ok) {
+      /* odluka 15. 11. 2026: čuvaju se 3 prethodne verzije; greška čišćenja ne obara upis plana */
+      try {
+        await api.pruneVersions(VERSIONS_KEPT);
+      } catch {
+        /* višak verzija ostaje do sledećeg upisa */
+      }
+      return { ok: true, row: saved.row, wrote: true, tries: i };
+    }
     if ('conflict' in saved) continue;
     return { ...saved, tries: i };
   }

@@ -28,8 +28,10 @@ function fakeServer() {
     plan_v4: [],
     aktivnost: [],
     plan_v4_dogadjaj: [],
-    v4_pristup: []
+    v4_pristup: [],
+    plan_v4_verzija: []
   };
+  let verzijaId = 0;
   const tokens: Record<string, string> = { 'tok-A': 'A', 'tok-B': 'B' };
   const calls: string[] = [];
   let fail: Fail | null = null;
@@ -60,9 +62,11 @@ function fakeServer() {
     const filters = [...u.searchParams.entries()].filter(
       ([k, v]) => v.startsWith('eq.') && k !== 'select'
     );
+    const lt = [...u.searchParams.entries()].filter(([, v]) => v.startsWith('lt.'));
     const match = (r: Row): boolean =>
       r['user_id'] === uid &&
-      filters.every(([k, v]) => String(r[k]) === decodeURIComponent(v.slice(3)));
+      filters.every(([k, v]) => String(r[k]) === decodeURIComponent(v.slice(3))) &&
+      lt.every(([k, v]) => Number(r[k]) < Number(v.slice(3)));
     const prefer = headers['Prefer'] ?? '';
     const respond = (status: number, body: unknown): Promise<Response> => {
       if (f !== null && f.method === method && f.table === table && f.when === 'posle') {
@@ -71,7 +75,20 @@ function fakeServer() {
       }
       return Promise.resolve(json(status, body));
     };
-    if (method === 'GET') return respond(200, rows.filter(match));
+    if (method === 'GET') {
+      let out = rows.filter(match);
+      if (u.searchParams.get('order') === 'id.desc')
+        out = [...out].sort((a, b) => (b['id'] as number) - (a['id'] as number));
+      const off = Number(u.searchParams.get('offset') ?? 0);
+      const lim = u.searchParams.get('limit');
+      out = out.slice(off, lim === null ? undefined : off + Number(lim));
+      return respond(200, out);
+    }
+    if (method === 'DELETE') {
+      if (table !== 'plan_v4_verzija') return respond(403, { message: 'RLS' });
+      for (let i = rows.length - 1; i >= 0; i--) if (match(rows[i] as Row)) rows.splice(i, 1);
+      return respond(204, null);
+    }
     const body = JSON.parse(typeof init?.body === 'string' ? init.body : 'null') as Row | Row[];
     const list = Array.isArray(body) ? body : [body];
     if (list.some((r) => r['user_id'] !== uid)) return respond(403, { message: 'RLS' });
@@ -100,6 +117,15 @@ function fakeServer() {
         if (!match(cur)) continue;
         const next: Row = { ...cur, ...(list[0] as Row) };
         if (table === 'plan_v4') next['rev'] = (cur['rev'] as number) + 1;
+        /* okidač plan_v4_zapamti: SAMO dopisuje staru verziju kad se otisak promeni */
+        if (table === 'plan_v4' && cur['otisak'] !== next['otisak'])
+          tables['plan_v4_verzija']?.push({
+            id: ++verzijaId,
+            user_id: cur['user_id'],
+            rev: cur['rev'],
+            doc: cur['doc'],
+            otisak: cur['otisak']
+          });
         rows[i] = next;
         out.push(next);
       }
@@ -180,6 +206,7 @@ describe('plan_v4: uslovni upis po `rev`', () => {
     let raced = false;
     const racing = {
       load: () => lap.load(),
+      pruneVersions: (k: number) => lap.pruneVersions(k),
       save: async (next: Parameters<typeof lap.save>[0], rev: number | null, dev: string) => {
         if (!raced) {
           raced = true;
@@ -201,6 +228,7 @@ describe('plan_v4: uslovni upis po `rev`', () => {
     let raced = false;
     const racing = {
       load: () => lap.load(),
+      pruneVersions: (k: number) => lap.pruneVersions(k),
       save: async (next: Parameters<typeof lap.save>[0], rev: number | null, dev: string) => {
         if (!raced) {
           raced = true;
@@ -245,6 +273,7 @@ describe('plan_v4: uslovni upis po `rev`', () => {
     const api = createPlanApi(restFor(srv, 'A'));
     const always = {
       load: () => api.load(),
+      pruneVersions: () => Promise.resolve(true),
       save: () => Promise.resolve({ ok: false as const, conflict: true as const })
     };
     expect(await commitAction(always, withDay('d1'), 'tel', 3)).toEqual({
@@ -451,5 +480,37 @@ describe('aktivnost: pravo skladište iza `ActivityStore`', () => {
     }).run();
     expect(r.status).toBe('greska');
     expect(srv.calls).toEqual([]);
+  });
+});
+
+describe('plan_v4_verzija: aplikacija zadržava 3 najnovije verzije (odluka 15. 11. 2026)', () => {
+  it('posle više izmena ostaju tačno 3 najnovije; tuđe verzije se ne diraju', async () => {
+    const srv = fakeServer();
+    const api = createPlanApi(restFor(srv, 'A'));
+    srv.tables['plan_v4_verzija']?.push({ id: 1000, user_id: 'B', rev: 1, doc: {}, otisak: 'b' });
+    for (const d of ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'])
+      await commitAction(api, withDay(d), 'tel');
+    const mine = (srv.tables['plan_v4_verzija'] ?? []).filter((r) => r['user_id'] === 'A');
+    expect(mine.map((r) => r['rev'])).toEqual([3, 4, 5]);
+    expect(srv.tables['plan_v4_verzija']?.some((r) => r['user_id'] === 'B')).toBe(true);
+    expect(srv.calls).toContain('DELETE plan_v4_verzija');
+  });
+
+  it('do 3 verzije: nema brisanja', async () => {
+    const srv = fakeServer();
+    const api = createPlanApi(restFor(srv, 'A'));
+    for (const d of ['d1', 'd2', 'd3']) await commitAction(api, withDay(d), 'tel');
+    expect(srv.tables['plan_v4_verzija']).toHaveLength(2);
+    expect(srv.calls).not.toContain('DELETE plan_v4_verzija');
+  });
+
+  it('greška pri uklanjanju ne obara upis plana', async () => {
+    const srv = fakeServer();
+    const api = createPlanApi(restFor(srv, 'A'));
+    for (const d of ['d1', 'd2', 'd3', 'd4']) await commitAction(api, withDay(d), 'tel');
+    srv.failNext({ method: 'DELETE', table: 'plan_v4_verzija', when: 'pre' });
+    const r = await commitAction(api, withDay('d5'), 'tel');
+    expect(r).toMatchObject({ ok: true, wrote: true });
+    expect(r.ok && r.row?.rev).toBe(5);
   });
 });

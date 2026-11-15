@@ -14,6 +14,7 @@ export interface PlanRow {
 
 const Row = z.object({ doc: z.unknown(), rev: z.number(), otisak: z.string() }).passthrough();
 const RowList = z.array(Row);
+const IdList = z.array(z.object({ id: z.number() }).passthrough());
 
 const toRow = (r: z.infer<typeof Row>): PlanRow => ({
   doc: r.doc as PlanDoc,
@@ -26,6 +27,9 @@ export type SaveResult = { ok: true; row: PlanRow } | { ok: false; conflict: tru
 
 export interface PlanApi {
   load(): Promise<LoadResult>;
+  /** Zadržava `keep` najnovijih redova u `plan_v4_verzija` (okidač u bazi samo dopisuje, odluka 15. 11. 2026: 3).
+   *  `true` = uspelo ili nije bilo viška. Nikad ne baca. */
+  pruneVersions(keep: number): Promise<boolean>;
   /** `expectedRev = null`: reda još nema (prvi upis). */
   save(
     next: { doc: PlanDoc; otisak: string },
@@ -36,6 +40,26 @@ export interface PlanApi {
 
 export function createPlanApi(rest: V4Rest): PlanApi {
   return {
+    async pruneVersions(keep) {
+      const uid = await rest.user();
+      if (uid === null) return false;
+      const r = await rest
+        .call(
+          `plan_v4_verzija?select=id&user_id=${eq(uid)}&order=id.desc&limit=1&offset=${keep - 1}`,
+          IdList
+        )
+        .catch(() => null);
+      if (r === null || !r.ok) return false;
+      const oldestKept = r.data[0];
+      if (oldestKept === undefined) return true; // ima ih ≤ keep
+      const d = await rest
+        .call(`plan_v4_verzija?user_id=${eq(uid)}&id=lt.${oldestKept.id}`, z.unknown(), {
+          method: 'DELETE',
+          prefer: 'return=minimal'
+        })
+        .catch(() => null);
+      return d !== null && d.ok;
+    },
     async load() {
       const uid = await rest.user();
       if (uid === null) return ODJAVLJEN;
