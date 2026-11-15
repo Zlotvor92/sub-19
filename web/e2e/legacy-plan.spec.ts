@@ -1,10 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
-import { tab } from './support/flows';
 
-/* V1b — STARI PLAN (v1 generator obrisan): plan starog formata (bez oznake politike, kakvih ima u bazi) se otvara i
-   prikazuje, unos radi, a umesto prilagođavanja stoji jedna poruka i dugme „Generiši nov plan". Potvrda kaže šta se
-   briše a šta ostaje. Stanje se ne migrira. */
+/* DRUGO PUŠTANJE (odluka vlasnika 15. 11. 2026; ranije V1b: stari plan se prikazivao uz poruku „Generiši nov plan"):
+   plan starog formata (bez oznake politike, kakvih ima u bazi) se pri otvaranju uklanja sa svim podacima vezanim za
+   plan (BRISANJE-PLAN § 2d), a korisnik vidi samo čarobnjak. Merenja, podešavanja i ručni unosi ostaju. */
 
 const STATE_KEY = 'sub19-v1:account:u-e2e';
 const MESSAGE = 'Plan je napravljen starim generatorom: prikazuje se, ali se više ne prilagođava.';
@@ -96,42 +95,36 @@ test.beforeEach(async ({ page }) => {
   await seedOldPlan(page);
 });
 
-test('stari plan: prikazuje se, unos radi; poruka i „Generiši nov plan" sa jasnom potvrdom', async ({
+test('drugo puštanje: stari plan se pri otvaranju uklanja sa podacima uz njega — samo čarobnjak; merenja i ručni unosi ostaju', async ({
   page
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await installBackend(page);
+  const backend = await installBackend(page);
   await page.goto('/');
-  await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
-  // Danas: plan se prikazuje (današnji trening) i nosi poruku sa radnjom.
-  const today = page.locator('#legacy-plan-today');
-  await expect(today).toContainText(MESSAGE);
-  await expect(today.getByRole('button', { name: /Generiši nov plan/ })).toBeVisible();
-  await expect(page.locator('#tcard')).toBeVisible();
-  // Unos radi: današnji trening (sreda 14. 1.) se označava kao završen.
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await expect(page.locator('#tcard')).toHaveAttribute('data-status', 'done');
-  // Plan: nedelja starog plana i ista poruka; Prilagodi plan bez predloga i bez prilagođavanja.
-  await tab(page, 'Plan').click();
-  await expect(page.getByRole('heading', { name: 'Nedelja 1 od 3' })).toBeVisible();
-  await expect(page.locator('#legacy-plan')).toContainText(MESSAGE);
-  // „Generiši nov plan": potvrda kaže šta se briše a šta ostaje; „Ne" ne menja ništa.
-  await page
-    .locator('#legacy-plan')
-    .getByRole('button', { name: /Generiši nov plan/ })
-    .click();
-  const dialog = page.getByRole('alertdialog');
-  await expect(dialog).toContainText('TRAJNO se briše');
-  await expect(dialog).toContainText('Ostaje: test na 3 km, bol i težina upisani ručno');
-  await dialog.getByRole('button', { name: 'Ne', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Nedelja 1 od 3' })).toBeVisible();
-  // „Da": stari plan i njegovi unosi odlaze, otvara se čarobnjak (v2).
-  await page
-    .locator('#legacy-plan')
-    .getByRole('button', { name: /Generiši nov plan/ })
-    .click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Da', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeVisible();
+  await expect(page.getByText(MESSAGE)).toHaveCount(0);
+  await expect(page.locator('#legacy-plan-today')).toHaveCount(0);
+  const local = async (): Promise<Record<string, unknown>> =>
+    JSON.parse((await page.evaluate((k) => localStorage.getItem(k), STATE_KEY)) ?? '{}') as Record<
+      string,
+      unknown
+    >;
+  await expect.poll(async () => (await local())['genPlan'], { timeout: 15_000 }).toBeNull();
+  const s = await local();
+  expect(s['log']).toEqual({});
+  expect(s['vdotLog']).toEqual([]);
+  expect(s['knee']).toEqual([{ date: '2026-01-10', pain: 2, part: 'koleno-L' }]); // ručni bol ostaje
+  expect((s['ui'] as { lastBackup: string }).lastBackup).toBe('2026-01-13');
+  /* uklanjanje stiže i na server (jedan upis stanja) */
+  await expect
+    .poll(() => (backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan, {
+      timeout: 15_000
+    })
+    .toBeNull();
+  expect((backend.row?.data as { log?: unknown }).log).toEqual({});
+  /* ponovno otvaranje: i dalje samo čarobnjak */
+  await page.reload();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeVisible();
   expect(errors).toEqual([]);
 });

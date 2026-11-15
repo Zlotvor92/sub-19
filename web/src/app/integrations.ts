@@ -688,15 +688,26 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
               return 'greska';
             }
             let wrote = false;
-            const ok = await v4Self.commit(
-              (cur) => {
-                const next = a.action(cur);
-                wrote = next !== null; // ponovljen pokušaj posle sukoba: drugi uređaj je već upisao
-                return next;
-              },
-              () => (wrote ? [a.event] : [])
-            );
-            return ok ? (wrote ? 'upisano' : 'nije-potrebno') : 'nije-sacuvano';
+            const ok = await v4Self.commit((cur) => {
+              const next = a.action(cur);
+              wrote = next !== null; // ponovljen pokušaj posle sukoba: drugi uređaj je već upisao
+              return next;
+            });
+            if (!ok) return 'nije-sacuvano';
+            if (!wrote) return 'nije-potrebno';
+            await v4Events
+              .append(
+                [
+                  {
+                    event: a.event,
+                    vrsta: 'preuzeto',
+                    revPlana: useV4Store.getState().row?.rev ?? null
+                  }
+                ],
+                deps.session.state.deviceId ?? 'uredjaj'
+              )
+              .catch(() => undefined);
+            return 'upisano';
           }
         };
   const v4Self = v4 as NonNullable<typeof v4>;

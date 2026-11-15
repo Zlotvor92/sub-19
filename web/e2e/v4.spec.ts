@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, logToday, runWizard, tab, type PlanInput } from './support/flows';
 import { installV4 } from './support/v4';
@@ -283,8 +283,9 @@ test('V4 korak 8: Forma iz trčanja, „Nešto se desilo?" → pregled → Prime
   expect(v4.row?.rev).toBe(before + 1);
 });
 
-test('puštanje: postojeći korisnik sa v2 planom posle puštanja vidi isti plan (preuzimanje uz isti otisak), bez praznog ekrana', async ({
-  page
+test('drugo puštanje: v2 korisnik (trka u budućnosti) → pri otvaranju red u plan_v4, isti prikaz; drugi uređaj ne piše ponovo', async ({
+  page,
+  browser
 }) => {
   const backend = await installBackend(page);
   const v4 = installV4(backend, false);
@@ -301,16 +302,47 @@ test('puštanje: postojeći korisnik sa v2 planom posle puštanja vidi isti plan
   const rows = page.locator('.page.active .plan-row');
   await expect(rows.first()).toBeVisible();
   const before = await rows.allInnerTexts();
+  const stateBefore = JSON.stringify(backend.row?.data);
 
-  // puštanje: korisnik nema red u v4_pristup → V4 uključen
+  // puštanje: korisnik nema red u v4_pristup → V4 uključen; prvo otvaranje trajno preuzima plan
   v4.enabled = true;
   await page.reload();
-  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
+  await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
+  await expect.poll(() => v4.events.map((e) => e.vrsta), SYNC).toContain('preuzeto');
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
   await tab(page, 'Plan').click();
   await expect(rows.first()).toBeVisible();
   expect(await rows.allInnerTexts()).toEqual(before);
-  expect(v4.row).toBeNull(); // samo prikaz: preuzimanje ništa ne upisuje dok nema izmene
+  expect(JSON.stringify(backend.row?.data)).toBe(stateBefore); // user_state se ne menja
+
+  // drugo otvaranje istog uređaja: red postoji → nema upisa
+  await page.reload();
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(2);
+  await tab(page, 'Plan').click();
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.allInnerTexts()).toEqual(before);
+
+  // drugi uređaj (nov pregledač, isti nalog i isti server): vidi isti plan, ne piše drugi red ni sukob
+  const other = await browser.newContext();
+  const handler = (route: Route): Promise<void> => backend.handle(route);
+  await other.route(/^https:\/\/[^/]+\.supabase\.co\//, handler);
+  await other.route(/^https:\/\/www\.strava\.com\/(?!oauth)/, handler);
+  await other.route(/^https:\/\/api\.open-meteo\.com\//, handler);
+  await other.route((u) => u.pathname.startsWith('/api/'), handler);
+  await seedSession(other);
+  const page2 = await other.newPage();
+  await fixToday(page2);
+  const gets = backend.count('/rest/v1/plan_v4?', 'GET');
+  await page2.goto('/');
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(gets);
+  await tab(page2, 'Plan').click();
+  const rows2 = page2.locator('.page.active .plan-row');
+  await expect(rows2.first()).toBeVisible();
+  expect(await rows2.allInnerTexts()).toEqual(before);
+  expect(v4.writes).toBe(1);
+  expect(v4.row?.rev).toBe(1);
+  expect(v4.events.filter((e) => e.vrsta === 'preuzeto')).toHaveLength(1);
+  await other.close();
 });
 
 test('puštanje: korisnik koji ima samo plan_v4 vidi plan i bez mreže (lokalni keš)', async ({
