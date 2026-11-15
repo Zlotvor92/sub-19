@@ -92,7 +92,6 @@ export default function TodayPage() {
       <AppBar right={fmtDayLong(today)} />
       <h1 className="sr-only">Danas</h1>
       <Advisories today={today} />
-      <V4Today />
 
       {!day ? (
         <div className="state">
@@ -159,6 +158,8 @@ export default function TodayPage() {
           />
         </div>
       ) : null}
+      {/* V4 (prijava događaja, promene plana) je ispod dana i nedelje, da vrh ekrana ostane kao pre V4. */}
+      <V4Today />
       {pop ? <DonePop onDone={donePop} /> : null}
     </>
   );

@@ -108,7 +108,6 @@ export default function PlanPage() {
           </p>
         ) : null}
         <GoalAssessmentLine meta={gen?.meta} />
-        <V4FormCard />
       </header>
 
       <div className="weeknav">
@@ -232,6 +231,8 @@ export default function PlanPage() {
       >
         Pregled celog plana
       </button>
+      {/* Forma (V4) je na dnu i zatvorena, da vrh ekrana ostane kao pre V4 (nedelja i dani prvi). */}
+      <V4FormCard />
     </>
   );
 }

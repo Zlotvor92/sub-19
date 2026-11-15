@@ -16,7 +16,7 @@ export function V4FormCard() {
   const v = formView(live);
   return (
     <div className="plan-warn" id="v4-form">
-      <Disclosure title={`Forma · ${v.distanceLabel}`} meta={clock(v.raceDay.expectedSec)} open>
+      <Disclosure title={`Forma · ${v.distanceLabel}`} meta={clock(v.raceDay.expectedSec)}>
         <p className="note-src" id="v4-form-today">
           Danas: {clock(v.today.timeSec)} ({CONFIDENCE[v.today.confidence] ?? v.today.confidence})
         </p>
