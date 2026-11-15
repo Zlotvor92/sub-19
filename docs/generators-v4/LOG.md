@@ -1046,3 +1046,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   2027). Zadržavaju se sva tri v2 plana (pravilo: v2 sa trkom koja nije prošla). Pokrenut korak 1
   (`briefs/PUSTANJE2-KORAK1.md`): trajno preuzimanje, `discardLegacyPlan` + čuvar. SQL brisanja se ne izvršava dok
   kod koraka 1 ne bude u produkciji.
+
+### 15. 11. 2026, 15:30 — DRUGO PUŠTANJE, korak 1 u produkciji; brisanje iz baze čeka potvrdu
+- Korak 1 (Opus, do `f68556be`, `reports/PUSTANJE2-KORAK1.md`): `kindOfStoredPlan`, trajno preuzimanje v2 i ličnog
+  plana u `plan_v4`, `discardLegacyPlan` + čuvar, E2E; check 4901 + 12, check:full 5433 + 12, E2E 93/93, CI 1021
+  zelen. `main` spojen nazad u `claude/v4` (`db0c6f60`, bez izmene sadržaja).
+- Vlasnik potvrdio direktno u Opus tabu: PR #57 spojen ≈ 15:14 → `main` = `7fe9d387`; deployment
+  `dpl_9zdBhwHJXE81ctGLPFbnAE6uQo8T` READY 15:17; produkcija 200; baza: `user_state` 31, `plan_v4` 1.
+  Vraćanje: Promote `dpl_AaYv2BttHizAgUHtyEQWaW7k9Y5Q`. Izveštaj `reports/PUSTANJE2-KORAK1-MAIN.md`.
+- Brisanje 19 starih planova iz baze: proba (samo select) daje 19 pogođenih, 3 zadržana, 0 aktivnih u 14 dana;
+  izvršenje kroz Supabase MCP NIJE prošlo — server traži potvrdu vlasnika koja mu se ne prikazuje (isteklo 230 s).
+  Tekst je u `f9/brisanje-starih-planova.sql` (jedan blok sa proverom 19/3). Čuvar u aplikaciji svakako uklanja
+  stari plan pri otvaranju.
