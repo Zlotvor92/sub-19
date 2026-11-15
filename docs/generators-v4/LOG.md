@@ -1020,3 +1020,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   tab ga dopunjuje): v2 593 fajla (66 875 redova koda), HM v1 82 fajla, `select.ts` uvozi 56 fajlova aplikacije,
   `generatorForPlan` 27 poziva koji i pod V4 idu kroz v2; 16 E2E testova brani samo v2; `domain/v4` ne uvozi ništa
   van sebe. Redosled u 7 koraka; korak 2 (27 poziva bez v2) je VELIKI.
+- (≈ 09:50) ODLUKE VLASNIKA za korisnike sa planom starog formata: vide SAMO čarobnjak; BRIŠE SE SVE vezano za stari
+  plan (plan i trčanja uneta uz njega); stari plan se UKLANJA (ne ostaje kao arhiva). Dopuna poslata tabu BRISANJE-1:
+  tačan spisak polja koja se brišu / ostaju, način uklanjanja (predlog: na uređaju pri otvaranju, ne masovni SQL),
+  pravilo razlikovanja starog formata od v2 i ličnog plana. Ne izvršava se pre drugog puštanja.
