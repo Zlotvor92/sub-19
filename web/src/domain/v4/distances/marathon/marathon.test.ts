@@ -340,7 +340,7 @@ function atEasyCap(b: Built, weekIndex: number): boolean {
 }
 
 describe('čuvar na mreži ulaza (1440 planova)', () => {
-  it('nema nalaza osim onih koje ulaz opravdava', { timeout: 60_000 }, () => {
+  it('nema nalaza osim onih koje ulaz opravdava', { timeout: 140_000 }, () => {
     const unexplained: string[] = [];
     for (const c of gridCases()) {
       const b = gridBuild(c);

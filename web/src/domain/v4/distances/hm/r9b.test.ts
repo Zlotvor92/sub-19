@@ -54,17 +54,21 @@ describe('krug 9b — A11: tekst pominje izbačenu proveru forme', () => {
 });
 
 describe('krug 9b — dan posle provere forme (odluka organizatora umesto A15)', () => {
-  it('profili i mreža: dan posle provere je lagano trčanje ≤ 60 % prethodnog dugog', () => {
-    const bad: string[] = [];
-    for (const p of PROFILES) {
-      const r = plan(buildState(factsOf(p), p.goal, hm, estimateForm), p.goal, hm);
-      if (r.ok) bad.push(...afterTestEasy(p.id, r.doc, hm));
+  it(
+    'profili i mreža: dan posle provere je lagano trčanje ≤ 60 % prethodnog dugog',
+    { timeout: 30_000 },
+    () => {
+      const bad: string[] = [];
+      for (const p of PROFILES) {
+        const r = plan(buildState(factsOf(p), p.goal, hm, estimateForm), p.goal, hm);
+        if (r.ok) bad.push(...afterTestEasy(p.id, r.doc, hm));
+      }
+      for (const g of smallGrid(hm.distanceM, FORMS)) {
+        const goal = { distanceId: hm.id, raceDate: g.raceDate };
+        const r = plan(buildState(g.facts, goal, hm, estimateForm), goal, hm);
+        if (r.ok) bad.push(...afterTestEasy(g.label, r.doc, hm));
+      }
+      expect(bad).toEqual([]);
     }
-    for (const g of smallGrid(hm.distanceM, FORMS)) {
-      const goal = { distanceId: hm.id, raceDate: g.raceDate };
-      const r = plan(buildState(g.facts, goal, hm, estimateForm), goal, hm);
-      if (r.ok) bad.push(...afterTestEasy(g.label, r.doc, hm));
-    }
-    expect(bad).toEqual([]);
-  });
+  );
 });

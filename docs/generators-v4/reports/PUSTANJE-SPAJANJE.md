@@ -48,3 +48,12 @@ Zamena za ove reference ne postoji jer je v1 (osim zamrznutog HM v1) obrisan; li
 ## CI za spajanje
 - Push `92fef7e7`: CI **nije pokrenut** — u odnosu na prethodni vrh grane menja samo `docs/**`
   (pravilo `ciScope`). Stanje CI grane je stanje run-a 1018 (gore).
+
+## Dopuna (nalog organizatora 15. 11., 09:23): CI zelen pre upisa u `main`
+- `supabase/user-state.sql`: `plan_v4_zapamti` dodat na oba spiska izuzetaka (čišćenje + završni ispis); `plan_v4_rev` je
+  već bio. `v4_iskljuci` NIJE dodat: vraća `void`, a čišćenje dira samo `returns trigger` — nije u opasnosti, a dodavanje
+  bi oborilo tvrdnju „spisak ne štiti ono što nijedan fajl ne pravi kao okidač". Korenski testovi 431/431.
+- `npm run check` 403/403 (4884 + 12 očekivanih). Izričiti rokovi (merenje `TEST_FULL=1`, 5 fajlova paralelno; rok ≥ 4 × izmereno, najmanje 30 s; obrazac `{ timeout }`):
+  `engine/guard.test.ts:39` 3,9 s → 30 s; `engine/stability.test.ts:9` 3,7 s → 30 s; `hm/r9b.test.ts:57` 3,7 s → 30 s;
+  `tenk/r9b.test.ts:15` 3,4 s → 30 s; `marathon/marathon.test.ts:343` 34,8 s → 140 s (bilo 60 s). U run-u 1018 nije
+  istekao nijedan drugi test. Tela testova i tvrdnje netaknuti (u 3 fajla prettier samo preuvlači).

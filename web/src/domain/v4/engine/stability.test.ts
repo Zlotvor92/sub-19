@@ -6,16 +6,20 @@ import { SYNTHETIC } from './testdata/synthetic';
 import type { PlanEvent } from './types';
 
 describe('stabilnost (SPEC § 6.3): bez događaja plan se ne menja', () => {
-  it('replan(doc, state, []) vraća isti dokument i prazne promene (mreža)', () => {
-    for (const c of grid()) {
-      const b = build(c.facts, c.goal);
-      const before = serializePlan(b.doc);
-      const result = replan(b.doc, b.state, [], SYNTHETIC);
-      expect(result.changes, c.name).toEqual([]);
-      expect(result.doc, c.name).toBe(b.doc);
-      expect(serializePlan(result.doc), c.name).toBe(before);
+  it(
+    'replan(doc, state, []) vraća isti dokument i prazne promene (mreža)',
+    { timeout: 30_000 },
+    () => {
+      for (const c of grid()) {
+        const b = build(c.facts, c.goal);
+        const before = serializePlan(b.doc);
+        const result = replan(b.doc, b.state, [], SYNTHETIC);
+        expect(result.changes, c.name).toEqual([]);
+        expect(result.doc, c.name).toBe(b.doc);
+        expect(serializePlan(result.doc), c.name).toBe(before);
+      }
     }
-  });
+  );
 
   it('deriveEvents odmah posle nastanka plana ne menja plan (mreža)', () => {
     for (const c of grid()) {

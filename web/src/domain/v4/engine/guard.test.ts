@@ -36,7 +36,7 @@ function allowed(
 }
 
 describe('čuvar na mreži ispravnih ulaza (SPEC § 8.2)', () => {
-  it('bez nalaza, osim tamo gde ulaz to traži', () => {
+  it('bez nalaza, osim tamo gde ulaz to traži', { timeout: 30_000 }, () => {
     let clean = 0;
     for (const c of grid()) {
       const b = build(c.facts, c.goal);
