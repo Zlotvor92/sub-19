@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { personalPlan } from '../../domain/personal';
 import { adopt as adoptPlanReal, fingerprintLegacy } from '../../domain/v4/adapters';
 import { fingerprint } from '../../domain/v4/engine';
-import { adapterInput, adoptActive, type AdoptSnapshot } from './adopt';
+import {
+  ADOPT_WARNING_CODE,
+  adapterInput,
+  adoptActive,
+  adoptedDoc,
+  type AdoptSnapshot
+} from './adopt';
 import { clone, deepFreeze, SAMPLES } from './samples.test-data';
 
 const empty = (plan: AdoptSnapshot['plan']): AdoptSnapshot => ({
@@ -76,7 +82,7 @@ describe('ishodi koji nisu preuzimanje', () => {
     expect(r.status).toBe('greska');
   });
 
-  it('različit otisak → plan se NE preuzima (ostaje stari prikaz)', () => {
+  it('različit otisak → plan se NE preuzima u prikaz, ali nosi doc za trajni upis uz upozorenje', () => {
     const s = SAMPLES[0];
     if (s === undefined) throw new Error('nema uzorka');
     const r = adoptActive(s.snap, s.today, {
@@ -84,6 +90,16 @@ describe('ishodi koji nisu preuzimanje', () => {
       fingerprintLegacy: () => 'staro',
       fingerprint: () => 'novo'
     });
-    expect(r).toEqual({ status: 'otisak-razlicit', before: 'staro', after: 'novo' });
+    if (r.status !== 'otisak-razlicit') throw new Error(r.status);
+    expect({ before: r.before, after: r.after }).toEqual({ before: 'staro', after: 'novo' });
+    const real = adoptActive(s.snap, s.today);
+    if (real.status !== 'preuzet') throw new Error(real.status);
+    expect(r.doc).toEqual(real.doc);
+    const doc = adoptedDoc(r);
+    expect(doc?.header.warnings.filter((w) => w.code === ADOPT_WARNING_CODE)).toHaveLength(1);
+    expect(doc?.weeks).toEqual(real.doc.weeks);
+    expect(adoptedDoc({ ...r, doc: doc! })).toBe(doc);
+    expect(adoptedDoc(real)).toBe(real.doc);
+    expect(adoptedDoc({ status: 'nema-plana' })).toBeNull();
   });
 });

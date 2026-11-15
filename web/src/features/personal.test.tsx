@@ -5,7 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PERSONAL, personalBaselineVdot } from '../domain/personal';
 import { seedState, type PersistedState } from '../domain/state';
 import { ADMIN_UID } from '../services/config';
-import { hydratePersisted, useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../stores';
+import {
+  activeGenPlan,
+  hydratePersisted,
+  useActiveGenPlan,
+  useResolvedPlan,
+  useTrainingStore
+} from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { Advisories } from './today/Advisories';
@@ -78,7 +84,7 @@ describe('ko vidi ugrađeni plan', () => {
     expect(some.result.current?.weeks).toHaveLength(6);
   });
 
-  it('generisan plan ima prednost nad ugrađenim i za vlasnika', () => {
+  it('drugo puštanje: za vlasnika lični plan ima prednost nad generisanim (tuđ nalog: generisan)', () => {
     asUser(ADMIN_UID);
     const g = adaptGeneratedPlan(
       generatePlan({
@@ -95,7 +101,11 @@ describe('ko vidi ugrađeni plan', () => {
     );
     act(() => useTrainingStore.setState({ genPlan: g }));
     const { result } = renderHook(() => useActiveGenPlan());
-    expect(result.current).toBe(g);
+    expect(result.current?.meta?.['licni']).toBe(true);
+    expect(activeGenPlan()?.meta?.['licni']).toBe(true);
+    asUser('neko-drugi');
+    expect(renderHook(() => useActiveGenPlan()).result.current).toBe(g);
+    expect(activeGenPlan()).toBe(g);
   });
 
   it('isti objekat dok se ništa ne menja (memoizovanje ekrana)', () => {

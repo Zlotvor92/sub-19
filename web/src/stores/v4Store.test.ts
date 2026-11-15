@@ -7,7 +7,7 @@ import type { GenPlanState } from '../domain/state';
 import { adoptActive, toResolved } from '../integrations/v4';
 import { currentPlan, useHasPlan, useResolvedPlan, useTrainingStore } from './trainingStore';
 import { useRecoveryStore } from './recoveryStore';
-import { PERSONAL_PROTECTED_UNTIL, personalProtected, useV4Store } from './v4Store';
+import { useV4Store, v4DocOf } from './v4Store';
 
 const plan = (hmFixture as unknown as { plan: GenPlanState }).plan;
 const TODAY = plan.weeks[0]?.start ?? '2026-01-05';
@@ -59,18 +59,17 @@ describe('grananje prikaza plana (F9 korak 7)', () => {
     expect(shape(currentPlan())).toEqual(shape(toResolved(a.doc)));
   });
 
-  it('lični plan vlasnika do 13. 12. 2026: stari prikaz i uz upaljenu zastavicu i red', () => {
+  it('drugo puštanje: zaštita ličnog plana do 13. 12. je ukinuta — uz zastavicu i red prikaz je iz plan_v4', () => {
     const personal = personalPlan(47);
     setPlan(personal);
-    const old = resolvePlan(personal.weeks, { alts: {}, moves: {} });
     const a = adoptActive({ plan, log: {}, alts: {}, moves: {}, vanPlana: {}, knee: [] }, TODAY);
     if (a.status !== 'preuzet') throw new Error(a.status);
     useV4Store.setState({
       enabled: true,
-      today: PERSONAL_PROTECTED_UNTIL,
+      today: '2026-12-13',
       row: { doc: a.doc, rev: 1, otisak: 'x' }
     });
-    expect(shape(currentPlan())).toEqual(shape(old));
+    expect(shape(currentPlan())).toEqual(shape(toResolved(a.doc)));
   });
 
   it('pokvaren V4 dokument ne obara prikaz: ostaje stari', () => {
@@ -98,13 +97,17 @@ describe('grananje prikaza plana (F9 korak 7)', () => {
     expect(renderHook(() => useHasPlan()).result.current).toBe(true);
   });
 
-  it('A5: lični plan vlasnika je zaštićen do 13. 12. 2026 (uključivo) — čarobnjak tada ne ide kroz V4', () => {
+  it('drugo puštanje: lični plan bez reda se preuzima adapterom (isti otisak), prikaz isti kao stari', () => {
     const own = personalPlan(45);
-    expect(personalProtected(own, '2026-11-14')).toBe(true);
-    expect(personalProtected(own, PERSONAL_PROTECTED_UNTIL)).toBe(true);
-    expect(personalProtected(own, null)).toBe(true);
-    expect(personalProtected(own, '2026-12-14')).toBe(false);
-    expect(personalProtected(plan, '2026-11-14')).toBe(false);
-    expect(personalProtected(null, '2026-11-14')).toBe(false);
+    setPlan(own);
+    const snap = { plan: own, log: {}, alts: {}, moves: {}, vanPlana: {}, knee: [] };
+    const v4 = { enabled: true, row: null, today: '2026-11-14' };
+    const got = v4DocOf(v4, snap);
+    expect(got?.source).toBe('preuzet');
+    expect(v4DocOf({ ...v4, today: '2026-12-14' }, snap)?.source).toBe('preuzet');
+    useV4Store.setState(v4);
+    expect(shape(currentPlan())).toEqual(shape(toResolved(got!.doc)));
+    const days = (p: ReturnType<typeof currentPlan>) => p?.dated.map((d) => [d.id, d.date, d.km]);
+    expect(days(currentPlan())).toEqual(days(resolvePlan(own.weeks, { alts: {}, moves: {} })));
   });
 });

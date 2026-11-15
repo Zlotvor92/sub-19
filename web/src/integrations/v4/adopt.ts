@@ -1,6 +1,8 @@
 /* F9 · SLOJ APLIKACIJA ↔ V4: PREUZIMANJE AKTIVNOG PLANA (INTEGRACIJA.md § 2e, AGENTS t. 8).
    Stanje aplikacije → `adopt` (jedino mesto koje zna stari format) → provera otiska. Plan se smatra preuzetim SAMO kad
-   je otisak pre = otisak posle; inače ostaje stari prikaz i vraća se nalaz (pitanje 5). Ništa se ne upisuje. */
+   je otisak pre = otisak posle; inače ostaje stari prikaz i vraća se nalaz (pitanje 5). Ništa se ne upisuje.
+   Drugo puštanje (odluka vlasnika 1, 15. 11. 2026): i uz različit otisak ishod nosi `doc` — trajni upis u `plan_v4`
+   ga upisuje kako ga adapter da, uz upozorenje u zaglavlju (`adoptedDoc`). */
 import {
   adopt as adoptPlan,
   fingerprintLegacy,
@@ -32,7 +34,13 @@ export type AdoptOutcome =
     }
   | { status: 'nema-plana' }
   | { status: 'greska'; error: ReadError }
-  | { status: 'otisak-razlicit'; before: string | null; after: string };
+  | {
+      status: 'otisak-razlicit';
+      before: string | null;
+      after: string;
+      doc: PlanDoc;
+      facts: RunnerFacts;
+    };
 
 /** Zavisnosti (zamenljive samo u testu, da se proveri grana „otisak različit"). */
 export interface AdoptDeps {
@@ -64,7 +72,8 @@ export function adoptActive(
   if ('error' in r) return { status: 'greska', error: r.error };
   const before = deps.fingerprintLegacy(input);
   const after = deps.fingerprint(r.doc, r.facts);
-  if (before !== after) return { status: 'otisak-razlicit', before, after };
+  if (before !== after)
+    return { status: 'otisak-razlicit', before, after, doc: r.doc, facts: r.facts };
   return {
     status: 'preuzet',
     doc: r.doc,
@@ -72,5 +81,35 @@ export function adoptActive(
     carried: r.carried,
     fallbackDays: r.fallbackDays,
     fingerprint: after
+  };
+}
+
+/** Šifra upozorenja u zaglavlju plana preuzetog uz različit otisak. */
+export const ADOPT_WARNING_CODE = 'preuzimanje-otisak';
+
+/** Plan za trajni upis u `plan_v4`: isti otisak → doc kakav jeste; različit → doc + upozorenje u zaglavlju (jednom).
+ *  `null` kad nema šta da se upiše (nema plana, greška adaptera). */
+export function adoptedDoc(o: AdoptOutcome): PlanDoc | null {
+  if (o.status === 'preuzet') return o.doc;
+  if (o.status !== 'otisak-razlicit') return null;
+  if (o.doc.header.warnings.some((w) => w.code === ADOPT_WARNING_CODE)) return o.doc;
+  return {
+    ...o.doc,
+    header: {
+      ...o.doc.header,
+      warnings: [
+        ...o.doc.header.warnings,
+        {
+          code: ADOPT_WARNING_CODE,
+          severity: 'info',
+          problem:
+            'Plan je prenet u novi generator, ali se prenos ne poklapa u potpunosti sa ranijim prikazom.',
+          meaning:
+            'Neki dani mogu izgledati drugačije nego ranije (km, opis ili oznaka urađenog). Urađeni treninzi se ne menjaju.',
+          proposal:
+            'Pregledaj naredne nedelje; ako nešto ne odgovara, izmeni dan ili napravi nov plan kroz čarobnjak.'
+        }
+      ]
+    }
   };
 }

@@ -37,10 +37,18 @@ import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 import { useV4Store } from '../stores/v4Store';
-import type { Change, PlanEvent } from '../domain/v4/engine';
-import { liveState, otisakOf, refreshPlan } from '../integrations/v4';
+import type { Change, PlanDoc, PlanEvent } from '../domain/v4/engine';
+import {
+  adoptActive,
+  adoptedDoc,
+  liveState,
+  otisakOf,
+  refreshPlan,
+  type AdoptSnapshot
+} from '../integrations/v4';
 import { loadRuns } from '../services/v4/activities';
-import { personalProtected } from '../stores/v4Store';
+import { ADOPTED_KINDS, kindOfStoredPlan, type StoredPlanKind } from '../stores/detect';
+import { isOwnerNow } from '../stores/owner';
 import { createActivityImport } from '../services/strava/activityImport';
 import { v4ActivityKey, v4PlanKey } from '../services/storage/keys';
 import {
@@ -149,11 +157,63 @@ export interface Integrations {
      *  `false` = nije sačuvano (mreža, odjava, sukob posle ponovljenih pokušaja). */
     /** Korak 8: izvedene promene se primenjuju same (v. `refresh` u kodu). */
     refresh(): Promise<void>;
+    /** Drugo puštanje, korak 1: v2 plan (trka nije prošla) ili lični plan vlasnika → trajno u `plan_v4`, kad reda
+     *  još nema. Idempotentno (drugi uređaj ne piše ponovo); greška adaptera → ništa se ne upisuje ni briše. */
+    adoptStored(today: string): Promise<AdoptStoredResult>;
     commit(
       action: PlanAction,
       events?: readonly PlanEvent[] | (() => readonly PlanEvent[])
     ): Promise<boolean>;
   } | null;
+}
+
+export type AdoptStoredResult = 'upisano' | 'nije-potrebno' | 'greska' | 'nije-sacuvano';
+
+/** Drugo puštanje, korak 1 (BRISANJE-PLAN § 2a, odluka vlasnika 1): šta trajno preuzimanje radi za nalog — čisto.
+ *  `null`: vrsta se ne preuzima (`stari`, `nema`, …) ili nema plana. `greska`: adapter ne ume — ništa se ne upisuje
+ *  ni briše, samo se beleži događaj. `upis`: radnja za `commitAction` koja piše SAMO kad reda još nema (drugi uređaj
+ *  ili drugo otvaranje ne piše ponovo), uz događaj `preuzeto` (format, politika, otisak pre/posle). */
+export type Adoption =
+  | { kind: 'upis'; doc: PlanDoc; otisak: string; action: PlanAction; event: PlanEvent }
+  | { kind: 'greska'; event: PlanEvent };
+
+export function adoptionOf(
+  kind: StoredPlanKind,
+  snap: AdoptSnapshot,
+  today: string
+): Adoption | null {
+  if (!ADOPTED_KINDS.includes(kind)) return null;
+  const out = adoptActive(snap, today);
+  if (out.status === 'greska')
+    return {
+      kind: 'greska',
+      event: {
+        id: `preuzeto-greska:${today}`,
+        date: today,
+        kind: 'none',
+        format: kind,
+        code: out.error.code
+      } as PlanEvent
+    };
+  const doc = adoptedDoc(out);
+  if (doc === null) return null;
+  const otisak = otisakOf(doc, today);
+  return {
+    kind: 'upis',
+    doc,
+    otisak,
+    action: (cur) => (cur === null ? { doc, otisak } : null),
+    event: {
+      id: `preuzeto:${today}`,
+      date: today,
+      kind: 'none',
+      format: kind,
+      policyVersion: doc.header.policyVersion,
+      isti: out.status === 'preuzet',
+      before: out.status === 'otisak-razlicit' ? out.before : otisak,
+      after: out.status === 'otisak-razlicit' ? out.after : otisak
+    } as PlanEvent
+  };
 }
 
 const icuLinkStore = {
@@ -563,6 +623,9 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
               }
             }
             if (!next.enabled) return;
+            /* drugo puštanje: samo uz sveže učitan red (ne iz keša van mreže) — tada se pouzdano zna da reda nema */
+            if (cache === 'upisi' && next.row === null) await v4Self.adoptStored(next.today);
+            if (deps.accountKey?.() !== owner) return;
             /* korak 8: trčanja (forma iz trčanja) i odbijeni prijavljeni događaji; pa izvedene promene same */
             const [runs, ev] = await Promise.all([
               loadRuns(v4Rest),
@@ -584,7 +647,6 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
             const st = useV4Store.getState();
             const today = st.today;
             if (!st.enabled || st.row === null || today === null) return;
-            if (personalProtected(activeGenPlan(), today)) return;
             const log = useTrainingStore.getState().log;
             const knee = useRecoveryStore.getState().knee;
             let changes: Change[] = [];
@@ -598,6 +660,43 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
               return { doc: res.doc, otisak: otisakOf(res.doc, today) };
             });
             if (changes.length > 0) useV4Store.getState().set({ changes });
+          },
+          async adoptStored(today: string): Promise<AdoptStoredResult> {
+            const t = useTrainingStore.getState();
+            const r = useRecoveryStore.getState();
+            const a = adoptionOf(
+              kindOfStoredPlan({ genPlan: t.genPlan, isOwner: isOwnerNow() }, today),
+              {
+                plan: activeGenPlan(),
+                log: t.log,
+                alts: t.alts,
+                moves: t.moves,
+                vanPlana: r.vanPlana,
+                vanPlanaV2: r.vanPlanaV2,
+                knee: r.knee
+              },
+              today
+            );
+            if (a === null) return 'nije-potrebno';
+            if (a.kind === 'greska') {
+              await v4Events
+                .append(
+                  [{ event: a.event, vrsta: 'preuzeto-greska', revPlana: null }],
+                  deps.session.state.deviceId ?? 'uredjaj'
+                )
+                .catch(() => undefined);
+              return 'greska';
+            }
+            let wrote = false;
+            const ok = await v4Self.commit(
+              (cur) => {
+                const next = a.action(cur);
+                wrote = next !== null; // ponovljen pokušaj posle sukoba: drugi uređaj je već upisao
+                return next;
+              },
+              () => (wrote ? [a.event] : [])
+            );
+            return ok ? (wrote ? 'upisano' : 'nije-potrebno') : 'nije-sacuvano';
           }
         };
   const v4Self = v4 as NonNullable<typeof v4>;

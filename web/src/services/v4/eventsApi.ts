@@ -4,8 +4,10 @@ import { z } from 'zod';
 import type { PlanEvent } from '../../domain/v4/engine';
 import { eq, failureOf, ODJAVLJEN, type V4Failure, type V4Rest } from './rest';
 
-/** `odbijeno` / `primenjeno` beleže odluku korisnika o prijavljenom događaju; ostalo je vrsta događaja. */
-export type EventRecordKind = PlanEvent['kind'] | 'odbijeno' | 'primenjeno';
+/** `odbijeno` / `primenjeno` beleže odluku korisnika o prijavljenom događaju; `preuzeto` / `preuzeto-greska` beleže
+ *  trajno preuzimanje starog plana u `plan_v4` (drugo puštanje); ostalo je vrsta događaja. */
+export type EventRecordKind =
+  PlanEvent['kind'] | 'odbijeno' | 'primenjeno' | 'preuzeto' | 'preuzeto-greska';
 
 export interface EventRecord {
   event: PlanEvent;

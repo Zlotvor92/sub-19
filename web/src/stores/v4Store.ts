@@ -3,16 +3,13 @@
    Kad je uključeno, plan za prikaz dolazi iz V4 ovim redom:
      1. red iz `plan_v4` (plan koji je V4 napravio ili već preuzeo);
      2. inače postojeći plan preuzet adapterom — SAMO ako je otisak pre = otisak posle (odluka vlasnika 5);
-   Lični plan vlasnika (`meta.licni`) se ne dira do 13. 12. 2026 (Bokeška): ostaje stari prikaz.
+   Drugo puštanje (15. 11. 2026): zaštita ličnog plana vlasnika do 13. 12. je ukinuta; lični plan i v2 plan se pri
+   otvaranju trajno upisuju u `plan_v4` (`v4.load` → `adoptStored`), a do upisa važi tačka 2.
    Ovaj store ništa ne upisuje u `user_state` i ne zove mrežu; puni ga učitavač (`loadV4`) iz servisa. */
 import { create } from 'zustand';
 import type { Change, PlanDoc, Run } from '../domain/v4/engine';
-import { isPersonalPlan } from '../domain/generators/select';
 import { adoptActive, type AdoptSnapshot } from '../integrations/v4';
 import type { PlanRow } from '../services/v4';
-
-/** Do ovog dana (uključivo) lični plan vlasnika ostaje van V4. */
-export const PERSONAL_PROTECTED_UNTIL = '2026-12-13';
 
 export interface V4State {
   enabled: boolean;
@@ -41,12 +38,6 @@ export const useV4Store = create<V4State>()((set) => ({
   set: (p) => set(p)
 }));
 
-/** Lični plan vlasnika je aktivan i još zaštićen (do `PERSONAL_PROTECTED_UNTIL`): V4 ga ne prikazuje i ne pravi mu
- *  nov plan (čarobnjak tada ide starim putem, kao sa ugašenom zastavicom — ništa se tiho ne upisuje u `plan_v4`). */
-export function personalProtected(plan: AdoptSnapshot['plan'], today: string | null): boolean {
-  return isPersonalPlan(plan) && (today === null || today <= PERSONAL_PROTECTED_UNTIL);
-}
-
 export type V4Source = 'plan_v4' | 'preuzet';
 
 /**
@@ -59,7 +50,6 @@ export function v4DocOf(
 ): { doc: PlanDoc; source: V4Source } | null {
   if (!v4.enabled) return null;
   const today = v4.today;
-  if (personalProtected(snap.plan, today)) return null;
   if (v4.row !== null) return { doc: v4.row.doc, source: 'plan_v4' };
   if (snap.plan === null || today === null) return null;
   const r = adoptActive(snap, today);
