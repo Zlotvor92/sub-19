@@ -1,0 +1,252 @@
+{
+ "distanca": "5K",
+ "krug": 7,
+ "runda": "R28",
+ "stanje": "51e1bc57",
+ "prethodno": "b8ad0bb6",
+ "ocenjeno_beograd": "15. 11. 2026 07:40",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet (oznaka)",
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75.5,
+   "plan_stara": 76,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "oznaka ispravljena",
+   "prolazi": false
+  },
+  "p03": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 76,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80.5,
+   "plan_stara": 80.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 65.5,
+   "plan_stara": 78.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p08": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": false
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p10": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 76.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": false
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 77,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet (oznaka)",
+   "prolazi": false
+  },
+  "p13": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 77,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": 76,
+   "plan_za_ulaz": 81,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p14": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 77,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": 78,
+   "plan_za_ulaz": 78,
+   "status": "prenet",
+   "prolazi": false
+  },
+  "p15": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p16": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  }
+ },
+ "plan_za_ulaz_kriterijumi": {
+  "p13": [
+   8,
+   8,
+   8,
+   8.5
+  ],
+  "p14": [
+   8,
+   8,
+   8,
+   6.5
+  ]
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "7/14",
+   "sada": "8/14"
+  },
+  "plafon": {
+   "prethodno": "0/2",
+   "sada": "1/2"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 77.4,
+  "sada": 78.8
+ },
+ "B": {
+  "prethodno": 82.8,
+  "sada": 82.8,
+  "dogadjaji": {
+   "E1": 83.8,
+   "E2": 81.0,
+   "E3": 82,
+   "E4": 80.4,
+   "E5": 82.0,
+   "E6": 89.8,
+   "E7": 80.7
+  },
+  "napomena": "18 scenarija promenjeno samo u oznaci vršne nedelje; preneto"
+ },
+ "C": {
+  "prethodno": 82.7,
+  "sada": 82.7,
+  "parovi": {
+   "P1": 84,
+   "P2": 82,
+   "P3": 82
+  }
+ },
+ "zbirna": {
+  "prethodno": 80.1,
+  "sada": 80.8
+ },
+ "regresije": [],
+ "pale_ocene": [],
+ "napomene_bez_pada": [
+  "oznaka vršne nedelje kod p01, P1 A, P1 B na 7. nedelji, a najveća po km je 9.",
+  "p13: upozorenje ne pominje da je vrh na donjoj granici adekvatnog obima"
+ ],
+ "kalibracija": {
+  "stanje": "b8ad0bb6",
+  "5K p06": {
+   "R25": 65.5,
+   "moja": 63.5
+  },
+  "5K p12": {
+   "R25": 77,
+   "moja": 73,
+   "napomena": "razlika > 3, zapisano, nije štimovano"
+  },
+  "nacin": "ocene promenjenih = R25 + učinak izmene; nezavisna ocena: p06 77,5, p15 77,5"
+ },
+ "promenjeni_treninzi": [
+  "p03",
+  "p06",
+  "p13",
+  "p15",
+  "pairs/p1b",
+  "pairs/p2b"
+ ],
+ "commit_21abcf1e": {
+  "oslabljena_provera": "povratnik ≤ 4 dana: ≥ 2 treninga brzine umesto 3",
+  "trenerski_prihvatljivo": true,
+  "zamerka": "P1 B i dalje ima jake uzbrdice u 1. i 2. nedelji"
+ },
+ "dan_manje": {
+  "p06": "4 dana kao odluka plana uz upozorenje; trenerski ispravno; traži odluku vlasnika (AGENTS § 6)"
+ },
+ "za_vlasnika": [
+  "p06: plan daje 4 dana trkaču koji je tražio 5 — odluka vlasnika",
+  "šest profila ispod 80 nedirano: p12, p10, p02, p03, p08 (+ p06 78,5); p14 plafon 78",
+  "p13 i p15 prolaze na ivici; nezavisna strogost 2–4 poena niža",
+  "lagan dan 20–22 min ostaje (p06, p15, p03)",
+  "s20 nepromenjen"
+ ],
+ "pustiti_trkacima": "da, uz odluku vlasnika o p06 (dan manje)"
+}
