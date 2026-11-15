@@ -122,41 +122,70 @@ Upis (korak 1): pri prvom otvaranju posle `load()`, kada je red `plan_v4` `null`
 - **Lični plan:** `activeOf` daje `personalPlan(personalBaselineVdot(log))`, adapter ga prepoznaje (`meta.licni`)
   → `header.protected = true` (motor ga ne menja sam, čuvar samo upozorava, t. 8c). Pre upisa se briše
   `personalProtected`/`PERSONAL_PROTECTED_UNTIL`. VDOT zavisi od `log` u trenutku upisa, posle je fiksan u doc-u.
-### 2b. Plan starog formata → ne preuzima se; korisnik pravi nov
-- **(a) Prvo otvaranje:** umesto plana jedna poruka (kao današnji `LegacyPlanNotice`, ali bez prikaza plana): „Tvoj
-  plan je napravio stari generator i više se ne prikazuje. Trčanja i forma ostaju. Napravi nov plan — traje minut."
-  Dugme „Napravi nov plan" otvara V4 čarobnjak. Ekran nije prazan: Danas/Napredak i dalje rade nad trčanjima
-  (Strava/`aktivnost`, `vanPlana`). E2E test za to se dodaje u koraku 2.
-- **(b) `log` i forma:** predlog organizatora je prihvaćen. Trčanja ostaju: `aktivnost` (Strava, cela istorija, ne
-  zavisi od plana) i `log` u `user_state`. Stari plan se ne prikazuje. Ručni unosi bez Strave postoje samo u
-  `log` pod ID-jevima `g…`. Ne vide se uz plan (plana nema), ali se ne brišu. V4 dani imaju ID-jeve `w{n}d{wd}`
-  (`engine/plan.ts:277`), pa nema sudara sa starim `g…` ključevima. Forma pod V4 dolazi iz `v4/fitness` (trčanja),
-  ne iz starog `vdotLog`.
-- **(c) Brisanje starog plana iz `user_state`, dva puta (SQL se NE izvršava):**
-  1. *Na uređaju pri otvaranju:* aplikacija vidi `isLegacyPlan(genPlan)` i postavlja `genPlan: null` (bez
-     `purgeGenPlanData`, da `log` ostane), pa `requestPersist`. **Rizik:** briše se tek kad se nalog otvori (nalozi
-     koji se ne otvaraju ostaju sa starim planom zauvek); stari uređaj van mreže može kasnije da vrati stari
-     `genPlan` upisom svog stanja; kod koji to radi mora da ostane u aplikaciji. **Prednost:** nema ručnog rada nad
-     bazom.
-  2. *Jednokratni SQL na bazi* (posle provere zbira, uz rezervu `rezerva_20261114`):
-     `update user_state set data = data - 'genPlan' where data ? 'genPlan' and not (data->'genPlan' ? 'fiveKV2'
-     or … 'tenKV2' or … 'hmV2' or … 'marathonV2') and coalesce(data->'genPlan'->'meta'->>'policyId','') not like '%-v2%';`
-     (tačan uslov = `isLegacyPlan` prepisan u SQL i proveren na uzorcima pre puštanja). **Rizik:** uređaj sa
-     keširanim starim stanjem može da ga vrati pri sledećem upisu (isti problem kao 1, pa i tu treba čuvar na
-     uređaju); pogrešan uslov briše v2 plan (zato prvo `select count(*)` po vrsti, pa `update`); nema poništavanja
-     osim iz rezerve. **Prednost:** jedan trenutak, svi nalozi odjednom, kod za stari format može odmah da ode.
-  Predlog: **2 + čuvar na uređaju** („`genPlan` starog formata se ignoriše") dok se kod starog formata ne obriše.
-- **(d) Trka još nije prošla:** isto pravilo (ne preuzima se). Iz koda se to može utvrditi: plan starog formata nosi
-  `meta.raceDate` (proveren u svim uzorcima `legacy-*.json`), pa zbir „stari format, trka ≥ danas" daje jedan
-  `select` (`data->'genPlan'->'meta'->>'raceDate' >= '2026-11-15'`). Koliko ih je u bazi ne znam (bazu ne čitam).
-  Takvim korisnicima poruka iz (a) dodaje datum trke, a V4 čarobnjak se otvara sa trkom i datumom popunjenim iz
-  `meta.raceDistM`/`raceDate` (samo predlog unosa; plan se pravi nov).
+### 2b. Plan starog formata → uklanja se sa svim podacima, korisnik vidi samo čarobnjak
+Odluke vlasnika (15. 11. 2026, ≈ 09:50 po Beogradu): (a) pri otvaranju SAMO čarobnjak; (b) briše se sve vezano za
+stari plan, i trčanja uneta uz njega; (c) plan se uklanja, bez arhive u `user_state`. Rezerva: `rezerva_20261114`.
+
+**Polja `user_state.data` (`domain/state/types.ts` `PersistedState`, `stores/persistence.ts` `*_KEYS`):**
+| Polje | Šta je | Odluka |
+|---|---|---|
+| `genPlan` | stari plan (uz `genPlan.verzije` = verzije plana iz `recordPlanRevision`) | **briše se** (`null`) |
+| `log` | unosi po ID-ju dana (`g…`), i Strava upisi u njih | **briše se** ceo ključ `g…` (stari plan ima samo `g…`, provereno na 12 uzoraka) |
+| `alts`, `moves` | ručne izmene i pomeranja dana | **briše se** (`g…`) |
+| `pred`, `predLock` | procene vremena po danu | **briše se** (`g…`) |
+| `vanPlana`, `vanPlanaV2` | trčanja van plana (datum → km; `izvor:ID` → zapis) | **briše se** (odluka b; `discardPlan` ih danas NE briše) |
+| `vdotLog` | lanac forme (VDOT) | **sporno:** zapisi sa `id` `g…` se brišu; ostali (test 3 km, trke van plana) — predlog: ostaju |
+| `knee`, `kg` | bol i težina | zapisi sa `src` `g…` se brišu; ručni (`src` null) ostaju |
+| `t3k` | test na 3 km | **sporno:** predlog ostaje (nije deo plana; i danas ostaje) |
+| `wellness` | jutarnja merenja (HRV, puls u miru, san, težina) | ostaje |
+| `ui` | `firstRun`, `lastBackup`, `snooze`, `seenWeek`, `geo`, `satTreninga`, `novo` | ostaje; `seenWeek`/`snooze` se poništavaju (vezani za nedelje starog plana) |
+| `vreme` (`sati` treninga), `zajed` (zajednica), `icu` (veza), `strava` (tokeni, ne idu na server), `v` | podešavanja i veze | ostaje |
+| nepoznata polja (`pickUnknown`) | čuvaju se doslovno | ostaje (bez tumačenja) |
+Van `user_state`: `aktivnost` (Strava trčanja za V4), `push_pretplata`, `zajednica_profil`, `ai_posao` — ostaju.
+Trke/rekordi: u `user_state` nema posebnog polja; rezultat trke je u `log` dana trke (`raceAi` …) i briše se sa
+njim, osim kao trčanje u `aktivnost`. **Sporno** — v. pitanje 2.
+
+**Kako se uklanja (predlog organizatora prihvaćen — na uređaju, ne masovni SQL):** pri prvom otvaranju posle
+puštanja, posle `hydrate` i `v4.load()`, uslov iz donjeg pravila → nova radnja `discardLegacyPlan()` = današnji
+`discardPlan()` (`stores/actions.ts:63`: `purgeGenPlanData` briše `g…` iz `log`/`pred`/`predLock`/`alts`/`moves`/
+`vdotLog`, `knee`/`kg` sa `src` `g…`, `genPlan: null`, pa `requestPersist('now')`) **plus** `vanPlana: {}`,
+`vanPlanaV2` izbrisan, `ui.seenWeek`/`snooze` = `null`; zatim čarobnjak. Bez pitanja korisniku (odluka a).
+`discardPlan` sam **ne pokriva** odluku: ostavlja `vanPlana`/`vanPlanaV2`. Čuvar posle toga ostaje u kodu: stanje sa
+starim planom koje stigne kasnije (drugi uređaj van mreže, „Vrati verziju" iz istorije) briše se istom radnjom.
+SQL nacrt (samo kao rezerva, NE izvršava se; isti uslov, bez `log` filtera po `g…` jer to SQL ne radi pouzdano):
+`-- NACRT, ne izvršava se: select count(*) from user_state where data->'genPlan' is not null and not (data->'genPlan' ?| array['fiveKV2','tenKV2','hmV2','marathonV2']) and coalesce(data->'genPlan'->'meta'->>'policyId','') in ('','5k-v1','10k-v1','hm-v1','marathon-v1','legacy-5k','legacy-10k','legacy-hm','legacy-marathon') and coalesce((data->'genPlan'->'meta'->>'licni')::boolean,false) = false;`
+Nalog koji se ne otvori ostaje sa starim stanjem u bazi dok se ne otvori (bez posledica: prikazuje ga samo aplikacija).
+
+**`user_state_istorija`** (okidač `user_state_zapamti`: pri izmeni čuva staro stanje najviše jednom na sat, 40
+verzija; korisnik čita i vraća kroz Ti → Istorija, `restoreVersion`). (1) *Ostaje:* stari plan se može vratiti
+verzijom, ali ga čuvar odmah ponovo briše (vraćanje ne radi); nestaje sam posle 40 novih verzija; podaci ostaju na
+serveru suprotno odluci c. (2) *Čisti se* (jednokratno, `delete from user_state_istorija where user_id in (…)`,
+nacrt, NE izvršava se, uz potvrdu vlasnika): odluka c ispunjena do kraja; gubi se i istorija ostalih polja tih
+korisnika (podešavanja, merenja) — jedina rezerva je `rezerva_20261114`. Predlog: (1), jer čuvar ionako važi.
+
+**Pravilo razlikovanja (tačno iz koda), uklanja se SAMO kad važi sve:**
+1. `genPlan !== null` (inače „nema plana"; vlasnikov ugrađeni plan je baš `genPlan === null`, `activeOf`);
+2. nalog nije vlasnikov (`domain/personal.isOwnerUid`) i `isPersonalPlan(genPlan)` je `false` (`meta.licni`);
+3. `adapters/v2.isV2(plan)` je `false` (`policyId`/`policyVersion` sa `-v2.` ili ključ `fiveKV2`/`tenKV2`/`hmV2`/
+   `marathonV2`);
+4. `select.isLegacyPlan(genPlan)` je `true` (poznata distanca, `meta.policyId` nema ili je u `LEGACY_POLICY_IDS`).
+Plan za koji je 3 i 4 oboje `true` (v2 ključ bez `policyId`) se NE briše — preuzima se kao v2. Plan koji nije ni
+v2 ni stari (nepoznata distanca ili politika) se ne dira i prijavljuje u popisnoj skripti (§ 3). Pravilo se piše
+na jednom mestu, `domain/v4/adapters/detect.ts` (`kindOfStoredPlan → 'v2' | 'licni' | 'stari' | 'nepoznat' |
+'nema'`), da ne zavisi od `select.ts` koji se briše.
+**Test koji ga brani** (`detect.test.ts`, korak 1): svih 8 uzoraka `v2-*` → `v2`; `personal.json` → `licni`;
+12 uzoraka `legacy-*` → `stari`; `null` → `nema`; veštački: v2 ključ bez `policyId` → `v2`, `policyId: '10k-v3'`
+→ `nepoznat`, `raceDistM: 7000` → `nepoznat`, vlasnikov nalog sa starim `genPlan` → ne briše se. Plus test radnje:
+`discardLegacyPlan` nad `states/legacy-*` ostavlja `wellness`/`ui.geo`/`zajed`/`t3k`/ručni `knee` bajt-isto, a
+nad v2 i ličnim stanjem se ne poziva. E2E (korak 2): korisnik sa starim planom vidi samo čarobnjak.
+
 ### 2c. Kada adapteri mogu da se obrišu
 Adapter v2 (`v2.ts`), adapter ličnog plana (`personal.ts`), `detect.ts`, `fingerprintLegacy.ts`, `read.ts`,
 `shared.ts`, `stimuli.ts` i uzorci trebaju samo za upis iz 2a. Predlog: brišu se kada (1) organizator potvrdi zbirom
 iz baze da svaki nalog sa v2 `genPlan`-om (≈ 3) i vlasnik imaju red u `plan_v4`, i (2) prođe 14 dana bez grešaka
 preuzimanja. Nalog sa v2 planom koji se do tada ne otvori postaje stari format (2b). Grana starog formata
-(`legacy.ts` + uzorci) briše se odmah u koraku 2.
+(`legacy.ts` + uzorci `legacy-*`) se ne koristi za preuzimanje i briše se u koraku 2, osim 12 uzoraka koji
+ostaju u `detect.test.ts` dok traje čuvar (tada se brišu zajedno sa čuvarom, korak 6b).
 
 ## 3. Plan bez istog otiska (sada samo ≈ 3 v2 plana i lični plan)
 **Važno:** „isti otisak" danas znači da je `fingerprintLegacy` (adapterov `resolveDays`) jednak `fingerprint(doc)`.
@@ -178,18 +207,18 @@ broj dana po vrsti razlike. Bez ID-jeva, datuma, opisa i naloga. Uslov za upis: 
 ## 4. Redosled brisanja (svaki korak = jedan segment, pojedinačno proveren)
 | # | Šta | Mora da ostane zeleno | Veličina |
 |---|---|---|---|
-| 1 | Trajno preuzimanje SAMO v2 + lični plan (§ 2a), popisna skripta (§ 3), skida se `personalProtected`. E2E podrazumevano prelazi na V4 uključen (`backend.ts:124`). Stari tokovi dobijaju izričit `ukljuceno:false` | `npm run check`, `v4Store.test`, `adopt.test`, `integrations/v4/*`, E2E `v4.spec` + `owner.spec` + nov test „prvo otvaranje upisuje red, drugi uređaj ne piše" | srednji |
-| 2 | Prikaz i funkcije bez v2 puta: 27 poziva `generatorForPlan` dobija V4 izvor (forma/VDOT ← `v4/fitness`, faza ← `doc.weeks[].intent`, lagan tempo/RPE ← `paceCtxOf`, prilagođavanje ← događaji V4, `tracksOffPlanRuns` ← uvek). Briše se grana „stari prikaz", zastavica `enabled` i `v4_pristup` u kodu. Stari format: poruka + čarobnjak (§ 2b a), uklanjanje `genPlan` (§ 2b c), brišu se `adapters/legacy.ts`, uzorci `legacy-*`, `test/legacyPlans`/`legacyAdapt` (24 testa: prevod ili brisanje). `select.ts` se smanjuje na ono što ostaje | sve E2E koje danas brane v2 put (16 testova) prevedene na V4 put **pre** brisanja (§ 5). Ekrani Danas/Plan/Napredak/Ti bez praznog stanja za nalog bez `genPlan` | **veliki** |
+| 1 | Trajno preuzimanje SAMO v2 + lični plan (§ 2a), popisna skripta (§ 3), skida se `personalProtected`. Pravilo `kindOfStoredPlan` + `detect.test.ts`, radnja `discardLegacyPlan` + čuvar, stari format → samo čarobnjak (§ 2b). E2E podrazumevano prelazi na V4 uključen (`backend.ts:124`). Stari tokovi dobijaju izričit `ukljuceno:false` | `npm run check`, `v4Store.test`, `adopt.test`, `integrations/v4/*`, E2E `v4.spec` + `owner.spec` + nov test „prvo otvaranje upisuje red, drugi uređaj ne piše" | srednji |
+| 2 | Prikaz i funkcije bez v2 puta: 27 poziva `generatorForPlan` dobija V4 izvor (forma/VDOT ← `v4/fitness`, faza ← `doc.weeks[].intent`, lagan tempo/RPE ← `paceCtxOf`, prilagođavanje ← događaji V4, `tracksOffPlanRuns` ← uvek). Briše se grana „stari prikaz", zastavica `enabled` i `v4_pristup` u kodu. Brišu se `adapters/legacy.ts` (grana u `detect.ts`), `LegacyPlanNotice`, uzorci `states/legacy-*`, `test/legacyPlans`/`legacyAdapt` (24 testa: prevod ili brisanje). `select.ts` se smanjuje na ono što ostaje | sve E2E koje danas brane v2 put (16 testova) prevedene na V4 put **pre** brisanja (§ 5). Ekrani Danas/Plan/Napredak/Ti bez praznog stanja za nalog bez `genPlan` | **veliki** |
 | 3 | Brisanje v2 generatora po distanci (5K → 10K → maraton → HM), sa `*V2Actions`, `onboarding/*V2`, `*V2Steps`, `Form*V2`, `ShorterDistanceDecision`, `LegacyPlanNotice`, granom `executionActions` | po distanci: `check`, `tsc -b`, `build`, otisci V4 planova te distance (`domain/v4/distances/<d>`) nepromenjeni, E2E | srednji ×4 |
 | 4 | HM v1 (`halfMarathon/` van `v2/`), `domain/personal`, `data/personalPlan.ts`, `LEGACY_PERSONAL_GENERATOR`, `select.ts`/`contract.ts`/`handoff.ts` do kraja | vlasnikov red u `plan_v4` potvrđen u bazi (organizator, samo zbir). `adopt.test › lični plan` ostaje na `personal.json` | srednji |
 | 5 | Zajednički ostaci: tipovi čitanja starog formata premešteni u adapter, `domain/plan/edit.swapDays`, deo `domain/training/vdot`, `VITE_V2_DEFAULT_ON` (`vercel.json`, `deploy/vercel.cutover.json`, `cutover.node.test.ts`). Izmena `vercel.json` je deploy konfiguracija i traži potvrdu vlasnika | `check`, `build`, `deploy/*.node.test` | mali |
 | 6 | Testovi/fiksture/CI/dokumenti: 78 test fajlova (prevod ili brisanje sa predmetom), `src/test/legacy*`, `generators.ts`, proročišta čiji je predmet obrisan, `ciScope.mjs` (bez `DISTANCES`/`V2_FOLDER`: domen V4 po folderu distance), `AGENTS.md` (bez v2/v1 odeljaka), `TEST-SPEED.md`, ponovno merenje `check:full` | `ciScope.node.test`, ceo `npm test` jednom, CI „sve" zelen | srednji |
-| 6b | Adapteri v2 i ličnog plana + uzorci (§ 2c), posle potvrde zbirom i 14 dana | `check`, `isolation.test`, E2E `v4.spec` | mali |
+| 6b | Adapteri v2 i ličnog plana + uzorci (§ 2c), posle potvrde zbirom i 14 dana. Čuvar starog formata, `discardLegacyPlan`, `isLegacyPlan` u `detect.ts` i 12 uzoraka `legacy-*` — kad zbir pokaže 0 naloga sa starim `genPlan` i prođe 40 verzija / 90 dana (istorija istisnuta) | `check`, `isolation.test`, E2E `v4.spec` | mali |
 | 7 | Dupli kod u V4 sloju (§ 1c): `edits.ts` datumi → motor, `isPersonal` jedini, `toResolved`/`resolvePlan` → ekrani čitaju `PlanDoc` direktno (ako vlasnik želi; inače `resolvePlan` ostaje kao jedini prikaz) | otisci planova po distanci, E2E | srednji (bez prikaza) / veliki (sa prikazom) |
 
 ## 5. Rizici i šta se gubi
 1. **Vraćanje nazad:** jedini put je prethodni Vercel deployment. Za v2 i vlasnika radi (`user_state` netaknut),
-   ali ne vidi ništa urađeno u V4 posle prelaska. Stari format posle SQL-a samo iz rezerve. Korak 3 ≠ dan koraka 1.
+   ali ne vidi ništa urađeno u V4 posle prelaska. Obrisan stari plan samo iz rezerve. Korak 3 ≠ dan koraka 1.
 2. **Pokrivenost E2E:** 16 testova u 6 spec-ova brani samo v2 put (`fivek-v2` 3, `tenk-v2` 3, `hm-v2` 4,
    `marathon-v2` 3, `handoff-v2` 2, `legacy-plan` 1). Uz njih, svih 15 spec-ova koji zovu `createPlan`/`runWizard`
    danas rade sa V4 isključenim (`backend.ts:124`). V4 put brani `v4.spec` (6 testova). Predlog: svaki tok se
@@ -199,22 +228,27 @@ broj dana po vrsti razlike. Bez ID-jeva, datuma, opisa i naloga. Uslov za upis: 
    trke/rekalibracija): ako V4 nema ekvivalent, korak 2 ih gubi. Popis po funkciji je prvi zadatak koraka 2
    **[neprovereno]**.
 4. **Otisak „različit" nad stvarnim v2 planovima i ličnim planom:** nepoznat dok se ne pusti popisna skripta (§ 3).
-   **Gubitak za korisnike starog formata (≈ 19 naloga po zbiru organizatora):** plan nestaje i prave nov. Ručni
-   unosi bez Strave ostaju samo u `log` (nevidljivi uz plan). Ako se izabere SQL (§ 2b c 2), stari plan se vraća samo
-   iz rezerve `rezerva_20261114`.
+   **Gubitak za korisnike starog formata (≈ 19 naloga po zbiru organizatora):** plan, unosi uz njega, izmene,
+   procene i `vanPlana` se brišu (§ 2b); ostaju Strava trčanja u `aktivnost`, merenja, podešavanja. Vraćanje samo
+   iz rezerve `rezerva_20261114` (i iz `user_state_istorija` dok se ne istisne). Pogrešno pravilo bi obrisalo v2
+   ili lični plan — zato pravilo na jednom mestu + test (§ 2b) i popis brojeva pre puštanja (§ 3).
 5. **Proročišta/byteSame:** 32 proročišta upoređuju zajednički domen sa snimljenom starom aplikacijom
    (`legacy-recordings`, 3,9 MB). Ona ne štite generatore, osim 11 koja ih uvoze. Kad se predmet promeni
    (npr. VDOT u koraku 5), proročište pada namerno i briše se zajedno sa starim predmetom, nikad samo da bi bilo
    zeleno. `byteSame` (1) i `sameJson` (1) nestaju sa v2.
 6. Gubi se: v2 generatori (66 875 redova koda), HM v1, mreže `check:full`, mogućnost „Generiši v2 plan".
-   Stari planovi ostaju čitljivi samo kroz adapter.
+   Planovi starog formata i podaci uz njih (odluka vlasnika).
 
-## 6. Pitanja za vlasnika („da" prihvata predlog)
-1. v2 plan čiji se otisak razlikuje preuzima se kako ga adapter da, uz upozorenje u zaglavlju. Lični plan sa
-   razlikom se ne upisuje bez vašeg „da". **Da?**
-2. Stari plan briše se jednokratnim SQL-om (posle zbira i uz rezervu `rezerva_20261114`), uz čuvar na uređaju koji
-   ignoriše `genPlan` starog formata. `log` i trčanja se ne brišu. **Da?**
-3. `user_state` v2 korisnika i vlasnika (`genPlan`, `log`, `alts`, `moves`) ostaje nepromenjen kao arhiva i put
-   nazad. Adapteri v2 i ličnog plana se brišu 14 dana posle potvrde da su svi redovi upisani. **Da?**
-4. Popisnu skriptu (§ 3) i SQL pušta organizator uz vaše odobrenje u tom trenutku. `vercel.json` (korak 5) se menja
-   tek uz potvrdu. Dokumentacija v2 (≈ 166 MB) se arhivira, ne briše. **Da?**
+## 6. Pitanja za vlasnika („da" prihvata predlog; **dok ne odgovorite, važi predlog**)
+1. *(otvoreno)* v2 plan čiji se otisak razlikuje preuzima se kako ga adapter da, uz upozorenje u zaglavlju. Lični
+   plan sa razlikom se ne upisuje bez vašeg „da". **Da?**
+2. *(otvoreno, preformulisano posle odluka 09:50)* Stari plan uklanja se na uređaju pri prvom otvaranju
+   (`discardLegacyPlan`, § 2b), ne SQL-om; uz plan se brišu `log`/`alts`/`moves`/`pred`/`vanPlana` i zapisi forme,
+   bola i težine vezani za dane plana. **Ostaju** test 3 km (`t3k`), ručni bol/težina, jutarnja merenja, Strava
+   trčanja u `aktivnost`; `user_state_istorija` se ne čisti (čuvar sprečava vraćanje). Rezultati trka uneti uz dan
+   plana se brišu sa planom. **Da?**
+3. *(odgovoreno 15. 11. ≈ 09:50 za stari format: `user_state` se menja, plan i podaci se brišu.)* Za v2 korisnike
+   i vlasnika važi predlog: `user_state` ostaje nepromenjen kao arhiva; adapteri se brišu 14 dana posle potvrde da
+   su svi redovi upisani.
+4. *(otvoreno)* Popisnu skriptu (§ 3) pušta organizator uz vaše odobrenje. `vercel.json` (korak 5) se menja tek uz
+   potvrdu. Dokumentacija v2 (≈ 166 MB) se arhivira, ne briše. **Da?**
