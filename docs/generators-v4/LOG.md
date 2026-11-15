@@ -1024,3 +1024,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   plan (plan i trčanja uneta uz njega); stari plan se UKLANJA (ne ostaje kao arhiva). Dopuna poslata tabu BRISANJE-1:
   tačan spisak polja koja se brišu / ostaju, način uklanjanja (predlog: na uređaju pri otvaranju, ne masovni SQL),
   pravilo razlikovanja starog formata od v2 i ličnog plana. Ne izvršava se pre drugog puštanja.
+- (≈ 09:55) KONAČNE ODLUKE VLASNIKA (bez daljih pitanja): plan se preuzima kako adapter da, uz upozorenje; v2 planovi
+  čija je trka prošla se ne preuzimaju; čuvaju se i prelaze u V4 samo dva v2 plana aktivnih korisnika i lični plan
+  vlasnika; SVE OSTALO se briše iz baze (stari planovi i sve vezano za njih), bez arhive u `user_state`. Štedljivo —
+  limit je blizu. Popis nad bazom (zbir): v2 = 3 (sva tri aktivna u 14 dana, trka nije prošla); stari format = 19
+  (0 aktivnih u 14 dana, poslednja izmena 18. 10.). Prosleđeno tabu BRISANJE-1 za konačan dokument i SQL nacrt.
