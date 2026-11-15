@@ -962,7 +962,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   očekivano, `tsc` čist; razlika ispisa naspram `b8ad0bb6` samo u zaglavlju i redovima nedelje [visoka za MAR, uzorak].
   Tab arhiviran. Stanje generatora za puštanje: `7f3ea1fa` (osim 5 km — čeka odluku vlasnika).
 
-### 15. 11. 2026, 01:25 — ODLUKE VLASNIKA: krug 5 km, 3 verzije plana, „spajaj pa deploy"
+### 15. 11. 2026, 06:10 — ODLUKE VLASNIKA: krug 5 km, 3 verzije plana, „spajaj pa deploy"
 - (1) „pusti taj krug": R26 podatak 5 km (p13, p06, p15) zadat postojećem tabu 5K.
 - (2) „ima 3 prethodna plana koja se koriste, ostale briši": na produkciji primenjene migracije `v4_verzije_plana`
   (`plan_v4_zapamti()` samo dopisuje + okidač; politika `plan_v4_verzija_ukloni` for delete + grant delete — višak
