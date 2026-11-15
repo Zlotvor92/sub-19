@@ -11,13 +11,18 @@
 --   - politike koriste `(select auth.uid())` (računa se jednom po upitu);
 --   - `plan_v4_rev()` ima `set search_path = public` i opozvan `execute`.
 --
--- ČEKA POTVRDU VLASNIKA — NIJE u bazi, pa NIJE ni u ovom fajlu (inače bi ga
--- `inventar.sql` i `provera.sql` tražili): okidač koji čuva prethodne verzije
--- plana (plan_v4_zapamti, plan_v4_zapamti_trg) i funkcija kojom korisnik sam
--- gasi V4 (v4_iskljuci). Tekst: docs/generators-v4/f9/v4-ceka-potvrdu.sql;
--- kad se primeni, prenosi se ovde. Do tada `plan_v4_verzija` postoji, ali se
--- ne puni.
---
+-- DOPUNA 15. 11. 2026. (≈ 01:15 po beogradskom vremenu, odluke vlasnika:
+-- čuvaju se 3 prethodne verzije; V4 se pušta svima) — primenio organizator
+-- na produkciji, u izmenjenom obliku naspram nekadašnjeg
+-- docs/generators-v4/f9/v4-ceka-potvrdu.sql (fajl je obrisan):
+--   - `plan_v4_zapamti()` + `plan_v4_zapamti_trg`: okidač SAMO DOPISUJE staru
+--     verziju (nema brisanja u bazi);
+--   - politika `plan_v4_verzija_ukloni` + `grant delete`: višak verzija
+--     uklanja APLIKACIJA (zadržava 3 najnovije, web/src/services/v4/planApi.ts);
+--   - `v4_iskljuci()` je upsert (radi i kad korisnik nema red).
+-- Značenje zastavice (web/src/services/v4/access.ts, `WITHOUT_ROW = true`):
+-- nema reda = V4 UKLJUČEN; red sa `ukljuceno = false` = isključen.
+
 -- Idempotentno: `create table if not exists`, politike `drop` pa `create`.
 -- Brisanje naloga: sve tabele imaju `on delete cascade` i navedene su u
 -- api/delete-account.js, api/broadcast.js, api/daily-report.js i
@@ -27,7 +32,8 @@
 -- gubitka; aplikacija čita `user_state` kao pre). Potpuno uklanjanje:
 --   drop table public.plan_v4_verzija, public.plan_v4_dogadjaj,
 --              public.plan_v4, public.aktivnost, public.v4_pristup cascade;
---   drop function public.plan_v4_rev();
+--   drop function public.plan_v4_rev(), public.plan_v4_zapamti(),
+--                 public.v4_iskljuci();
 -- =====================================================================
 
 
@@ -119,10 +125,11 @@ revoke all on public.plan_v4 from anon;
 
 
 -- ---------------------------------------------------------------------
--- 3. plan_v4_verzija — prethodne verzije, najviše 10 (uzor istorija.sql)
---   piše:   SAMO okidač (security definer); kroz RLS niko
+-- 3. plan_v4_verzija — prethodne verzije (uzor istorija.sql)
+--   piše:   SAMO okidač (security definer, samo dopisuje); kroz RLS niko
+--   briše:  aplikacija, svoj red — zadržava 3 najnovije (odluka 15. 11.)
 --   čita:   svoj red („Ranije verzije plana")
---   veličina: ≤ 10 × 41 KB ≈ 0,4 MB [niska]
+--   veličina: ≈ 3 × 41 KB (+ verzije između dva čišćenja) [niska]
 --   nazad:  vraćanje verzije = uslovni upis starog `doc` u plan_v4
 -- ---------------------------------------------------------------------
 create table if not exists public.plan_v4_verzija (
@@ -135,12 +142,30 @@ create table if not exists public.plan_v4_verzija (
 );
 create index if not exists plan_v4_verzija_po_korisniku on public.plan_v4_verzija (user_id, id desc);
 
--- (okidač za čuvanje verzija čeka potvrdu, v. zaglavlje)
+create or replace function public.plan_v4_zapamti()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  begin
+    if old.otisak is distinct from new.otisak then
+      insert into public.plan_v4_verzija (user_id, rev, doc, otisak)
+        values (old.user_id, old.rev, old.doc, old.otisak);
+    end if;
+  exception when others then
+    null;  -- istorija nikad ne obara upis plana (kao istorija.sql)
+  end;
+  return new;
+end $$;
+drop trigger if exists plan_v4_zapamti_trg on public.plan_v4;
+create trigger plan_v4_zapamti_trg after update on public.plan_v4
+  for each row execute function public.plan_v4_zapamti();
+revoke execute on function public.plan_v4_zapamti() from public, anon, authenticated;
 
 alter table public.plan_v4_verzija enable row level security;
 drop policy if exists plan_v4_verzija_citaj on public.plan_v4_verzija;
 create policy plan_v4_verzija_citaj on public.plan_v4_verzija for select using ((select auth.uid()) = user_id);
-grant select on public.plan_v4_verzija to authenticated;
+drop policy if exists plan_v4_verzija_ukloni on public.plan_v4_verzija;
+create policy plan_v4_verzija_ukloni on public.plan_v4_verzija for delete using ((select auth.uid()) = user_id);
+grant select, delete on public.plan_v4_verzija to authenticated;
 revoke all on public.plan_v4_verzija from anon;
 
 
@@ -179,13 +204,12 @@ revoke all on public.plan_v4_dogadjaj from anon;
 
 -- ---------------------------------------------------------------------
 -- 5. v4_pristup — zastavica po korisniku, NA SERVERU
---   piše:   service_role / SQL vlasnika (korisničko gašenje čeka potvrdu,
---           v. zaglavlje)
---   čita:   svoj red; bez reda = V4 isključen
+--   piše:   service_role / SQL vlasnika; korisnik sam gasi V4 (`v4_iskljuci()`)
+--   čita:   svoj red; bez reda = V4 UKLJUČEN (puštanje svima, 15. 11.)
 --   veličina: 1 red
 --   nazad:  update public.v4_pristup set ukljuceno = false;   (svima ili jednom)
 --   ZNAČENJE (jedno mesto u kodu: web/src/services/v4/access.ts):
---           bez reda = isključen, red sa `ukljuceno` = vrednost reda.
+--           bez reda = uključen, red sa `ukljuceno` = vrednost reda.
 -- ---------------------------------------------------------------------
 create table if not exists public.v4_pristup (
   user_id     uuid        primary key references auth.users(id) on delete cascade,
@@ -199,6 +223,15 @@ drop policy if exists v4_pristup_citaj on public.v4_pristup;
 create policy v4_pristup_citaj on public.v4_pristup for select using ((select auth.uid()) = user_id);
 grant select on public.v4_pristup to authenticated;
 revoke all on public.v4_pristup from anon;
+
+create or replace function public.v4_iskljuci()
+returns void language sql security definer set search_path = public as $$
+  insert into public.v4_pristup (user_id, ukljuceno, napomena)
+    values ((select auth.uid()), false, 'korisnik isključio')
+  on conflict (user_id) do update set ukljuceno = false, od = now();
+$$;
+revoke all on function public.v4_iskljuci() from public, anon;
+grant execute on function public.v4_iskljuci() to authenticated;
 
 -- Uključenje svima (korak 10, odluka vlasnika 1):
 --   insert into public.v4_pristup (user_id, ukljuceno)

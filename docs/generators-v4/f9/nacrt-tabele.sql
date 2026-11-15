@@ -2,7 +2,7 @@
 -- SUB-20 — V4: NACRT TABELA (F9 etapa 1, 14. 11. 2026)
 --
 -- ZAMENJEN (14. 11. 2026): primenjeno stanje je u supabase/v4.sql, a deo koji
--- čeka potvrdu u docs/generators-v4/f9/v4-ceka-potvrdu.sql. Ovaj fajl se
+-- je primenjen 15. 11. 2026 u izmenjenom obliku (v. supabase/v4.sql; nekadašnji v4-ceka-potvrdu.sql je obrisan). Ovaj fajl se
 -- čuva samo kao istorija nacrta.
 --
 -- NACRT. NE IZVRŠAVATI. Izvršava se tek u F9 koraku 5, na Supabase GRANI,

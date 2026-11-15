@@ -41,11 +41,12 @@ with ocekivano as (
     'funkcija:zajednica_vidljiv_ja',
     'funkcija:korisnik_dogadjaj_iz_stanja','funkcija:zabelezi_otvaranje',
     'funkcija:odbij_oauth_token','funkcija:plan_v4_rev',
+    'funkcija:plan_v4_zapamti','funkcija:v4_iskljuci',
     -- okidači
     'okidač:ai_posao_kvota_zastiti_trg','okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
     'okidač:push_pretplata_dodirni_trg','okidač:user_state_touch_trg',
     'okidač:user_state_zapamti_trg','okidač:zajednica_profil_dodirni_trg',
-    'okidač:korisnik_dogadjaj_trg','okidač:plan_v4_rev_trg'
+    'okidač:korisnik_dogadjaj_trg','okidač:plan_v4_rev_trg','okidač:plan_v4_zapamti_trg'
   ] ) as kljuc
 ),
 stvarno as (
