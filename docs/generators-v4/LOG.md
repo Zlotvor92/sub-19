@@ -956,3 +956,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   Napretku, „Ubuduće dugi subotom?".
 - Do puštanja: popravka upozorenja (tab radi), odluka vlasnika za 5 km, potvrda vlasnika za `plan_v4_zapamti` +
   `v4_iskljuci`, izričito „da" za `main` i deploy.
+- (01:05) R25-POPRAVKA primljena (`1c91f221`, `e6000a31`, `bbb1ce50`, `cf2246f7`; izveštaj `reports/R25-POPRAVKA.md`):
+  predlog kraće distance, staž i cilj van raspona su uvek stavka; nijedan prazan predlog; „vršna" = najveće
+  opterećenje pre sužavanja (oznaka promenjena u 87 ispisa). Provera organizatora na `7f3ea1fa`: V4 + sloj 1381 + 12
+  očekivano, `tsc` čist; razlika ispisa naspram `b8ad0bb6` samo u zaglavlju i redovima nedelje [visoka za MAR, uzorak].
+  Tab arhiviran. Stanje generatora za puštanje: `7f3ea1fa` (osim 5 km — čeka odluku vlasnika).
