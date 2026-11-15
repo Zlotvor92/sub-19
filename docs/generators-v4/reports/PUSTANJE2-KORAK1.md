@@ -11,11 +11,11 @@ Grana `claude/v4`, polazni `73ce172d`. Baza, `main`, deploy i PR nisu dirani; v2
 | 4 | `9b72d128` | E2E (v. dole) + ispravka: događaj preuzimanja ide kao vrsta `preuzeto` (ranije bi `commit` upisao `none`) |
 
 ## Provere
-- `npm run check`: 406 fajlova, 4901 prošlo + 12 očekivanih padova (posle celine 3). Ponovljen posle celine 4: v. „check:full".
+- `npm run check` (posle celine 3 i ponovo nad `9b72d128`): 406 fajlova, 4901 prošlo + 12 očekivanih padova.
 - E2E lokalno ceo: 93/93; `npm run build`: uspešan.
 - CI run 1021 (`9b72d128`, 12:57–13:01): sve zeleno (database, scope, test, web, web-test 1/1, web-e2e 1–3/3).
   Napomena: `ciScope` je izabrao `select`, ne „sve", iako je diran domen van `generators/<D>/v2/` — vredi proveriti pravilo.
-- `check:full`: POPUNJAVA SE (pokrenut posle drugog `check`-a).
+- `npm run check:full` nad `9b72d128` (završen ≈ 14:15): 544 fajla, 5433 prošlo + 12 očekivanih padova, izlaz 0.
 
 ## Promenjeni postojeći testovi
 - `v4Store.test.ts`: „lični plan vlasnika do 13. 12.: stari prikaz" → „zaštita ukinuta: uz zastavicu i red prikaz iz plan_v4";
@@ -41,4 +41,4 @@ Grana `claude/v4`, polazni `73ce172d`. Baza, `main`, deploy i PR nisu dirani; v2
 - Čuvar radi i kad je V4 izričito isključen (`ukljuceno=false`): korisnik sa starim planom tada dobija stari v2 čarobnjak.
 - Upis se radi samo uz sveže učitan red (ne iz keša van mreže); nalog koji se ne otvori ostaje bez reda (§ 2c).
 - Čuvar se pokreće jednom po pokretanju; stanje koje kasnije stigne sinhronizacijom sa drugog uređaja hvata tek sledeće otvaranje.
-- Prikaz ličnog plana iz `plan_v4` (dan odmora bez teksta „Odmor") se razlikuje od starog u opisu dana odmora; km/datumi/ID isti.
+- `toResolved` daje dan odmora bez opisa („Odmor" → `null`), kao i za v2 već danas; km, datumi, ID i redovi ekrana Plan (E2E) su isti.
